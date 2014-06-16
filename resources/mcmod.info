@@ -1,0 +1,14 @@
+[
+{
+  "modid": "thaumicpipes",
+  "name": "Thaumic Pipes",
+  "description": "Thaumcraft addon for better essentia transport.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "authors": [ "Jezzadabomb338" ],
+  "dependencies": [
+     "MinecraftForge",
+	 "Thaumcraft"
+  ]
+}
+]

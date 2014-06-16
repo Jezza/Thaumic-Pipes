@@ -1,0 +1,14 @@
+package me.jezza.thaumicpipes.common.lib;
+
+public class Reference {
+
+    public static final String MOD_ID = "ThaumicPipes";
+    public static final String MOD_NAME = "Thaumic Pipes";
+    public static final String CHANNEL_NAME = "ThaumicPipes";
+
+    public static final String MOD_IDENTIFIER = MOD_ID + ":";
+
+    public static final String SERVER_PROXY_CLASS = "me.jezza.thaumicpipes.CommonProxy";
+    public static final String CLIENT_PROXY_CLASS = "me.jezza.thaumicpipes.client.ClientProxy";
+
+}
