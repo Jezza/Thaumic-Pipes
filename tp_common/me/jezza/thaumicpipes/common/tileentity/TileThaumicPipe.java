@@ -27,7 +27,7 @@ import thaumcraft.api.wands.IWandable;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandable, IEssentiaTransport {
+public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandable {
 
     AspectList aspectList = new AspectList();
     ArmState[] armStateArray = new ArmState[6];
@@ -341,70 +341,5 @@ public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandab
             return true;
 
         return false;
-    }
-
-    @Override
-    public boolean isConnectable(ForgeDirection face) {
-        return true;
-    }
-
-    @Override
-    public boolean canInputFrom(ForgeDirection face) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean canOutputTo(ForgeDirection face) {
-        return false;
-    }
-
-    @Override
-    public void setSuction(Aspect aspect, int amount) {
-        // TODO Auto-generated method stub
-        TPLogger.info("Requesting: " + amount + " of " + aspect);
-    }
-
-    @Override
-    public Aspect getSuctionType(ForgeDirection face) {
-        return null;
-    }
-
-    @Override
-    public int getSuctionAmount(ForgeDirection face) {
-        return 0;
-    }
-
-    @Override
-    public Aspect getEssentiaType(ForgeDirection face) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public int getEssentiaAmount(ForgeDirection face) {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
-    public int getMinimumSuction() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
-    public boolean renderExtendedTube() {
-        return false;
-    }
-
-    @Override
-    public int takeEssentia(Aspect aspect, int amount, ForgeDirection face) {
-        return 0;
-    }
-
-    @Override
-    public int addEssentia(Aspect aspect, int amount, ForgeDirection face) {
-        return 0;
     }
 }
