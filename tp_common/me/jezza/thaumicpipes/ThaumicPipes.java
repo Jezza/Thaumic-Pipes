@@ -8,7 +8,6 @@ import me.jezza.thaumicpipes.common.core.TPLogger;
 import me.jezza.thaumicpipes.common.core.command.CommandAirBlock;
 import me.jezza.thaumicpipes.common.core.command.CommandAreaRemove;
 import me.jezza.thaumicpipes.common.core.command.CommandAreaScan;
-import me.jezza.thaumicpipes.common.core.command.CommandUnlockAspect;
 import me.jezza.thaumicpipes.common.core.config.ConfigHandler;
 import me.jezza.thaumicpipes.common.lib.Reference;
 import me.jezza.thaumicpipes.common.research.ModRecipes;
@@ -63,7 +62,6 @@ public class ThaumicPipes {
         event.registerServerCommand(new CommandAirBlock());
         event.registerServerCommand(new CommandAreaRemove());
         event.registerServerCommand(new CommandAreaScan());
-        event.registerServerCommand(new CommandUnlockAspect());
     }
 
     private CreativeTabs getThaumcraftCreativeTab() {

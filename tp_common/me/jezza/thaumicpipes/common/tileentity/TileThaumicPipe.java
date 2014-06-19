@@ -118,7 +118,6 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
                 IEssentiaTransport transport = state.transport;
 
                 Aspect requiredAspect = transport.getSuctionType(direction);
-                TPLogger.info(requiredAspect);
 
                 if (requiredAspect == null)
                     continue;
@@ -424,7 +423,6 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
     @Override
     public AspectContainerList ping(Aspect pingedAspect, HashSet<CoordSet> pipeList) {
         pipeList.add(getCoordSet());
-        TPLogger.info(getCoordSet());
         stateList.clear(pingedAspect);
 
         int amount = aspectList.getAmount(pingedAspect);
