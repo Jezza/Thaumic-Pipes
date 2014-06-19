@@ -26,21 +26,21 @@ public class TextureMaps {
     public static final ResourceLocation[] THAUMIC_PIPE_ARM_PRIORITY = getThaumicPipeResources("thaumicPipeArmPriority");
 
     public static void bindBorderlessTexture(ArmState currentState) {
-        if (currentState.priority && RenderUtils.isPlayerWearingGoogles())
+        if (currentState.isPriority() && RenderUtils.isPlayerWearingGoogles())
             RenderUtils.bindTexture(PIPE_EXTENSION_BORDERLESS_PRIORITY[THAUMIC_TEXTURE_INDEX]);
         else
             RenderUtils.bindTexture(PIPE_EXTENSION_BORDERLESS[THAUMIC_TEXTURE_INDEX]);
     }
 
     public static void bindBorderedTexture(ArmState currentState) {
-        if (currentState.priority && RenderUtils.isPlayerWearingGoogles())
+        if (currentState.isPriority() && RenderUtils.isPlayerWearingGoogles())
             RenderUtils.bindTexture(PIPE_EXTENSION_PRIORITY[THAUMIC_TEXTURE_INDEX]);
         else
             RenderUtils.bindTexture(PIPE_EXTENSION[THAUMIC_TEXTURE_INDEX]);
     }
 
     public static void bindPipeTexture(ArmState currentState) {
-        if (currentState.priority && RenderUtils.isPlayerWearingGoogles())
+        if (currentState.isPriority() && RenderUtils.isPlayerWearingGoogles())
             RenderUtils.bindTexture(THAUMIC_PIPE_ARM_PRIORITY[THAUMIC_TEXTURE_INDEX]);
         else
             RenderUtils.bindTexture(THAUMIC_PIPE_ARM[THAUMIC_TEXTURE_INDEX]);

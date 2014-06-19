@@ -19,7 +19,7 @@ public class ThaumicHelper {
     }
 
     public static boolean isContainer(TileEntity tileEntity) {
-        return tileEntity instanceof IAspectContainer && !(tileEntity instanceof IAspectSource || tileEntity instanceof INode);
+        return tileEntity instanceof IAspectContainer && !(tileEntity instanceof IAspectSource || tileEntity instanceof INode || tileEntity instanceof ISidedInventory);
     }
 
     public static boolean isNode(TileEntity tileEntity) {
@@ -29,5 +29,4 @@ public class ThaumicHelper {
     public static boolean isAlchemicalConstruct(TileEntity tileEntity) {
         return tileEntity instanceof IAspectContainer && tileEntity instanceof IEssentiaTransport && tileEntity instanceof ISidedInventory;
     }
-
 }

@@ -24,24 +24,13 @@ public class RenderUtils {
             return false;
         ItemStack[] armour = player.inventory.armorInventory;
 
-        for (ItemStack stack : armour) {
-            if (stack == null)
+        for (ItemStack itemStack : armour) {
+            if (itemStack == null)
                 continue;
-            if (stack.getItem() instanceof IGoggles)
+            if (itemStack.getItem() instanceof IGoggles)
                 return true;
         }
 
-        return false;
-    }
-
-    public static boolean isPlayerHoldingWand() {
-        ItemStack itemStack = Minecraft.getMinecraft().thePlayer.getCurrentEquippedItem();
-
-        if (itemStack == null)
-            return false;
-
-        Item item = itemStack.getItem();
-//        return item instanceof ItemWandCasting;
         return false;
     }
 }

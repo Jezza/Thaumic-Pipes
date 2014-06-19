@@ -1,10 +1,16 @@
 package me.jezza.thaumicpipes.common.tileentity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
 
+import com.google.common.collect.Lists;
+
 import me.jezza.thaumicpipes.common.core.ArmState;
+import me.jezza.thaumicpipes.common.core.AspectContainerList;
+import me.jezza.thaumicpipes.common.core.AspectContainerList.AspectContainerState;
 import me.jezza.thaumicpipes.common.core.TPLogger;
+import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.core.utils.ThaumicHelper;
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
 import net.minecraft.entity.player.EntityPlayer;
@@ -27,13 +33,15 @@ import thaumcraft.api.wands.IWandable;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandable {
+public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWandable {
 
-    AspectList aspectList = new AspectList();
-    ArmState[] armStateArray = new ArmState[6];
-    ForgeDirection priority = ForgeDirection.UNKNOWN;
-    int tickTiming = 0;
-    boolean bigNode = false;
+    private AspectList aspectList = new AspectList();
+    private AspectContainerList stateList = new AspectContainerList();
+    private ArmState[] armStateArray = new ArmState[6];
+    private ForgeDirection priority = ForgeDirection.UNKNOWN;
+    private int tickTiming = 0;
+    private int timeTicked = 0;
+    private boolean bigNode = false;
 
     @Override
     public void updateEntity() {
@@ -42,12 +50,17 @@ public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandab
 
         updateArmStates();
 
-        // Get rid of the client side, because fuck them.
+        // Get rid of the client side.
         if (worldObj.isRemote)
             return;
 
+        processNearbyConstructs();
+
         // Take aspects from all sources.
         processNearbySources();
+
+        if (timeTicked > 10)
+            timeTicked = 0;
 
         // Handle checking and sending to jars, if leftovers, returns true and passes to next pipe.
         if (processPossibleJars() && ++tickTiming > 10) {
@@ -74,7 +87,7 @@ public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandab
     private void updateArmStates() {
         int index = 0;
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
-            armStateArray[index++] = new ArmState(dir, worldObj.getTileEntity(xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord + dir.offsetZ), canConnectTo(dir), dir.equals(priority));
+            armStateArray[index++] = new ArmState(dir, getCoordSet().addForgeDirection(dir).getTileEntity(worldObj), canConnectTo(dir), dir.equals(priority));
     }
 
     public ArmState[] getArmStateArray() {
@@ -84,11 +97,43 @@ public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandab
     @Override
     @SideOnly(Side.CLIENT)
     public AxisAlignedBB getRenderBoundingBox() {
-        return AxisAlignedBB.getAABBPool().getAABB(xCoord, yCoord, zCoord, xCoord + 1, yCoord + 1, zCoord + 1);
+        return AxisAlignedBB.getBoundingBox(xCoord, yCoord, zCoord, xCoord + 1, yCoord + 1, zCoord + 1);
     }
 
     public void drain() {
         aspectList = new AspectList();
+    }
+
+    private void processNearbyConstructs() {
+        if (timeTicked++ > 0)
+            return;
+
+        ArrayList<ConstructState> constructStates = getNearbyConstructs();
+        if (constructStates == null)
+            return;
+
+        if (!constructStates.isEmpty())
+            for (ConstructState state : constructStates) {
+                ForgeDirection direction = state.directionFound.getOpposite();
+                IEssentiaTransport transport = state.transport;
+
+                Aspect requiredAspect = transport.getSuctionType(direction);
+                TPLogger.info(requiredAspect);
+
+                if (requiredAspect == null)
+                    continue;
+
+                AspectContainerList tempList = ping(requiredAspect, new HashSet<CoordSet>());
+
+                if (tempList != null)
+                    for (AspectContainerState container : tempList) {
+                        int amountAdded = transport.addEssentia(requiredAspect, 1, direction);
+                        if (amountAdded > 0) {
+                            container.removeAmount(amountAdded);
+                            break;
+                        }
+                    }
+            }
     }
 
     private void processNearbySources() {
@@ -158,10 +203,10 @@ public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandab
     private ArrayList<IAspectContainer> getNearbyJars() {
         ArrayList<IAspectContainer> containerList = new ArrayList<IAspectContainer>();
 
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            if (!canConnectTo(dir))
+        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
+            if (!canConnectTo(direction))
                 continue;
-            TileEntity tileEntity = worldObj.getTileEntity(xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord + dir.offsetZ);
+            TileEntity tileEntity = getCoordSet().addForgeDirection(direction).getTileEntity(worldObj);
             if (ThaumicHelper.isJar(tileEntity))
                 containerList.add((IAspectContainer) tileEntity);
         }
@@ -172,10 +217,10 @@ public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandab
     private ArrayList<IAspectContainer> getNearbyAspectContainers() {
         ArrayList<IAspectContainer> containerList = new ArrayList<IAspectContainer>();
 
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            if (!canConnectTo(dir))
+        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
+            if (!canConnectTo(direction))
                 continue;
-            TileEntity tileEntity = worldObj.getTileEntity(xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord + dir.offsetZ);
+            TileEntity tileEntity = getCoordSet().addForgeDirection(direction).getTileEntity(worldObj);
             if (ThaumicHelper.isContainer(tileEntity))
                 containerList.add((IAspectContainer) tileEntity);
         }
@@ -183,31 +228,62 @@ public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandab
         return containerList;
     }
 
-    private ThaumicPipeState getNearbyPipe() {
-        if (priority != ForgeDirection.UNKNOWN && canConnectTo(priority)) {
-            TileEntity tileEntity = worldObj.getTileEntity(xCoord + priority.offsetX, yCoord + priority.offsetY, zCoord + priority.offsetZ);
-            if (ThaumicHelper.isPipe(tileEntity))
-                return new ThaumicPipeState((IThaumicPipe) tileEntity, priority);
-            return null;
-        }
-
+    private ArrayList<ThaumicPipeState> getNearbyPipes() {
         ArrayList<ThaumicPipeState> pipeList = new ArrayList<ThaumicPipeState>();
 
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            if (!canConnectTo(dir))
+        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
+            if (!canConnectTo(direction))
                 continue;
-            TileEntity tileEntity = worldObj.getTileEntity(xCoord + dir.offsetX, yCoord + dir.offsetY, zCoord + dir.offsetZ);
+            TileEntity tileEntity = getCoordSet().addForgeDirection(direction).getTileEntity(worldObj);
             if (ThaumicHelper.isPipe(tileEntity)) {
                 IThaumicPipe pipe = (IThaumicPipe) tileEntity;
-                if (pipe.canReceiveFrom(dir))
-                    pipeList.add(new ThaumicPipeState(pipe, dir));
+                if (pipe.canReceiveFrom(direction))
+                    pipeList.add(new ThaumicPipeState(pipe, direction));
             }
         }
 
         if (pipeList.isEmpty())
             return null;
 
+        return pipeList;
+    }
+
+    private ThaumicPipeState getNearbyPipe() {
+        if (priority != ForgeDirection.UNKNOWN && canConnectTo(priority)) {
+            TileEntity tileEntity = getCoordSet().addForgeDirection(priority).getTileEntity(worldObj);
+            if (ThaumicHelper.isPipe(tileEntity)) {
+                IThaumicPipe pipe = (IThaumicPipe) tileEntity;
+                if (pipe.canReceiveFrom(priority))
+                    return new ThaumicPipeState(pipe, priority);
+            }
+            cyclePriorityState();
+            return getNearbyPipe();
+        }
+
+        ArrayList<ThaumicPipeState> pipeList = getNearbyPipes();
+
+        if (pipeList == null || pipeList.isEmpty())
+            return null;
+
         return pipeList.get(new Random().nextInt(pipeList.size()));
+    }
+
+    private ArrayList<ConstructState> getNearbyConstructs() {
+        ArrayList<ConstructState> constructList = new ArrayList<ConstructState>();
+
+        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
+            if (!canConnectTo(direction))
+                continue;
+            TileEntity tileEntity = getCoordSet().addForgeDirection(direction).getTileEntity(worldObj);
+            if (ThaumicHelper.isAlchemicalConstruct(tileEntity)) {
+                constructList.add(new ConstructState((IEssentiaTransport) tileEntity, direction));
+            }
+        }
+
+        if (constructList.isEmpty())
+            return null;
+
+        return constructList;
     }
 
     @Override
@@ -243,27 +319,13 @@ public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandab
 
     @Override
     public boolean receiveAspect(Aspect aspect, int amount, ForgeDirection forgeDirection) {
-        if (forgeDirection.equals(priority))
-            return false;
-
         aspectList.add(aspect, amount);
         return aspectList.aspects.containsKey(aspect);
     }
 
-    public AspectList getAspects() {
+    @Override
+    public AspectList getAspectList() {
         return aspectList;
-    }
-
-    public static class ThaumicPipeState {
-
-        public IThaumicPipe pipe;;
-        public ForgeDirection directionFound;
-
-        public ThaumicPipeState(IThaumicPipe pipe, ForgeDirection directionFound) {
-            this.pipe = pipe;
-            this.directionFound = directionFound;
-        }
-
     }
 
     @Override
@@ -273,6 +335,12 @@ public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandab
             return 0;
         }
 
+        cyclePriorityState();
+
+        return 0;
+    }
+
+    private void cyclePriorityState() {
         ArrayList<ForgeDirection> validDirections = new ArrayList<ForgeDirection>();
         validDirections.add(ForgeDirection.UNKNOWN);
 
@@ -281,7 +349,7 @@ public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandab
             if (currentState == null)
                 continue;
             if (currentState.isValid())
-                validDirections.add(currentState.dir);
+                validDirections.add(currentState.getDirection());
         }
 
         int direction = priority.ordinal();
@@ -296,8 +364,6 @@ public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandab
             priority = ForgeDirection.UNKNOWN;
         else
             priority = ForgeDirection.getOrientation(direction);
-
-        return 0;
     }
 
     @Override
@@ -315,7 +381,7 @@ public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandab
 
     @Override
     public boolean canReceiveFrom(ForgeDirection forgeDirection) {
-        return !forgeDirection.getOpposite().equals(priority) && canConnectTo(forgeDirection);
+        return canConnectTo(forgeDirection.getOpposite()) && !forgeDirection.getOpposite().equals(priority);
     }
 
     @Override
@@ -323,12 +389,12 @@ public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandab
         if (worldObj == null)
             return false;
 
-        TileEntity tileEntity = worldObj.getTileEntity(xCoord + forgeDirection.offsetX, yCoord + forgeDirection.offsetY, zCoord + forgeDirection.offsetZ);
+        TileEntity tileEntity = getCoordSet().addForgeDirection(forgeDirection).getTileEntity(worldObj);
 
         if (tileEntity instanceof IFluidHandler)
             return false;
 
-        if (ThaumicHelper.isJar(tileEntity) || ThaumicHelper.isPipe(tileEntity))
+        if (ThaumicHelper.isJar(tileEntity) || ThaumicHelper.isPipe(tileEntity) || ThaumicHelper.isContainer(tileEntity))
             return true;
 
         if (tileEntity instanceof IEssentiaTransport)
@@ -337,9 +403,99 @@ public class TileThaumicPipe extends TileEntity implements IThaumicPipe, IWandab
         if (tileEntity instanceof IInventory)
             return false;
 
-        if (ThaumicHelper.isContainer(tileEntity))
-            return true;
-
         return false;
+    }
+
+    @Override
+    public AspectContainerList getContainerState() {
+        return stateList;
+    }
+
+    @Override
+    public AspectList removeAspect(Aspect aspect, int amount) {
+        return aspectList.remove(aspect, amount);
+    }
+
+    @Override
+    public boolean reduceAspect(Aspect aspect, int amount) {
+        return aspectList.reduce(aspect, amount);
+    }
+
+    @Override
+    public AspectContainerList ping(Aspect pingedAspect, HashSet<CoordSet> pipeList) {
+        pipeList.add(getCoordSet());
+        TPLogger.info(getCoordSet());
+        stateList.clear(pingedAspect);
+
+        int amount = aspectList.getAmount(pingedAspect);
+        if (amount > 0)
+            stateList.add(this);
+
+        ArrayList<IAspectContainer> containerList = getNearbyJars();
+        containerList.addAll(getNearbyAspectContainers());
+
+        if (!containerList.isEmpty()) {
+            for (IAspectContainer container : containerList) {
+                AspectList tempList = container.getAspects();
+
+                if (tempList == null || tempList.aspects.isEmpty())
+                    continue;
+
+                for (Aspect aspect : tempList.getAspects()) {
+                    if (aspect == null)
+                        continue;
+
+                    if (aspect.equals(pingedAspect)) {
+                        stateList.add(container);
+                        break;
+                    }
+                }
+            }
+        }
+
+        ArrayList<ThaumicPipeState> tempPipeList = getNearbyPipes();
+
+        if (tempPipeList == null)
+            return null;
+
+        for (ThaumicPipeState state : tempPipeList) {
+            CoordSet tempSet = getCoordSet().addForgeDirection(state.directionFound);
+
+            if (pipeList.contains(tempSet))
+                continue;
+
+            AspectContainerList pipe = state.pipe.ping(pingedAspect, pipeList);
+
+            if (pipe != null)
+                stateList.addAll(pipe);
+        }
+
+        if (stateList.isEmpty())
+            return null;
+
+        return stateList;
+    }
+
+    private static class ConstructState {
+
+        public IEssentiaTransport transport;
+        public ForgeDirection directionFound;
+
+        public ConstructState(IEssentiaTransport transport, ForgeDirection directionFound) {
+            this.transport = transport;
+            this.directionFound = directionFound;
+        }
+
+    }
+
+    private static class ThaumicPipeState {
+
+        public IThaumicPipe pipe;
+        public ForgeDirection directionFound;
+
+        public ThaumicPipeState(IThaumicPipe pipe, ForgeDirection directionFound) {
+            this.pipe = pipe;
+            this.directionFound = directionFound;
+        }
     }
 }

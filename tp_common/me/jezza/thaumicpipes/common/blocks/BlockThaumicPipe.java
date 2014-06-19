@@ -148,7 +148,7 @@ public class BlockThaumicPipe extends BlockTP {
         if (player.isSneaking()) {
             pipe.drain();
         } else {
-            AspectList aspectList = pipe.getAspects();
+            AspectList aspectList = pipe.getAspectList();
             boolean empty = true;
             for (Aspect aspect : aspectList.getAspects()) {
                 if (aspect == null)

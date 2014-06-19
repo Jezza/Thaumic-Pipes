@@ -5,54 +5,29 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
 public class ArmState {
-    public ForgeDirection dir;
-    // 0 - Container
-    // 1 - Jar
-    // 2 - Pipe
-    public int connectionType;
-    private float extensionSize;
-    public boolean priority;
+    private ForgeDirection direction;
+    private ConnectionState connectionState;
+    private boolean priority;
 
-    public ArmState(ForgeDirection dir, TileEntity tileEntity, boolean canConnect, boolean priority) {
-        this.dir = dir;
+    public ArmState(ForgeDirection direction, TileEntity tileEntity, boolean canConnect, boolean priority) {
+        this.direction = direction;
         this.priority = priority;
-        if (canConnect) {
-            if (ThaumicHelper.isPipe(tileEntity)) {
-                connectionType = 2;
-                extensionSize = 0.0F;
-            } else if (ThaumicHelper.isJar(tileEntity)) {
-                connectionType = 1;
-                extensionSize = 0.1F;
-            } else if (ThaumicHelper.isContainer(tileEntity)) {
-                connectionType = 0;
-                extensionSize = 0.5F;
-            } else {
-                connectionType = -1;
-                extensionSize = -1.0F;
-            }
-        } else {
-            connectionType = -1;
-        }
+        connectionState = ConnectionState.getConnectionState(tileEntity, canConnect);
     }
 
     public boolean isValid() {
-        return connectionType >= 0;
+        return connectionState.getType().isValid();
     }
 
-    public boolean isContainerType() {
-        return connectionType == 0;
+    public ConnectionState getConnectionState() {
+        return connectionState;
     }
 
-    public boolean isJarType() {
-        return connectionType == 1;
+    public ForgeDirection getDirection() {
+        return direction;
     }
 
-    public boolean isPipeType() {
-        return connectionType == 2;
+    public boolean isPriority() {
+        return priority;
     }
-
-    public float getExtensionSize() {
-        return extensionSize;
-    }
-
 }
