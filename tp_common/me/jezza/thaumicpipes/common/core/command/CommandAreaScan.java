@@ -1,5 +1,7 @@
 package me.jezza.thaumicpipes.common.core.command;
 
+import me.jezza.thaumicpipes.common.core.utils.CoordSet;
+import me.jezza.thaumicpipes.common.core.utils.CoordSet.Axis;
 import net.minecraft.block.Block;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -7,68 +9,48 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.WorldServer;
 
-public class CommandAreaScan extends CommandBase {
+public class CommandAreaScan extends CommandAbstract {
 
-    @Override
-    public String getCommandName() {
-        return "removeBlock";
+    public CommandAreaScan(String commandName, String commandUsage) {
+        super(commandName, commandUsage);
     }
 
     @Override
-    public String getCommandUsage(ICommandSender icommandsender) {
-        return "removeBlock <dimID> <x1> <y1> <z1> <x2> <y2> <z2> <id> <meta>";
-    }
-
-    @Override
-    public void processCommand(ICommandSender iCommandSender, String[] args) {
+    public void processCommand(ICommandSender commandSender, String[] args) {
         if (args.length != 9) {
-            iCommandSender.addChatMessage(new ChatComponentText(getCommandUsage(iCommandSender)));
+            sendCommandUsage(commandSender);
             return;
         }
 
         int dimID = Integer.parseInt(args[0]);
-        int x = Integer.parseInt(args[1]);
-        int y = Integer.parseInt(args[2]);
-        int z = Integer.parseInt(args[3]);
-
-        int x2 = Integer.parseInt(args[4]);
-        int y2 = Integer.parseInt(args[5]);
-        int z2 = Integer.parseInt(args[6]);
+        CoordSet firstSet = new CoordSet(args[1], args[2], args[3]);
+        CoordSet secondSet = new CoordSet(args[4], args[5], args[6]);
 
         int id = Integer.parseInt(args[7]);
         int meta = Integer.parseInt(args[8]);
 
         WorldServer world = MinecraftServer.getServer().worldServers[dimID];
 
-        if (x2 < x) {
-            int temp = x2;
-            x2 = x;
-            x = temp;
-        }
+        if (secondSet.getX() < firstSet.getX())
+            firstSet.swap(secondSet, Axis.X);
 
-        if (y2 < y) {
-            int temp = y2;
-            y2 = y;
-            y = temp;
-        }
+        if (secondSet.getY() < firstSet.getY())
+            firstSet.swap(secondSet, Axis.Y);
 
-        if (z2 < z) {
-            int temp = z2;
-            z2 = z;
-            z = temp;
-        }
+        if (secondSet.getZ() < firstSet.getZ())
+            firstSet.swap(secondSet, Axis.Z);
 
         int index = 0;
-        for (int i = x; i <= x2; i++)
-            for (int j = y; j <= y2; j++)
-                for (int k = z; k <= z2; k++)
+        for (int i = firstSet.getX(); i <= secondSet.getX(); i++)
+            for (int j = firstSet.getY(); j <= secondSet.getY(); j++)
+                for (int k = firstSet.getZ(); k <= secondSet.getZ(); k++)
                     if (world.getBlock(i, j, k).equals(Block.getBlockById(id)) && world.getBlockMetadata(i, j, k) == meta) {
                         index++;
                         world.setBlockToAir(i, j, k);
                     }
 
-        iCommandSender.addChatMessage(new ChatComponentText("Command Executed Successfully"));
-        iCommandSender.addChatMessage(new ChatComponentText("Removed: " + index));
+        sendChatMessage(commandSender, "Command Executed Successfully");
+        sendChatMessage(commandSender, "Removed: " + index);
     }
 
     @Override

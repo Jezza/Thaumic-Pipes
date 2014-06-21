@@ -24,6 +24,12 @@ public class CoordSet {
         this.z = z;
     }
 
+    public CoordSet(String x, String y, String z) {
+        this.x = Integer.parseInt(x);
+        this.y = Integer.parseInt(y);
+        this.z = Integer.parseInt(z);
+    }
+
     public void setX(int x) {
         this.x = x;
     }
@@ -156,6 +162,29 @@ public class CoordSet {
         return new CoordSet(x, y, z);
     }
 
+    public void swap(CoordSet coordSet, Axis axis) {
+        int temp = 0;
+        switch (axis) {
+            case X:
+                temp = x;
+                x = coordSet.x;
+                coordSet.x = temp;
+                break;
+            case Y:
+                temp = y;
+                y = coordSet.y;
+                coordSet.y = temp;
+                break;
+            case Z:
+                temp = z;
+                z = coordSet.z;
+                coordSet.z = temp;
+                break;
+            default:
+                break;
+        }
+    }
+
     public static CoordSet createFromMinecraftTag(NBTTagCompound tag) {
         int x = tag.getInteger("x");
         int y = tag.getInteger("y");
@@ -163,4 +192,7 @@ public class CoordSet {
         return new CoordSet(x, y, z);
     }
 
+    public static enum Axis {
+        X, Y, Z;
+    }
 }

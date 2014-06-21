@@ -2,7 +2,6 @@ package me.jezza.thaumicpipes.common.blocks;
 
 import java.util.List;
 
-import me.jezza.thaumicpipes.common.core.TPLogger;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.core.utils.ThaumicHelper;
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
@@ -19,9 +18,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
-import thaumcraft.api.aspects.IAspectContainer;
-import thaumcraft.api.aspects.IAspectSource;
-import thaumcraft.api.nodes.INode;
 
 public class BlockThaumicPipe extends BlockTP {
 
@@ -44,7 +40,11 @@ public class BlockThaumicPipe extends BlockTP {
         if (world.isRemote)
             return true;
 
-        TileThaumicPipe pipe = (TileThaumicPipe) world.getTileEntity(x, y, z);
+        TileEntity tileEntity = world.getTileEntity(x, y, z);
+        if (!(tileEntity instanceof IThaumicPipe))
+            return true;
+
+        IThaumicPipe pipe = (IThaumicPipe) world.getTileEntity(x, y, z);
         if (player.isSneaking()) {
             pipe.drain();
         } else {

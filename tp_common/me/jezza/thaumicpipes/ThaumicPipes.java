@@ -61,9 +61,11 @@ public class ThaumicPipes {
 
     @EventHandler
     public void initServer(FMLServerStartingEvent event) {
-        event.registerServerCommand(new CommandAirBlock());
-        event.registerServerCommand(new CommandAreaRemove());
-        event.registerServerCommand(new CommandAreaScan());
+        if (Reference.COMMANDS) {
+            new CommandAirBlock("delete", "<dimID> <x> <y> <z>");
+            new CommandAreaRemove("removearea", "<dimID> <x1> <y1> <z1> <x2> <y2> <z2>");
+            new CommandAreaScan("removeBlock", "<dimID> <x1> <y1> <z1> <x2> <y2> <z2> <id> <meta>");
+        }
     }
 
     private CreativeTabs getThaumcraftCreativeTab() {

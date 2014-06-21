@@ -191,6 +191,7 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
         return firstState.isValid() && secondState.isValid() && firstState.getDirection().getOpposite().equals(secondState.getDirection());
     }
 
+    @Override
     public void drain() {
         aspectList = new AspectList();
     }

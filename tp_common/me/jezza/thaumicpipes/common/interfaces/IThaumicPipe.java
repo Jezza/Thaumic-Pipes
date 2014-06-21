@@ -25,4 +25,6 @@ public interface IThaumicPipe {
     public boolean canConnectTo(ForgeDirection forgeDirection);
 
     public AspectContainerList ping(Aspect pingedAspect, HashSet<CoordSet> pipeList);
+
+    public void drain();
 }

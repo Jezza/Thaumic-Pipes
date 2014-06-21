@@ -13,4 +13,6 @@ public class Reference {
 
     public static final int PIPE_ANIMATION_SIZE = 18;
 
+    public static boolean COMMANDS = false;
+
 }
