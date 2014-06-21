@@ -44,6 +44,8 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
 
     private AspectList aspectList = new AspectList();
     private AspectContainerList stateList = new AspectContainerList();
+
+    // Client side for the render
     private ArmState[] armStateArray = new ArmState[6];
     private ForgeDirection priority = ForgeDirection.UNKNOWN;
 
@@ -64,10 +66,9 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
         if (worldObj == null)
             return;
 
-        updateArmStates();
-
         // Get rid of the client side.
         if (worldObj.isRemote) {
+            updateArmStates();
             updateNodeState();
             stepAnimation();
             return;

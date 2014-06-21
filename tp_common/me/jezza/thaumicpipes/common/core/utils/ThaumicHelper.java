@@ -29,6 +29,10 @@ public class ThaumicHelper {
         return false;
     }
 
+    public static boolean isMatch(TileEntity tileEntity) {
+        return isPipe(tileEntity) || isJar(tileEntity) || isContainer(tileEntity);
+    }
+
     public static boolean isPipe(TileEntity tileEntity) {
         return tileEntity instanceof IThaumicPipe;
     }

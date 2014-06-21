@@ -1,15 +1,19 @@
 package me.jezza.thaumicpipes.common.blocks;
 
+import java.util.List;
+
 import me.jezza.thaumicpipes.ThaumicPipes;
 import me.jezza.thaumicpipes.common.interfaces.IBlockNotifier;
 import me.jezza.thaumicpipes.common.lib.Reference;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -77,6 +81,18 @@ public abstract class BlockTP extends Block {
         TileEntity tileEntity = world.getTileEntity(x, y, z);
         if (tileEntity instanceof IBlockNotifier)
             ((IBlockNotifier) tileEntity).onBlockDestroyed();
+    }
+
+    @Override
+    public void addCollisionBoxesToList(World world, int x, int y, int z, AxisAlignedBB entityBoundingBox, List list, Entity entity) {
+        AxisAlignedBB axisAligned = getCollisionBoundingBoxFromPool(world, x, y, z);
+        if (axisAligned != null && entityBoundingBox.intersectsWith(axisAligned))
+            list.add(axisAligned);
+    }
+
+    @Override
+    public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z) {
+        return AxisAlignedBB.getBoundingBox((double) x + this.minX, (double) y + this.minY, (double) z + this.minZ, (double) x + this.maxX, (double) y + this.maxY, (double) z + this.maxZ);
     }
 
     @Override
