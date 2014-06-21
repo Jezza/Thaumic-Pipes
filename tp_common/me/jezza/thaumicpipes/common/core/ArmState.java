@@ -8,11 +8,17 @@ public class ArmState {
     private ForgeDirection direction;
     private ConnectionState connectionState;
     private boolean priority;
+    private int position = 0;
 
-    public ArmState(ForgeDirection direction, TileEntity tileEntity, boolean canConnect, boolean priority) {
+    public ArmState(ForgeDirection direction, TileEntity tileEntity, boolean canConnect, boolean priority, int position) {
         this.direction = direction;
         this.priority = priority;
+        this.position = position;
         connectionState = ConnectionState.getConnectionState(tileEntity, canConnect);
+    }
+
+    public int getPosition() {
+        return position;
     }
 
     public boolean isValid() {
@@ -28,6 +34,6 @@ public class ArmState {
     }
 
     public boolean isPriority() {
-        return priority;
+        return isValid() && priority;
     }
 }

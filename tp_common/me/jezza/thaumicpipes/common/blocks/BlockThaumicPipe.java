@@ -2,6 +2,8 @@ package me.jezza.thaumicpipes.common.blocks;
 
 import java.util.List;
 
+import me.jezza.thaumicpipes.common.core.TPLogger;
+import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
 import net.minecraft.block.material.Material;

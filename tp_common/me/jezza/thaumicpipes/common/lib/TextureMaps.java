@@ -1,9 +1,13 @@
 package me.jezza.thaumicpipes.common.lib;
 
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.glBindTexture;
+
 import java.util.ArrayList;
 
 import me.jezza.thaumicpipes.client.RenderUtils;
 import me.jezza.thaumicpipes.common.core.ArmState;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -25,25 +29,18 @@ public class TextureMaps {
     public static final ResourceLocation[] THAUMIC_PIPE_ARM = getThaumicPipeResources("thaumicPipeArm");
     public static final ResourceLocation[] THAUMIC_PIPE_ARM_PRIORITY = getThaumicPipeResources("thaumicPipeArmPriority");
 
-    public static void bindBorderlessTexture(ArmState currentState) {
-        if (currentState.isPriority() && RenderUtils.isPlayerWearingGoogles())
-            RenderUtils.bindTexture(PIPE_EXTENSION_BORDERLESS_PRIORITY[THAUMIC_TEXTURE_INDEX]);
-        else
-            RenderUtils.bindTexture(PIPE_EXTENSION_BORDERLESS[THAUMIC_TEXTURE_INDEX]);
+    public static final ResourceLocation[] PRIORITY_ANIMATION_FRAMES = getAnimationFrames();
+
+    private static boolean confirm(ArmState currentState) {
+        return currentState.isPriority() && RenderUtils.isPlayerWearingGoogles() && RenderUtils.isPlayerHoldingWand();
     }
 
-    public static void bindBorderedTexture(ArmState currentState) {
-        if (currentState.isPriority() && RenderUtils.isPlayerWearingGoogles())
-            RenderUtils.bindTexture(PIPE_EXTENSION_PRIORITY[THAUMIC_TEXTURE_INDEX]);
-        else
-            RenderUtils.bindTexture(PIPE_EXTENSION[THAUMIC_TEXTURE_INDEX]);
-    }
-
-    public static void bindPipeTexture(ArmState currentState) {
-        if (currentState.isPriority() && RenderUtils.isPlayerWearingGoogles())
-            RenderUtils.bindTexture(THAUMIC_PIPE_ARM_PRIORITY[THAUMIC_TEXTURE_INDEX]);
-        else
-            RenderUtils.bindTexture(THAUMIC_PIPE_ARM[THAUMIC_TEXTURE_INDEX]);
+    private static ResourceLocation[] getAnimationFrames() {
+        String frameName = "priorityFrame_";
+        ArrayList<ResourceLocation> resourceMap = new ArrayList<ResourceLocation>();
+        for (int i = 0; i < Reference.PIPE_ANIMATION_SIZE; i++)
+            resourceMap.add(getResource("priority/" + frameName + i));
+        return resourceMap.toArray(new ResourceLocation[resourceMap.size()]);
     }
 
     private static ResourceLocation[] getThaumicPipeResources(String type) {

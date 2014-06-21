@@ -8,6 +8,8 @@ import me.jezza.thaumicpipes.client.renderer.TileThaumicPipeRenderer;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
 import cpw.mods.fml.client.registry.ClientRegistry;
+import cpw.mods.fml.common.Mod.EventHandler;
+import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 

@@ -2,6 +2,7 @@ package me.jezza.thaumicpipes;
 
 import java.lang.reflect.Field;
 
+import me.jezza.thaumicpipes.client.RenderUtils;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.core.TPLogger;
@@ -13,6 +14,7 @@ import me.jezza.thaumicpipes.common.lib.Reference;
 import me.jezza.thaumicpipes.common.research.ModRecipes;
 import me.jezza.thaumicpipes.common.research.ModResearch;
 import net.minecraft.creativetab.CreativeTabs;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -72,7 +74,7 @@ public class ThaumicPipes {
         try {
             Field field = Class.forName(creativeTabClass).getField("tabTC");
             tab = (CreativeTabs) field.get(clazz);
-        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException | ClassNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return tab;

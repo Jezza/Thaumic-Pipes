@@ -16,5 +16,4 @@ public class CommonProxy {
 
     public void initClientSide() {
     }
-
 }

@@ -1,14 +1,15 @@
 package me.jezza.thaumicpipes.client.renderer;
 
 import static org.lwjgl.opengl.GL11.*;
+import thaumcraft.api.aspects.Aspect;
 
 import me.jezza.thaumicpipes.client.RenderUtils;
+import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.client.model.ModelJarConnection;
 import me.jezza.thaumicpipes.client.model.ModelPipeExtension;
 import me.jezza.thaumicpipes.client.model.ModelThaumicPipe;
 import me.jezza.thaumicpipes.common.core.ArmState;
 import me.jezza.thaumicpipes.common.core.ConnectionType;
-import me.jezza.thaumicpipes.common.core.TPLogger;
 import me.jezza.thaumicpipes.common.lib.TextureMaps;
 import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
@@ -31,7 +32,6 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
     }
 
     public void renderThaumicPipeAt(TileThaumicPipe thaumicPipe, double x, double y, double z, float tick) {
-        TextureMaps.THAUMIC_TEXTURE_INDEX = 2;
         glPushMatrix();
 
         glTranslated(x, y, z);
@@ -50,17 +50,29 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
             renderArm(currentState, index);
         }
 
-        ForgeDirection flag = shouldRenderNode(armSet);
+        renderNodeState(thaumicPipe.getNodeState());
 
-        if (flag == ForgeDirection.UNKNOWN)
-            renderNode(isBigNode(armSet));
-        else
-            renderNodeReplacement(flag);
-
+        if (RenderUtils.canRenderPriority())
+            for (ArmState state : armSet)
+                if (state.isPriority()) {
+                    RenderUtils.bindPriorityTexture(thaumicPipe.getAnimationFrame());
+                    renderPriority(state.getDirection(), state.getPosition());
+                }
         glPopMatrix();
     }
 
+    private void renderNodeState(NodeState nodeState) {
+        if (nodeState == null)
+            return;
+
+        if (nodeState.isNode())
+            renderNode(nodeState.isBigNode());
+        else
+            renderNodeReplacement(nodeState.getDirection());
+    }
+
     private void renderNodeReplacement(ForgeDirection flag) {
+        glPushMatrix();
         RenderUtils.bindTexture(TextureMaps.PIPE_EXTENSION_BORDERLESS[TextureMaps.THAUMIC_TEXTURE_INDEX]);
         switch (flag) {
             case DOWN:
@@ -78,53 +90,17 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
             default:
                 break;
         }
-    }
-
-    private ForgeDirection shouldRenderNode(ArmState[] armStateArray) {
-        int count = 0;
-        boolean flag = true;
-        int side = 0;
-
-        for (int i = 0; i <= 5; i += 2) {
-            ArmState firstState = armStateArray[i];
-            ArmState secondState = armStateArray[i + 1];
-
-            boolean flag2 = firstState.isValid();
-            boolean flag3 = secondState.isValid();
-
-            if (flag2)
-                count++;
-            if (flag3)
-                count++;
-
-            if (flag2 && flag3)
-                side = i;
-
-            if (confirmArmState(firstState, secondState))
-                flag = false;
-        }
-
-        if (count > 2)
-            flag = true;
-
-        if (flag)
-            return ForgeDirection.UNKNOWN;
-        return ForgeDirection.getOrientation(side);
-    }
-
-    private boolean confirmArmState(ArmState firstState, ArmState secondState) {
-        if (firstState.isValid() && secondState.isValid())
-            return firstState.getDirection().getOpposite().equals(secondState.getDirection());
-        return false;
+        glPopMatrix();
     }
 
     private void renderArm(ArmState armState, int index) {
         glPushMatrix();
-        TextureMaps.bindPipeTexture(armState);
+        RenderUtils.bindPipeTexture();
 
         modelThaumicPipe.renderArm(index + 1);
 
         processPostArmRender(armState, index);
+
         glPopMatrix();
     }
 
@@ -166,14 +142,14 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
                     glRotatef(180F, 0.0F, 0.0F, 1.0F);
 
                 if (currentDir == ForgeDirection.DOWN) {
-                    TextureMaps.bindBorderlessTexture(currentState);
+                    glRotatef(180, 0.0F, 1.0F, 0.0F);
+                    RenderUtils.bindBorderlessTexture();
                     modelPipeExtension.render();
 
-                    distance = -0.20F;
+                    distance = 0.20F;
                     glTranslatef(currentDir.offsetY * distance, currentDir.offsetZ * distance, currentDir.offsetX * distance);
-
                 }
-                TextureMaps.bindBorderedTexture(currentState);
+                RenderUtils.bindBorderedTexture();
                 modelPipeExtension.render();
 
                 glPopMatrix();
@@ -187,7 +163,6 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
                 glTranslatef(currentDir.offsetX * distance, currentDir.offsetY * distance, currentDir.offsetZ * distance);
 
                 if (currentDir != ForgeDirection.UP) {
-
                     float secondaryTranslate = 0.455F;
 
                     glTranslatef(currentDir.offsetX * secondaryTranslate, 0.0F, currentDir.offsetZ * secondaryTranslate);
@@ -213,16 +188,44 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
         }
     }
 
-    private boolean isBigNode(ArmState[] armStateArray) {
-        for (ArmState armState : armStateArray) {
-            if (armState == null)
-                continue;
+    private void renderPriority(ForgeDirection armAxis, int position) {
+        glColor4f(0.49F, 0.976F, 1F, 0.4F);
+        renderPriorityOnAxis(armAxis, position);
+    }
 
-            if (armState.getConnectionState().getType().isBigNode())
-                return true;
+    private void renderPriorityOnAxis(ForgeDirection axis, int pixelsToShift) {
+        glPushMatrix();
+        glDisable(GL_LIGHTING);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        float xDisplace = axis.offsetX;
+        float yDisplace = axis.offsetY;
+        float zDisplace = axis.offsetZ;
+        float pixelStep = 0.05F;
+
+        glTranslatef(xDisplace * pixelStep * pixelsToShift, yDisplace * pixelStep * pixelsToShift, zDisplace * pixelStep * pixelsToShift);
+
+        switch (axis) {
+            case DOWN:
+            case UP:
+                glRotatef(90, 1.0F, 0.0F, 0.0F);
+            case SOUTH:
+            case NORTH:
+                glRotatef(90, 0.0F, 1.0F, 0.0F);
+            default:
+                break;
         }
 
-        return false;
+        float scale = 1.015F;
+        glScalef(scale, scale, scale);
+
+        modelPipeExtension.render();
+
+        glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        glDisable(GL_BLEND);
+        glEnable(GL_LIGHTING);
+        glPopMatrix();
     }
 
     @Override
