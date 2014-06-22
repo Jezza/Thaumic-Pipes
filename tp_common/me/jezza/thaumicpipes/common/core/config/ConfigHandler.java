@@ -6,6 +6,7 @@ import me.jezza.thaumicpipes.common.core.TPLogger;
 import me.jezza.thaumicpipes.common.lib.Reference;
 import me.jezza.thaumicpipes.common.lib.Strings;
 import me.jezza.thaumicpipes.common.lib.TextureMaps;
+import net.minecraft.util.MathHelper;
 import net.minecraftforge.common.config.Configuration;
 import cpw.mods.fml.common.FMLCommonHandler;
 
@@ -37,7 +38,8 @@ public class ConfigHandler {
     public static void getConstants() {
         Reference.COMMANDS = config.get(MISC, "commands", Reference.COMMANDS, "Should I implement some useful commands.\nThey aren't thaumcraft related, just some useful commands.").getBoolean(false);
 
-        TextureMaps.THAUMIC_TEXTURE_INDEX = config.get(MISC, Strings.THAUMIC_PIPE_TEXTURE, TextureMaps.THAUMIC_TEXTURE_INDEX, "0 - Steam punk style texture.\n1 - Old thaumcraft style texture.\n2 - The default texture.").getInt();
+        int textureIndex = config.get(MISC, Strings.THAUMIC_PIPE_TEXTURE, TextureMaps.THAUMIC_TEXTURE_INDEX, "0 - Steam punk style texture.\n1 - Old thaumcraft style texture.\n2 - The default texture.").getInt();
+        TextureMaps.THAUMIC_TEXTURE_INDEX = MathHelper.clamp_int(textureIndex, 0, 2);
     }
 
     public static int getID(String path, int defaultID) {

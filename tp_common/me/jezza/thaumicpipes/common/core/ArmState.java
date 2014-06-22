@@ -6,7 +6,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 public class ArmState {
     private ForgeDirection direction;
-    private ConnectionState connectionState;
+    private ConnectionType connectionType;
     private boolean priority;
     private int position = 0;
 
@@ -14,7 +14,7 @@ public class ArmState {
         this.direction = direction;
         this.priority = priority;
         this.position = position;
-        connectionState = ConnectionState.getConnectionState(tileEntity, canConnect);
+        connectionType = ConnectionType.getConnectionType(tileEntity, canConnect);
     }
 
     public int getPosition() {
@@ -22,11 +22,11 @@ public class ArmState {
     }
 
     public boolean isValid() {
-        return connectionState.getType().isValid();
+        return connectionType.isValid();
     }
 
-    public ConnectionState getConnectionState() {
-        return connectionState;
+    public ConnectionType getType() {
+        return connectionType;
     }
 
     public ForgeDirection getDirection() {

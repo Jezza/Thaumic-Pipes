@@ -79,9 +79,6 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
         // Take aspects from all sources.
         processNearbySources();
 
-        if (timeTicked > 10)
-            timeTicked = 0;
-
         // Handle checking and sending to jars, if leftovers, returns true and passes to next pipe.
         if (processPossibleJars() && ++tickTiming > 10) {
             tickTiming = 0;
@@ -135,7 +132,7 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
             if (armState == null)
                 continue;
 
-            if (armState.getConnectionState().getType().isBigNode()) {
+            if (armState.getType().isBigNode()) {
                 bigNode = true;
                 break;
             }
@@ -197,8 +194,11 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
     }
 
     private void processNearbyConstructs() {
-        if (timeTicked++ > 0)
+        if (timeTicked++ > 0) {
+            if (timeTicked >= 10)
+                timeTicked = 0;
             return;
+        }
 
         ArrayList<ConstructState> constructStates = getNearbyConstructs();
         if (constructStates == null)

@@ -17,15 +17,11 @@ public class ThaumicHelper {
         if (tileEntity instanceof IFluidHandler)
             return false;
 
-        if (ThaumicHelper.isJar(tileEntity) || ThaumicHelper.isPipe(tileEntity) || ThaumicHelper.isContainer(tileEntity))
+        if (isJar(tileEntity) || isPipe(tileEntity) || isContainer(tileEntity))
             return true;
 
         if (tileEntity instanceof IEssentiaTransport)
             return ((IEssentiaTransport) tileEntity).isConnectable(direction.getOpposite());
-
-        if (tileEntity instanceof IInventory)
-            return false;
-
         return false;
     }
 

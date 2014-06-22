@@ -119,8 +119,8 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
     }
 
     private void processPostArmRender(ArmState currentState, int index) {
-        ConnectionType type = currentState.getConnectionState().getType();
         ForgeDirection currentDir = currentState.getDirection();
+        ConnectionType type = currentState.getType();
 
         float xDisplace = currentDir.offsetX;
         float yDisplace = currentDir.offsetY;
