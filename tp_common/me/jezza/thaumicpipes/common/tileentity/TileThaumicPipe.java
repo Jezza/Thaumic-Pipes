@@ -1,23 +1,16 @@
 package me.jezza.thaumicpipes.common.tileentity;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.Random;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.common.core.ArmState;
 import me.jezza.thaumicpipes.common.core.AspectContainerList;
-import me.jezza.thaumicpipes.common.core.TPLogger;
-import me.jezza.thaumicpipes.common.core.AspectContainerList.AspectContainerState;
+import me.jezza.thaumicpipes.common.core.TransportState;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.core.utils.ThaumicHelper;
+import me.jezza.thaumicpipes.common.interfaces.IBlockInteract;
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.lib.Reference;
 import net.minecraft.entity.item.EntityItem;
@@ -29,6 +22,8 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
@@ -37,15 +32,18 @@ import thaumcraft.api.aspects.IAspectContainer;
 import thaumcraft.api.aspects.IEssentiaTransport;
 import thaumcraft.api.wands.IWandable;
 import cofh.api.block.IDismantleable;
+
+import com.google.common.collect.HashMultimap;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWandable, IDismantleable {
+public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWandable, IDismantleable, IBlockInteract {
 
     private AspectList aspectList = new AspectList();
     private AspectContainerList stateList = new AspectContainerList();
 
-    // Client side for the render
+    // Client side for the render state
     private ArmState[] armStateArray = new ArmState[6];
     private ForgeDirection priority = ForgeDirection.UNKNOWN;
 
@@ -55,11 +53,7 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
 
     private float animationFrame = 0.0F;
 
-    private NodeState nodeState;
-
-    public TileThaumicPipe() {
-        nodeState = null;
-    }
+    private NodeState nodeState = null;
 
     @Override
     public void updateEntity() {
@@ -109,34 +103,35 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
             ArmState firstState = armStateArray[i];
             ArmState secondState = armStateArray[i + 1];
 
-            boolean flag2 = firstState.isValid();
-            boolean flag3 = secondState.isValid();
+            boolean firstValid = firstState.isValid();
+            boolean secondValid = secondState.isValid();
 
-            if (flag2)
+            if (firstValid)
                 count++;
-            if (flag3)
+            if (secondValid)
                 count++;
 
-            if (flag2 && flag3)
+            if (firstValid && secondValid)
                 side = i;
 
             if (confirmArmState(firstState, secondState))
                 isNode = false;
         }
 
-        if (count > 2)
+        if (count != 2)
             isNode = true;
 
         boolean bigNode = false;
-        for (ArmState armState : armStateArray) {
-            if (armState == null)
-                continue;
+        if (isNode)
+            for (ArmState armState : armStateArray) {
+                if (armState == null)
+                    continue;
 
-            if (armState.getType().isBigNode()) {
-                bigNode = true;
-                break;
+                if (armState.getType().isBigNode()) {
+                    bigNode = true;
+                    break;
+                }
             }
-        }
 
         nodeState = new NodeState(isNode, bigNode, side);
     }
@@ -148,16 +143,6 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
         animationFrame += 0.8F;
         if (animationFrame >= Reference.PIPE_ANIMATION_SIZE)
             animationFrame = 0.0F;
-    }
-
-    private void sendAnimationEffect() {
-        TileEntity tileEntity = getCoordSet().addForgeDirection(priority).getTileEntity(worldObj);
-        if (tileEntity instanceof TileThaumicPipe)
-            ((TileThaumicPipe) tileEntity).receiveAnimationEffect(priority);
-    }
-
-    private void receiveAnimationEffect(ForgeDirection priority) {
-        // animationStates.get(priority.ordinal()).receiveAnimationPosition();
     }
 
     public NodeState getNodeState() {
@@ -200,14 +185,16 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
             return;
         }
 
-        ArrayList<ConstructState> constructStates = getNearbyConstructs();
+        ArrayList<TransportState> constructStates = getNearbyConstructs();
         if (constructStates == null)
             return;
 
         if (!constructStates.isEmpty())
-            for (ConstructState state : constructStates) {
-                ForgeDirection direction = state.directionFound.getOpposite();
-                IEssentiaTransport transport = state.transport;
+            for (TransportState state : constructStates) {
+                if (!state.isConstruct())
+                    continue;
+                ForgeDirection direction = state.getDirection().getOpposite();
+                IEssentiaTransport transport = state.getTransport();
 
                 Aspect requiredAspect = transport.getSuctionType(direction);
 
@@ -217,10 +204,10 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
                 AspectContainerList tempList = ping(requiredAspect, new HashSet<CoordSet>());
 
                 if (tempList != null)
-                    for (AspectContainerState container : tempList) {
+                    for (TransportState container : tempList) {
                         int amountAdded = transport.addEssentia(requiredAspect, 1, direction);
                         if (amountAdded > 0) {
-                            container.removeAmount(amountAdded);
+                            container.removeAmount(requiredAspect, amountAdded);
                             break;
                         }
                     }
@@ -290,8 +277,8 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
     }
 
     private void processPossiblePipes() {
-        ThaumicPipeState pipeState = getNearbyPipe();
-        if (pipeState == null)
+        TransportState pipeState = getNearbyPipe();
+        if (pipeState == null || !pipeState.isPipe())
             return;
 
         for (Aspect aspect : aspectList.getAspects()) {
@@ -300,7 +287,7 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
 
             int totalToAdd = aspectList.getAmount(aspect);
 
-            if (pipeState.pipe.receiveAspect(aspect, totalToAdd, pipeState.directionFound.getOpposite()))
+            if (pipeState.getPipe().receiveAspect(aspect, totalToAdd, pipeState.getDirection().getOpposite()))
                 aspectList.reduce(aspect, totalToAdd);
         }
     }
@@ -353,8 +340,8 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
         return containerList;
     }
 
-    private ArrayList<ThaumicPipeState> getNearbyPipes() {
-        ArrayList<ThaumicPipeState> pipeList = new ArrayList<ThaumicPipeState>();
+    private ArrayList<TransportState> getNearbyPipes() {
+        ArrayList<TransportState> pipeList = new ArrayList<TransportState>();
 
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
             if (!canConnectTo(direction))
@@ -363,7 +350,7 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
             if (ThaumicHelper.isPipe(tileEntity)) {
                 IThaumicPipe pipe = (IThaumicPipe) tileEntity;
                 if (pipe.canReceiveFrom(direction))
-                    pipeList.add(new ThaumicPipeState(pipe, direction));
+                    pipeList.add(new TransportState(pipe).setDirection(direction));
             }
         }
 
@@ -373,19 +360,19 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
         return pipeList;
     }
 
-    private ThaumicPipeState getNearbyPipe() {
+    private TransportState getNearbyPipe() {
         if (priority != ForgeDirection.UNKNOWN && canConnectTo(priority)) {
             TileEntity tileEntity = getCoordSet().addForgeDirection(priority).getTileEntity(worldObj);
             if (ThaumicHelper.isPipe(tileEntity)) {
                 IThaumicPipe pipe = (IThaumicPipe) tileEntity;
                 if (pipe.canReceiveFrom(priority))
-                    return new ThaumicPipeState(pipe, priority);
+                    return new TransportState(pipe).setDirection(priority);
             }
             cyclePriorityState();
             return getNearbyPipe();
         }
 
-        ArrayList<ThaumicPipeState> pipeList = getNearbyPipes();
+        ArrayList<TransportState> pipeList = getNearbyPipes();
 
         if (pipeList == null || pipeList.isEmpty())
             return null;
@@ -393,16 +380,15 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
         return pipeList.get(new Random().nextInt(pipeList.size()));
     }
 
-    private ArrayList<ConstructState> getNearbyConstructs() {
-        ArrayList<ConstructState> constructList = new ArrayList<ConstructState>();
+    private ArrayList<TransportState> getNearbyConstructs() {
+        ArrayList<TransportState> constructList = new ArrayList<TransportState>();
 
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
             if (!canConnectTo(direction))
                 continue;
             TileEntity tileEntity = getCoordSet().addForgeDirection(direction).getTileEntity(worldObj);
-            if (ThaumicHelper.isAlchemicalConstruct(tileEntity)) {
-                constructList.add(new ConstructState((IEssentiaTransport) tileEntity, direction));
-            }
+            if (ThaumicHelper.isAlchemicalConstruct(tileEntity))
+                constructList.add(new TransportState((IEssentiaTransport) tileEntity).setDirection(direction));
         }
 
         if (constructList.isEmpty())
@@ -503,8 +489,6 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
 
     @Override
     public boolean canConnectTo(ForgeDirection direction) {
-        if (worldObj == null)
-            return false;
         return ThaumicHelper.isValidConnection(getCoordSet().addForgeDirection(direction).getTileEntity(worldObj), direction);
     }
 
@@ -554,16 +538,19 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
             }
         }
 
-        ArrayList<ThaumicPipeState> tempPipeList = getNearbyPipes();
+        ArrayList<TransportState> tempPipeList = getNearbyPipes();
 
         if (tempPipeList != null)
-            for (ThaumicPipeState state : tempPipeList) {
-                CoordSet tempSet = getCoordSet().addForgeDirection(state.directionFound);
+            for (TransportState state : tempPipeList) {
+                if (!state.isPipe())
+                    continue;
+
+                CoordSet tempSet = getCoordSet().addForgeDirection(state.getDirection());
 
                 if (pipeList.contains(tempSet))
                     continue;
 
-                AspectContainerList pipe = state.pipe.ping(pingedAspect, pipeList);
+                AspectContainerList pipe = state.getPipe().ping(pingedAspect, pipeList);
 
                 if (pipe != null)
                     stateList.addAll(pipe);
@@ -575,32 +562,9 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
         return stateList;
     }
 
-    private static class ConstructState {
-
-        public IEssentiaTransport transport;
-        public ForgeDirection directionFound;
-
-        public ConstructState(IEssentiaTransport transport, ForgeDirection directionFound) {
-            this.transport = transport;
-            this.directionFound = directionFound;
-        }
-
-    }
-
-    private static class ThaumicPipeState {
-
-        public IThaumicPipe pipe;
-        public ForgeDirection directionFound;
-
-        public ThaumicPipeState(IThaumicPipe pipe, ForgeDirection directionFound) {
-            this.pipe = pipe;
-            this.directionFound = directionFound;
-        }
-    }
-
     @Override
     public ItemStack dismantleBlock(EntityPlayer player, World world, int x, int y, int z, boolean returnBlock) {
-        ItemStack itemStack = new ItemStack(getBlockType());
+        ItemStack itemStack = new ItemStack(getCoordSet().getBlock(world));
         boolean flag = true;
 
         world.func_147480_a(x, y, z, false);
@@ -615,6 +579,30 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
 
     @Override
     public boolean canDismantle(EntityPlayer player, World world, int x, int y, int z) {
+        return true;
+    }
+
+    @Override
+    public boolean onActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitVecX, float hitVecY, float hitVecZ) {
+        if (player.getCurrentEquippedItem() != null)
+            return false;
+
+        if (world.isRemote)
+            return true;
+
+        if (player.isSneaking()) {
+            drain();
+        } else {
+            boolean empty = true;
+            for (Aspect aspect : aspectList.getAspects()) {
+                if (aspect == null)
+                    continue;
+                empty = false;
+                player.addChatMessage(new ChatComponentText("Contains " + aspectList.getAmount(aspect) + " " + aspect.getName()));
+            }
+            if (empty)
+                player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "Pipe contains no Essentia."));
+        }
         return true;
     }
 }

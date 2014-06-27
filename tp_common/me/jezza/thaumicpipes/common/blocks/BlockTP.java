@@ -3,6 +3,7 @@ package me.jezza.thaumicpipes.common.blocks;
 import java.util.List;
 
 import me.jezza.thaumicpipes.ThaumicPipes;
+import me.jezza.thaumicpipes.common.interfaces.IBlockInteract;
 import me.jezza.thaumicpipes.common.interfaces.IBlockNotifier;
 import me.jezza.thaumicpipes.common.lib.Reference;
 import net.minecraft.block.Block;
@@ -56,6 +57,14 @@ public abstract class BlockTP extends Block {
     @Override
     public boolean hasTileEntity(int metadata) {
         return getTileEntity() == null ? false : true;
+    }
+
+    @Override
+    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitVecX, float hitVecY, float hitVecZ) {
+        TileEntity tileEntity = world.getTileEntity(x, y, z);
+        if (tileEntity instanceof IBlockInteract)
+            return ((IBlockInteract) tileEntity).onActivated(world, x, y, z, player, side, hitVecX, hitVecY, hitVecZ);
+        return false;
     }
 
     @Override

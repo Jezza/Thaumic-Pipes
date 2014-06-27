@@ -30,6 +30,9 @@ public class CoordSet {
         this.z = Integer.parseInt(z);
     }
 
+    public CoordSet() {
+    }
+
     public void setX(int x) {
         this.x = x;
     }
@@ -111,28 +114,6 @@ public class CoordSet {
         return world.isAirBlock(x, y, z);
     }
 
-    public void writeToNBT(NBTTagCompound tag) {
-        tag.setIntArray("coordSet", new int[] { x, y, z });
-    }
-
-    public static CoordSet readFromNBT(NBTTagCompound tag) {
-        return new CoordSet(tag.getIntArray("coordSet"));
-    }
-
-    public void writeBytes(ByteBuf bytes) {
-        bytes.writeInt(x);
-        bytes.writeInt(y);
-        bytes.writeInt(z);
-    }
-
-    public static CoordSet readBytes(ByteBuf bytes) {
-        int x = bytes.readInt();
-        int y = bytes.readInt();
-        int z = bytes.readInt();
-
-        return new CoordSet(x, y, z);
-    }
-
     @Override
     public boolean equals(Object other) {
         if (other == null || !(other instanceof CoordSet))
@@ -183,6 +164,28 @@ public class CoordSet {
             default:
                 break;
         }
+    }
+
+    public void writeToNBT(NBTTagCompound tag) {
+        tag.setIntArray("coordSet", new int[] { x, y, z });
+    }
+
+    public static CoordSet readFromNBT(NBTTagCompound tag) {
+        return new CoordSet(tag.getIntArray("coordSet"));
+    }
+
+    public void writeBytes(ByteBuf bytes) {
+        bytes.writeInt(x);
+        bytes.writeInt(y);
+        bytes.writeInt(z);
+    }
+
+    public static CoordSet readBytes(ByteBuf bytes) {
+        int x = bytes.readInt();
+        int y = bytes.readInt();
+        int z = bytes.readInt();
+
+        return new CoordSet(x, y, z);
     }
 
     public static CoordSet createFromMinecraftTag(NBTTagCompound tag) {

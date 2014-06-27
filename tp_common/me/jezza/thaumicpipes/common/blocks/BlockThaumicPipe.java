@@ -2,9 +2,11 @@ package me.jezza.thaumicpipes.common.blocks;
 
 import java.util.List;
 
+import me.jezza.thaumicpipes.common.core.TPLogger;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.core.utils.ThaumicHelper;
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
+import me.jezza.thaumicpipes.common.tileentity.TileEntityTP;
 import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
@@ -24,42 +26,13 @@ public class BlockThaumicPipe extends BlockTP {
     private static float minX, minY, minZ;
     private static float maxX, maxY, maxZ;
 
-    private float MIN = 0.3125F;
-    private float MAX = 0.6875F;
+    private static final float MIN = 0.3125F;
+    private static final float MAX = 0.6875F;
 
     public BlockThaumicPipe(Material material, String name) {
         super(material, name);
         setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
-    }
-
-    @Override
-    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitVectorX, float hitVectorY, float hitVectorZ) {
-        if (player.getCurrentEquippedItem() != null)
-            return false;
-
-        if (world.isRemote)
-            return true;
-
-        TileEntity tileEntity = world.getTileEntity(x, y, z);
-        if (!(tileEntity instanceof IThaumicPipe))
-            return true;
-
-        IThaumicPipe pipe = (IThaumicPipe) world.getTileEntity(x, y, z);
-        if (player.isSneaking()) {
-            pipe.drain();
-        } else {
-            AspectList aspectList = pipe.getAspectList();
-            boolean empty = true;
-            for (Aspect aspect : aspectList.getAspects()) {
-                if (aspect == null)
-                    continue;
-                empty = false;
-                player.addChatMessage(new ChatComponentText("Contains " + aspectList.getAmount(aspect) + " " + aspect.getName()));
-            }
-            if (empty)
-                player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "Pipe contains no Essentia."));
-        }
-        return true;
+        setHardness(3F);
     }
 
     @Override
@@ -70,7 +43,7 @@ public class BlockThaumicPipe extends BlockTP {
 
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
             TileEntity tileEntity = coordSet.copy().addForgeDirection(direction).getTileEntity(world);
-            if (ThaumicHelper.isMatch(tileEntity) && canConnectTo(coordSet.getTileEntity(world), direction)) {
+            if (ThaumicHelper.isMatch(tileEntity) && canConnectTo(coordSet.getTileEntity(world), direction))
                 switch (direction) {
                     case DOWN:
                         minY = 0.0F;
@@ -93,7 +66,6 @@ public class BlockThaumicPipe extends BlockTP {
                     default:
                         break;
                 }
-            }
         }
 
         setBlockBounds(minX, minY, minZ, maxX, maxY, maxZ);

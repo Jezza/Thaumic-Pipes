@@ -4,6 +4,7 @@ import java.util.HashSet;
 
 import me.jezza.thaumicpipes.common.core.AspectContainerList;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
@@ -22,7 +23,7 @@ public interface IThaumicPipe {
 
     public boolean canReceiveFrom(ForgeDirection forgeDirection);
 
-    public boolean canConnectTo(ForgeDirection forgeDirection);
+    public boolean canConnectTo(ForgeDirection direction);
 
     public AspectContainerList ping(Aspect pingedAspect, HashSet<CoordSet> pipeList);
 

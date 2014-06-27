@@ -47,7 +47,7 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
             if (currentState == null || !currentState.isValid())
                 continue;
 
-            renderArm(currentState, index);
+            renderArm(currentState, index + 1);
         }
 
         renderNodeState(thaumicPipe.getNodeState());
@@ -73,7 +73,7 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
 
     private void renderNodeReplacement(ForgeDirection flag) {
         glPushMatrix();
-        RenderUtils.bindTexture(TextureMaps.PIPE_EXTENSION_BORDERLESS[TextureMaps.THAUMIC_TEXTURE_INDEX]);
+        RenderUtils.bindBorderlessTexture();
         switch (flag) {
             case DOWN:
                 glRotatef(90, 1.0F, 0.0F, 0.0F);
@@ -97,7 +97,7 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
         glPushMatrix();
         RenderUtils.bindPipeTexture();
 
-        modelThaumicPipe.renderArm(index + 1);
+        modelThaumicPipe.renderArm(index);
 
         processPostArmRender(armState, index);
 
@@ -126,7 +126,7 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
         float yDisplace = currentDir.offsetY;
         float zDisplace = currentDir.offsetZ;
 
-        if (type.isJarType()) {
+        if (type.isJar()) {
             glPushMatrix();
             glTranslatef(xDisplace, yDisplace, zDisplace);
 
@@ -134,7 +134,7 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
                 glPushMatrix();
 
                 float distance = 0.4F;
-                glTranslatef(currentDir.offsetX * distance, currentDir.offsetY * distance, currentDir.offsetZ * distance);
+                glTranslatef(xDisplace * distance, yDisplace * distance, zDisplace * distance);
 
                 glRotatef(90F, xDisplace, zDisplace, yDisplace);
 
@@ -147,7 +147,7 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
                     modelPipeExtension.render();
 
                     distance = 0.20F;
-                    glTranslatef(currentDir.offsetY * distance, currentDir.offsetZ * distance, currentDir.offsetX * distance);
+                    glTranslatef(yDisplace * distance, zDisplace * distance, xDisplace * distance);
                 }
                 RenderUtils.bindBorderedTexture();
                 modelPipeExtension.render();
@@ -166,7 +166,7 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
                     float secondaryTranslate = 0.455F;
 
                     glTranslatef(currentDir.offsetX * secondaryTranslate, 0.0F, currentDir.offsetZ * secondaryTranslate);
-                    glRotatef(90F, currentDir.offsetZ * 1.0F, currentDir.offsetY * 1.0F, currentDir.offsetX * 1.0F);
+                    glRotatef(90F, currentDir.offsetZ, currentDir.offsetY, currentDir.offsetX);
                 }
 
                 glScalef(1.95F, 1.55F, 1.95F);
@@ -177,12 +177,12 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
             }
 
             glPopMatrix();
-        } else if (type.isContainerType()) {
+        } else if (type.isContainer()) {
             glPushMatrix();
 
             glTranslatef(xDisplace, yDisplace, zDisplace);
 
-            modelThaumicPipe.renderArm(index + 1);
+            modelThaumicPipe.renderArm(index);
 
             glPopMatrix();
         }

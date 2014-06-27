@@ -20,20 +20,20 @@ public enum ConnectionType {
         return this != UNKNOWN;
     }
 
-    public boolean isContainerType() {
+    public boolean isContainer() {
         return this == CONTAINER;
     }
 
-    public boolean isJarType() {
+    public boolean isJar() {
         return this == JAR;
     }
 
-    public boolean isPipeType() {
+    public boolean isPipe() {
         return this == PIPE;
     }
 
     public boolean isBigNode() {
-        return isJarType() || isContainerType();
+        return isJar() || isContainer();
     }
 
     public static ConnectionType getConnectionType(TileEntity tileEntity, boolean canConnect) {

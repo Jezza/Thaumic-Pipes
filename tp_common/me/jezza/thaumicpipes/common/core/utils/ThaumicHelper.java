@@ -42,7 +42,7 @@ public class ThaumicHelper {
     }
 
     public static boolean isNode(TileEntity tileEntity) {
-        return tileEntity instanceof IAspectContainer && tileEntity instanceof INode;
+        return tileEntity instanceof INode;
     }
 
     public static boolean isAlchemicalConstruct(TileEntity tileEntity) {

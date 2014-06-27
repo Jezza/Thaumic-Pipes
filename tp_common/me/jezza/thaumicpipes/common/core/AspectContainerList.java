@@ -3,17 +3,15 @@ package me.jezza.thaumicpipes.common.core;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import me.jezza.thaumicpipes.common.core.AspectContainerList.AspectContainerState;
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
 import thaumcraft.api.aspects.Aspect;
-import thaumcraft.api.aspects.AspectList;
 import thaumcraft.api.aspects.IAspectContainer;
 
 import com.google.common.collect.Lists;
 
-public class AspectContainerList implements Iterable<AspectContainerState> {
+public class AspectContainerList implements Iterable<TransportState> {
 
-    private ArrayList<AspectContainerState> containerList;
+    private ArrayList<TransportState> containerList;
     private Aspect filter = null;
 
     public AspectContainerList() {
@@ -25,7 +23,7 @@ public class AspectContainerList implements Iterable<AspectContainerState> {
             TPLogger.severe("Filter not set");
             return;
         }
-        containerList.add(new AspectContainerState(pipe));
+        containerList.add(new TransportState(pipe));
     }
 
     public void add(IAspectContainer container) {
@@ -33,11 +31,11 @@ public class AspectContainerList implements Iterable<AspectContainerState> {
             TPLogger.severe("Filter not set");
             return;
         }
-        containerList.add(new AspectContainerState(container));
+        containerList.add(new TransportState(container));
     }
 
     public void addAll(AspectContainerList otherList) {
-        for (AspectContainerState state : otherList.containerList)
+        for (TransportState state : otherList.containerList)
             containerList.add(state);
     }
 
@@ -63,48 +61,12 @@ public class AspectContainerList implements Iterable<AspectContainerState> {
         return containerList.isEmpty();
     }
 
-    public class AspectContainerState {
+    public static class AspectIterator implements Iterator<TransportState> {
 
-        private IThaumicPipe pipe;
-        private IAspectContainer container;
-        private int flag = 0;
-
-        private AspectContainerState(IThaumicPipe pipe) {
-            this.pipe = pipe;
-        }
-
-        private AspectContainerState(IAspectContainer container) {
-            this.container = container;
-            flag = 1;
-        }
-
-        public int getAspectSize() {
-            AspectList aspectList = null;
-            if (flag == 0)
-                aspectList = pipe.getAspectList();
-            if (flag == 1)
-                aspectList = container.getAspects();
-
-            if (aspectList == null)
-                return 0;
-
-            return aspectList.getAmount(filter);
-        }
-
-        public void removeAmount(int amountToRemove) {
-            if (flag == 0)
-                pipe.removeAspect(filter, amountToRemove);
-            if (flag == 1)
-                container.takeFromContainer(filter, amountToRemove);
-        }
-    }
-
-    public static class AspectIterator implements Iterator<AspectContainerState> {
-
-        private ArrayList<AspectContainerState> containerList;
+        private ArrayList<TransportState> containerList;
         int currentIndex = 0;
 
-        public AspectIterator(ArrayList<AspectContainerState> containerList) {
+        public AspectIterator(ArrayList<TransportState> containerList) {
             this.containerList = containerList;
         }
 
@@ -114,7 +76,7 @@ public class AspectContainerList implements Iterable<AspectContainerState> {
         }
 
         @Override
-        public AspectContainerState next() {
+        public TransportState next() {
             return containerList.get(currentIndex++);
         }
 
@@ -125,7 +87,7 @@ public class AspectContainerList implements Iterable<AspectContainerState> {
     }
 
     @Override
-    public Iterator<AspectContainerState> iterator() {
+    public Iterator<TransportState> iterator() {
         return new AspectIterator(containerList);
     }
 }
