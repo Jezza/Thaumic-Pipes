@@ -50,7 +50,6 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
     private int tickTiming = 0;
     private int timeTicked = 0;
     private int priorityPosition = 0;
-
     private float animationFrame = 0.0F;
 
     private NodeState nodeState = null;
