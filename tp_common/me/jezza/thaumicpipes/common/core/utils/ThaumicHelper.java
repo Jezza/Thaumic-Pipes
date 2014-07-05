@@ -26,7 +26,7 @@ public class ThaumicHelper {
     }
 
     public static boolean isMatch(TileEntity tileEntity) {
-        return isPipe(tileEntity) || isJar(tileEntity) || isContainer(tileEntity);
+        return isPipe(tileEntity) || isJar(tileEntity) || isContainer(tileEntity) || isAlchemicalConstruct(tileEntity);
     }
 
     public static boolean isPipe(TileEntity tileEntity) {

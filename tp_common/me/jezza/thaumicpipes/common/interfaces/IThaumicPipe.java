@@ -1,10 +1,9 @@
 package me.jezza.thaumicpipes.common.interfaces;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import me.jezza.thaumicpipes.common.core.AspectContainerList;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
@@ -12,8 +11,6 @@ import thaumcraft.api.aspects.AspectList;
 public interface IThaumicPipe {
 
     public AspectList getAspectList();
-
-    public AspectContainerList getContainerState();
 
     public boolean receiveAspect(Aspect aspect, int amount, ForgeDirection forgeDirection);
 
@@ -25,7 +22,7 @@ public interface IThaumicPipe {
 
     public boolean canConnectTo(ForgeDirection direction);
 
-    public AspectContainerList ping(Aspect pingedAspect, HashSet<CoordSet> pipeList);
+    public AspectContainerList ping(Aspect pingedAspect, LinkedHashSet<CoordSet> pipeList);
 
     public void drain();
 }

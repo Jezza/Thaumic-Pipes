@@ -1,4 +1,4 @@
-package me.jezza.thaumicpipes.common.core;
+package me.jezza.thaumicpipes.common.transport.connection;
 
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
 import net.minecraftforge.common.util.ForgeDirection;

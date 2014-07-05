@@ -6,7 +6,7 @@ import me.jezza.thaumicpipes.common.core.TPLogger;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.core.utils.ThaumicHelper;
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
-import me.jezza.thaumicpipes.common.tileentity.TileEntityTP;
+import me.jezza.thaumicpipes.common.tileentity.TileTP;
 import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;

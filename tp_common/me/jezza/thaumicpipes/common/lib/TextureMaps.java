@@ -6,7 +6,7 @@ import static org.lwjgl.opengl.GL11.glBindTexture;
 import java.util.ArrayList;
 
 import me.jezza.thaumicpipes.client.RenderUtils;
-import me.jezza.thaumicpipes.common.core.ArmState;
+import me.jezza.thaumicpipes.common.transport.ArmState;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import cpw.mods.fml.relauncher.Side;

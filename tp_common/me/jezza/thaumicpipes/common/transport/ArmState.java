@@ -1,6 +1,7 @@
-package me.jezza.thaumicpipes.common.core;
+package me.jezza.thaumicpipes.common.transport;
 
 import me.jezza.thaumicpipes.common.core.utils.ThaumicHelper;
+import me.jezza.thaumicpipes.common.transport.connection.ConnectionType;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 

@@ -27,7 +27,13 @@ public abstract class BlockTP extends Block {
         super(material);
         setCreativeTab(ThaumicPipes.instance.thaumcraftCreativeTab);
         setBlockName(name);
+        setName(name);
         register(name);
+    }
+
+    private void setName(String name) {
+        setBlockName(name);
+        setBlockTextureName(name);
     }
 
     protected void register(String name) {
@@ -107,7 +113,7 @@ public abstract class BlockTP extends Block {
     @Override
     @SideOnly(Side.CLIENT)
     public void registerBlockIcons(IIconRegister iconRegister) {
-        blockIcon = iconRegister.registerIcon(Reference.MOD_IDENTIFIER + getUnlocalizedName().replace("tile.", ""));
+        blockIcon = iconRegister.registerIcon(Reference.MOD_IDENTIFIER + getTextureName());
     }
 
     public abstract TileEntity getTileEntity();

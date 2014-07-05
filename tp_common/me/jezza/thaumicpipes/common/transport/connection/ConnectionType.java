@@ -1,4 +1,4 @@
-package me.jezza.thaumicpipes.common.core;
+package me.jezza.thaumicpipes.common.transport.connection;
 
 import me.jezza.thaumicpipes.common.core.utils.ThaumicHelper;
 import net.minecraft.tileentity.TileEntity;

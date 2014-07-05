@@ -2,17 +2,22 @@ package me.jezza.thaumicpipes.common.tileentity;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Random;
 
 import me.jezza.thaumicpipes.client.core.NodeState;
-import me.jezza.thaumicpipes.common.core.ArmState;
 import me.jezza.thaumicpipes.common.core.AspectContainerList;
-import me.jezza.thaumicpipes.common.core.TransportState;
+import me.jezza.thaumicpipes.common.core.TPLogger;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.core.utils.ThaumicHelper;
+import me.jezza.thaumicpipes.common.core.utils.TimeTicker;
+import me.jezza.thaumicpipes.common.core.utils.TimeTickerF;
 import me.jezza.thaumicpipes.common.interfaces.IBlockInteract;
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.lib.Reference;
+import me.jezza.thaumicpipes.common.transport.ArmState;
+import me.jezza.thaumicpipes.common.transport.connection.TransportState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -20,6 +25,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.dedicated.DedicatedPlayerList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ChatComponentText;
@@ -35,10 +42,11 @@ import cofh.api.block.IDismantleable;
 
 import com.google.common.collect.HashMultimap;
 
+import cpw.mods.fml.client.ExtendedServerListData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWandable, IDismantleable, IBlockInteract {
+public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, IDismantleable, IBlockInteract {
 
     private AspectList aspectList = new AspectList();
     private AspectContainerList stateList = new AspectContainerList();
@@ -47,12 +55,20 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
     private ArmState[] armStateArray = new ArmState[6];
     private ForgeDirection priority = ForgeDirection.UNKNOWN;
 
-    private int tickTiming = 0;
-    private int timeTicked = 0;
-    private int priorityPosition = 0;
-    private float animationFrame = 0.0F;
-
     private NodeState nodeState = null;
+
+    private TimeTicker constructs;
+    private TimeTicker pipes;
+    private TimeTicker priorityPosition;
+
+    private TimeTickerF priorityFrame;
+
+    public TileThaumicPipe() {
+        constructs = new TimeTicker(0, 10);
+        pipes = new TimeTicker(0, 10);
+        priorityPosition = new TimeTicker(0, 24);
+        priorityFrame = new TimeTickerF(0.0F, Reference.PIPE_ANIMATION_SIZE).setStepAmount(0.8F);
+    }
 
     @Override
     public void updateEntity() {
@@ -62,10 +78,12 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
         // Get rid of the client side.
         if (worldObj.isRemote) {
             updateArmStates();
-            updateNodeState();
+            nodeState = NodeState.createNodeState(armStateArray);
             stepAnimation();
             return;
         }
+
+        // processCurrentAspects();
 
         processNearbyConstructs();
 
@@ -73,8 +91,7 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
         processNearbySources();
 
         // Handle checking and sending to jars, if leftovers, returns true and passes to next pipe.
-        if (processPossibleJars() && ++tickTiming > 10) {
-            tickTiming = 0;
+        if (processPossibleJars() && pipes.tick()) {
             // Passes next pipes along the line.
             // Note: Will always try to send to priority, if can't manage, will not do anything.
             processPossiblePipes();
@@ -93,65 +110,19 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
         }
     }
 
-    private void updateNodeState() {
-        boolean isNode = true;
-        int count = 0;
-        int side = 0;
-
-        for (int i = 0; i <= 5; i += 2) {
-            ArmState firstState = armStateArray[i];
-            ArmState secondState = armStateArray[i + 1];
-
-            boolean firstValid = firstState.isValid();
-            boolean secondValid = secondState.isValid();
-
-            if (firstValid)
-                count++;
-            if (secondValid)
-                count++;
-
-            if (firstValid && secondValid)
-                side = i;
-
-            if (confirmArmState(firstState, secondState))
-                isNode = false;
-        }
-
-        if (count != 2)
-            isNode = true;
-
-        boolean bigNode = false;
-        if (isNode)
-            for (ArmState armState : armStateArray) {
-                if (armState == null)
-                    continue;
-
-                if (armState.getType().isBigNode()) {
-                    bigNode = true;
-                    break;
-                }
-            }
-
-        nodeState = new NodeState(isNode, bigNode, side);
-    }
-
     private void stepAnimation() {
-        if (++priorityPosition > 24)
-            priorityPosition = 0;
-
-        animationFrame += 0.8F;
-        if (animationFrame >= Reference.PIPE_ANIMATION_SIZE)
-            animationFrame = 0.0F;
-    }
-
-    public NodeState getNodeState() {
-        return nodeState;
+        priorityPosition.tick();
+        priorityFrame.tick();
     }
 
     private void updateArmStates() {
         int index = 0;
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
-            armStateArray[index++] = new ArmState(dir, getCoordSet().addForgeDirection(dir).getTileEntity(worldObj), canConnectTo(dir), dir.equals(priority), priorityPosition);
+            armStateArray[index++] = new ArmState(dir, getCoordSet().addForgeDirection(dir).getTileEntity(worldObj), canConnectTo(dir), dir.equals(priority), priorityPosition.getAmount());
+    }
+
+    public NodeState getNodeState() {
+        return nodeState;
     }
 
     public ArmState[] getArmStateArray() {
@@ -159,7 +130,7 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
     }
 
     public int getAnimationFrame() {
-        return (int) animationFrame;
+        return (int) priorityFrame.getAmount();
     }
 
     @Override
@@ -168,21 +139,14 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
         return AxisAlignedBB.getBoundingBox(xCoord, yCoord, zCoord, xCoord + 1, yCoord + 1, zCoord + 1);
     }
 
-    private boolean confirmArmState(ArmState firstState, ArmState secondState) {
-        return firstState.isValid() && secondState.isValid() && firstState.getDirection().getOpposite().equals(secondState.getDirection());
-    }
-
     @Override
     public void drain() {
         aspectList = new AspectList();
     }
 
     private void processNearbyConstructs() {
-        if (timeTicked++ > 0) {
-            if (timeTicked >= 10)
-                timeTicked = 0;
+        if (!constructs.tick())
             return;
-        }
 
         ArrayList<TransportState> constructStates = getNearbyConstructs();
         if (constructStates == null)
@@ -200,7 +164,7 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
                 if (requiredAspect == null)
                     continue;
 
-                AspectContainerList tempList = ping(requiredAspect, new HashSet<CoordSet>());
+                AspectContainerList tempList = ping(requiredAspect, new LinkedHashSet<CoordSet>());
 
                 if (tempList != null)
                     for (TransportState container : tempList) {
@@ -492,11 +456,6 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
     }
 
     @Override
-    public AspectContainerList getContainerState() {
-        return stateList;
-    }
-
-    @Override
     public AspectList removeAspect(Aspect aspect, int amount) {
         return aspectList.remove(aspect, amount);
     }
@@ -507,7 +466,7 @@ public class TileThaumicPipe extends TileEntityTP implements IThaumicPipe, IWand
     }
 
     @Override
-    public AspectContainerList ping(Aspect pingedAspect, HashSet<CoordSet> pipeList) {
+    public AspectContainerList ping(Aspect pingedAspect, LinkedHashSet<CoordSet> pipeList) {
         pipeList.add(getCoordSet());
         stateList.clear(pingedAspect);
 
