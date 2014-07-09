@@ -1,6 +1,8 @@
 package me.jezza.thaumicpipes.common.core.utils;
 
+import codechicken.lib.vec.BlockCoord;
 import io.netty.buffer.ByteBuf;
+import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
 import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -28,6 +30,18 @@ public class CoordSet {
         this.x = Integer.parseInt(x);
         this.y = Integer.parseInt(y);
         this.z = Integer.parseInt(z);
+    }
+
+    public CoordSet(TileEntity tile) {
+        x = tile.xCoord;
+        y = tile.yCoord;
+        z = tile.zCoord;
+    }
+
+    public CoordSet(BlockCoord coord) {
+        x = coord.x;
+        y = coord.y;
+        z = coord.z;
     }
 
     public CoordSet() {
@@ -141,6 +155,10 @@ public class CoordSet {
 
     public CoordSet copy() {
         return new CoordSet(x, y, z);
+    }
+
+    public boolean isThaumicPipe(World world) {
+        return getTileEntity(world) instanceof TileThaumicPipe;
     }
 
     public void swap(CoordSet coordSet, Axis axis) {

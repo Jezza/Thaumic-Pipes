@@ -1,15 +1,17 @@
 package me.jezza.thaumicpipes.client;
 
-import net.minecraft.item.Item;
-import net.minecraftforge.client.MinecraftForgeClient;
 import me.jezza.thaumicpipes.CommonProxy;
 import me.jezza.thaumicpipes.client.renderer.ItemThaumicPipeRenderer;
 import me.jezza.thaumicpipes.client.renderer.TileThaumicPipeRenderer;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
+import net.minecraft.block.Block;
+import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.item.Item;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.client.IItemRenderer;
+import net.minecraftforge.client.MinecraftForgeClient;
 import cpw.mods.fml.client.registry.ClientRegistry;
-import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -18,8 +20,21 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void initClientSide() {
-        ClientRegistry.bindTileEntitySpecialRenderer(TileThaumicPipe.class, new TileThaumicPipeRenderer());
+        registerTileEntityRenderer(TileThaumicPipe.class, new TileThaumicPipeRenderer());
+
+        registerItemRenderer(ModBlocks.thaumicPipe, new ItemThaumicPipeRenderer());
+    }
+
+    private void registerTileEntityRenderer(Class<? extends TileEntity> clazz, TileEntitySpecialRenderer renderer) {
+        ClientRegistry.bindTileEntitySpecialRenderer(clazz, renderer);
+    }
+
+    private void registerItemRenderer(Item item, IItemRenderer renderer) {
         MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(ModBlocks.thaumicPipe), new ItemThaumicPipeRenderer());
+    }
+
+    private void registerItemRenderer(Block block, IItemRenderer renderer) {
+        registerItemRenderer(Item.getItemFromBlock(block), renderer);
     }
 
 }

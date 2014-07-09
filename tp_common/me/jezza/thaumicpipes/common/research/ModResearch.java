@@ -1,19 +1,10 @@
 package me.jezza.thaumicpipes.common.research;
 
 import me.jezza.thaumicpipes.common.ModBlocks;
-import me.jezza.thaumicpipes.common.core.TPLogger;
-import me.jezza.thaumicpipes.common.lib.Research;
 import me.jezza.thaumicpipes.common.lib.Strings;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import thaumcraft.api.ItemApi;
-import thaumcraft.api.ThaumcraftApi;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
-import thaumcraft.api.crafting.IArcaneRecipe;
-import thaumcraft.api.crafting.ShapedArcaneRecipe;
-import thaumcraft.api.research.ResearchCategories;
-import thaumcraft.api.research.ResearchCategoryList;
 import thaumcraft.api.research.ResearchItem;
 import thaumcraft.api.research.ResearchPage;
 

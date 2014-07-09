@@ -19,6 +19,18 @@ public class NodeState {
 
     public static NodeState createNodeState(ArmState[] armStateArray) {
         boolean isNode = true;
+        boolean bigNode = false;
+
+        for (ArmState armState : armStateArray) {
+            if (armState == null)
+                continue;
+
+            if (armState.getType().isBigNode()) {
+                bigNode = true;
+                break;
+            }
+        }
+
         int count = 0;
         int side = 0;
 
@@ -34,33 +46,16 @@ public class NodeState {
             if (secondValid)
                 count++;
 
-            if (firstValid && secondValid)
+            if (firstValid && secondValid) {
                 side = i;
-
-            if (confirmArmState(firstState, secondState))
-                isNode = false;
+                isNode = !firstState.getDirection().getOpposite().equals(secondState.getDirection());
+            }
         }
 
         if (count != 2)
             isNode = true;
 
-        boolean bigNode = false;
-        if (isNode)
-            for (ArmState armState : armStateArray) {
-                if (armState == null)
-                    continue;
-
-                if (armState.getType().isBigNode()) {
-                    bigNode = true;
-                    break;
-                }
-            }
-
         return new NodeState(isNode, bigNode, side);
-    }
-
-    private static boolean confirmArmState(ArmState firstState, ArmState secondState) {
-        return firstState.isValid() && secondState.isValid() && firstState.getDirection().getOpposite().equals(secondState.getDirection());
     }
 
     public boolean isNode() {

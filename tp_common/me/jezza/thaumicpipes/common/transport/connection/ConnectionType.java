@@ -1,10 +1,12 @@
 package me.jezza.thaumicpipes.common.transport.connection;
 
-import me.jezza.thaumicpipes.common.core.utils.ThaumicHelper;
+import me.jezza.thaumicpipes.common.core.external.ModHelper;
+import me.jezza.thaumicpipes.common.core.external.ThaumcraftHelper;
+import me.jezza.thaumicpipes.common.core.external.ThaumicTinkerHelper;
 import net.minecraft.tileentity.TileEntity;
 
 public enum ConnectionType {
-    CONTAINER(0.5F), JAR(0.1F), PIPE(0.0F), CONSTRUCT(0.0F), UNKNOWN(-1.0F);
+    ALEMBIC(0.5F), JAR(0.1F), PIPE(0.0F), CONSTRUCT(0.0F), REPAIRER(0.0F), UNKNOWN(-1.0F);
 
     private float size = 0.0F;
 
@@ -20,8 +22,12 @@ public enum ConnectionType {
         return this != UNKNOWN;
     }
 
-    public boolean isContainer() {
-        return this == CONTAINER;
+    public boolean isConstruct() {
+        return this == CONSTRUCT;
+    }
+
+    public boolean isAlembic() {
+        return this == ALEMBIC;
     }
 
     public boolean isJar() {
@@ -32,25 +38,32 @@ public enum ConnectionType {
         return this == PIPE;
     }
 
+    public boolean isRepairer() {
+        return this == REPAIRER;
+    }
+
     public boolean isBigNode() {
-        return isJar() || isContainer();
+        return isJar() || isAlembic() || isRepairer();
     }
 
     public static ConnectionType getConnectionType(TileEntity tileEntity, boolean canConnect) {
         if (!canConnect)
             return ConnectionType.UNKNOWN;
 
-        if (ThaumicHelper.isPipe(tileEntity))
+        if (ThaumcraftHelper.isThaumicPipe(tileEntity))
             return ConnectionType.PIPE;
 
-        if (ThaumicHelper.isJar(tileEntity))
+        if (ThaumcraftHelper.isJarFillable(tileEntity))
             return ConnectionType.JAR;
 
-        if (ThaumicHelper.isContainer(tileEntity))
-            return ConnectionType.CONTAINER;
+        if (ThaumcraftHelper.isAlembic(tileEntity))
+            return ConnectionType.ALEMBIC;
 
-        if (ThaumicHelper.isAlchemicalConstruct(tileEntity))
+        if (ThaumcraftHelper.isAlchemicalConstruct(tileEntity))
             return ConnectionType.CONSTRUCT;
+
+        if (ModHelper.isThaumicTinkererLoaded() && ThaumicTinkerHelper.isRepairer(tileEntity))
+            return ConnectionType.REPAIRER;
 
         return ConnectionType.UNKNOWN;
     }

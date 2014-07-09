@@ -1,6 +1,5 @@
 package me.jezza.thaumicpipes.common.core.utils;
 
-import me.jezza.thaumicpipes.common.core.TPLogger;
 import net.minecraft.util.MathHelper;
 
 public class TimeTicker {

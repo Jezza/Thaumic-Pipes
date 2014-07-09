@@ -1,10 +1,8 @@
 package me.jezza.thaumicpipes.common.research;
 
 import me.jezza.thaumicpipes.common.ModBlocks;
-import me.jezza.thaumicpipes.common.lib.Research;
 import me.jezza.thaumicpipes.common.lib.Strings;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import thaumcraft.api.ItemApi;
 import thaumcraft.api.ThaumcraftApi;

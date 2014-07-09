@@ -1,8 +1,5 @@
 package me.jezza.thaumicpipes;
 
-import java.lang.reflect.Field;
-
-import me.jezza.thaumicpipes.client.RenderUtils;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.core.TPLogger;
@@ -10,11 +7,12 @@ import me.jezza.thaumicpipes.common.core.command.CommandAirBlock;
 import me.jezza.thaumicpipes.common.core.command.CommandAreaRemove;
 import me.jezza.thaumicpipes.common.core.command.CommandAreaScan;
 import me.jezza.thaumicpipes.common.core.config.ConfigHandler;
+import me.jezza.thaumicpipes.common.core.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.lib.Reference;
 import me.jezza.thaumicpipes.common.research.ModRecipes;
 import me.jezza.thaumicpipes.common.research.ModResearch;
 import net.minecraft.creativetab.CreativeTabs;
-import cpw.mods.fml.common.FMLCommonHandler;
+import thaumcraft.common.Thaumcraft;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -30,24 +28,25 @@ public class ThaumicPipes {
     @Instance(Reference.MOD_ID)
     public static ThaumicPipes instance;
 
-    public static CreativeTabs thaumcraftCreativeTab = null;
+    public static CreativeTabs thaumcraftCreativeTab = Thaumcraft.tabTC;
 
     @SidedProxy(clientSide = Reference.CLIENT_PROXY_CLASS, serverSide = Reference.SERVER_PROXY_CLASS)
     public static CommonProxy proxy;
+    public static thaumcraft.common.CommonProxy tcProxy;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        tcProxy = Thaumcraft.proxy;
         TPLogger.init();
         ConfigHandler.init(event.getSuggestedConfigurationFile());
 
-        // No way am I making a creative tab for two things... :P
-        thaumcraftCreativeTab = getThaumcraftCreativeTab();
         ModBlocks.init();
         ModItems.init();
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
+        new MultiPartFactory().init();
         proxy.registerTileEntities();
         proxy.initServerSide();
         proxy.initClientSide();
@@ -66,19 +65,5 @@ public class ThaumicPipes {
             new CommandAreaRemove("removearea", "<dimID> <x1> <y1> <z1> <x2> <y2> <z2>");
             new CommandAreaScan("removeBlock", "<dimID> <x1> <y1> <z1> <x2> <y2> <z2> <id> <meta>");
         }
-    }
-
-    private CreativeTabs getThaumcraftCreativeTab() {
-        String creativeTabClass = "thaumcraft.common.Thaumcraft";
-        CreativeTabs tab = null;
-        Class clazz = CreativeTabs.class;
-
-        try {
-            Field field = Class.forName(creativeTabClass).getField("tabTC");
-            tab = (CreativeTabs) field.get(clazz);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return tab;
     }
 }

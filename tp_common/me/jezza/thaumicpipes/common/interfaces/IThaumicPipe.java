@@ -2,8 +2,8 @@ package me.jezza.thaumicpipes.common.interfaces;
 
 import java.util.LinkedHashSet;
 
-import me.jezza.thaumicpipes.common.core.AspectContainerList;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
+import me.jezza.thaumicpipes.common.transport.AspectContainerList;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;

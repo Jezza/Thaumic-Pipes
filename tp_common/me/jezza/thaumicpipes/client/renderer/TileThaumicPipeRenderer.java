@@ -1,8 +1,19 @@
 package me.jezza.thaumicpipes.client.renderer;
 
-import static org.lwjgl.opengl.GL11.*;
-import thaumcraft.api.aspects.Aspect;
-
+import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.GL_LIGHTING;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
+import static org.lwjgl.opengl.GL11.glColor4f;
+import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glPopMatrix;
+import static org.lwjgl.opengl.GL11.glPushMatrix;
+import static org.lwjgl.opengl.GL11.glRotatef;
+import static org.lwjgl.opengl.GL11.glScalef;
+import static org.lwjgl.opengl.GL11.glTranslated;
+import static org.lwjgl.opengl.GL11.glTranslatef;
 import me.jezza.thaumicpipes.client.RenderUtils;
 import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.client.model.ModelJarConnection;
@@ -81,11 +92,11 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
                 glRotatef(90, 0.0F, 1.0F, 0.0F);
             case WEST:
                 glTranslatef(-0.2F, 0.0F, 0.0F);
-                modelPipeExtension.render();
+                modelPipeExtension.renderAll();
                 glTranslatef(0.2F, 0.0F, 0.0F);
-                modelPipeExtension.render();
+                modelPipeExtension.renderAll();
                 glTranslatef(0.2F, 0.0F, 0.0F);
-                modelPipeExtension.render();
+                modelPipeExtension.renderAll();
                 break;
             default:
                 break;
@@ -144,13 +155,13 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
                 if (currentDir == ForgeDirection.DOWN) {
                     glRotatef(180, 0.0F, 1.0F, 0.0F);
                     RenderUtils.bindBorderlessTexture();
-                    modelPipeExtension.render();
+                    modelPipeExtension.renderAll();
 
                     distance = 0.20F;
                     glTranslatef(yDisplace * distance, zDisplace * distance, xDisplace * distance);
                 }
                 RenderUtils.bindBorderedTexture();
-                modelPipeExtension.render();
+                modelPipeExtension.renderAll();
 
                 glPopMatrix();
             }
@@ -171,13 +182,13 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
 
                 glScalef(1.95F, 1.55F, 1.95F);
 
-                modelJarConnection.render();
+                modelJarConnection.renderAll();
 
                 glPopMatrix();
             }
 
             glPopMatrix();
-        } else if (type.isContainer()) {
+        } else if (type.isAlembic()) {
             glPushMatrix();
 
             glTranslatef(xDisplace, yDisplace, zDisplace);
@@ -220,7 +231,7 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
         float scale = 1.015F;
         glScalef(scale, scale, scale);
 
-        modelPipeExtension.render();
+        modelPipeExtension.renderAll();
 
         glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         glDisable(GL_BLEND);

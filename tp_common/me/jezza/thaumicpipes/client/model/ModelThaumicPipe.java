@@ -1,23 +1,14 @@
 package me.jezza.thaumicpipes.client.model;
 
+import me.jezza.thaumicpipes.common.lib.Models;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import me.jezza.thaumicpipes.common.core.TPLogger;
-import me.jezza.thaumicpipes.common.lib.Models;
-import net.minecraftforge.client.model.AdvancedModelLoader;
-import net.minecraftforge.client.model.IModelCustom;
 
 @SideOnly(Side.CLIENT)
-public class ModelThaumicPipe {
-
-    IModelCustom thaumicPipe;
+public class ModelThaumicPipe extends ModelCustomAbstract {
 
     public ModelThaumicPipe() {
-        thaumicPipe = AdvancedModelLoader.loadModel(Models.THAUMIC_PIPE);
-    }
-
-    public void renderPart(String part) {
-        thaumicPipe.renderPart(part);
+        super(Models.THAUMIC_PIPE);
     }
 
     public void renderArm(int i) {
@@ -26,11 +17,11 @@ public class ModelThaumicPipe {
         else if (i == 2)
             i = 1;
 
-        thaumicPipe.renderPart("arm" + i);
+        renderPart("arm" + i);
     }
 
     public void renderVerticalParts() {
-        thaumicPipe.renderOnly("arm1", "arm2");
+        renderOnly("arm1", "arm2");
     }
 
 }

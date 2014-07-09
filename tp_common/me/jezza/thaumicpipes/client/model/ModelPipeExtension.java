@@ -1,19 +1,9 @@
 package me.jezza.thaumicpipes.client.model;
 
 import me.jezza.thaumicpipes.common.lib.Models;
-import net.minecraftforge.client.model.AdvancedModelLoader;
-import net.minecraftforge.client.model.IModelCustom;
 
-public class ModelPipeExtension {
-
-    IModelCustom pipeExtension;
-
+public class ModelPipeExtension extends ModelCustomAbstract {
     public ModelPipeExtension() {
-        pipeExtension = AdvancedModelLoader.loadModel(Models.PIPE_EXTENSION);
+        super(Models.PIPE_EXTENSION);
     }
-
-    public void render() {
-        pipeExtension.renderAll();
-    }
-
 }

@@ -8,7 +8,6 @@ import me.jezza.thaumicpipes.common.lib.Strings;
 import me.jezza.thaumicpipes.common.lib.TextureMaps;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.common.config.Configuration;
-import cpw.mods.fml.common.FMLCommonHandler;
 
 public class ConfigHandler {
 

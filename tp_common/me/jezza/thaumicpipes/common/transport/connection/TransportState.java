@@ -1,6 +1,7 @@
 package me.jezza.thaumicpipes.common.transport.connection;
 
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
@@ -10,25 +11,34 @@ import thaumcraft.api.aspects.IEssentiaTransport;
 public class TransportState {
 
     private IThaumicPipe pipe = null;
-    private IEssentiaTransport transport = null;
     private IAspectContainer container = null;
+    private IEssentiaTransport transport = null;
 
-    private TransportType type = TransportType.UNKNOWN;
+    private ConnectionType type = ConnectionType.UNKNOWN;
     private ForgeDirection direction = ForgeDirection.UNKNOWN;
 
-    public TransportState(IThaumicPipe pipe) {
-        this.pipe = pipe;
-        type = TransportType.THAUMIC_PIPE;
-    }
-
-    public TransportState(IEssentiaTransport transport) {
-        this.transport = transport;
-        type = TransportType.CONSTRUCT;
-    }
-
-    public TransportState(IAspectContainer container) {
-        this.container = container;
-        type = TransportType.CONTAINER;
+    public TransportState(TileEntity tileEntity) {
+        type = ConnectionType.getConnectionType(tileEntity, true);
+        switch (type) {
+            case ALEMBIC:
+                container = (IAspectContainer) tileEntity;
+                break;
+            case CONSTRUCT:
+                container = (IAspectContainer) tileEntity;
+                transport = (IEssentiaTransport) tileEntity;
+                break;
+            case JAR:
+                container = (IAspectContainer) tileEntity;
+                break;
+            case PIPE:
+                pipe = (IThaumicPipe) tileEntity;
+                break;
+            case REPAIRER:
+                container = (IAspectContainer) tileEntity;
+                break;
+            default:
+                break;
+        }
     }
 
     public TransportState setDirection(ForgeDirection direction) {
@@ -40,24 +50,16 @@ public class TransportState {
         return direction;
     }
 
-    public boolean isPipe() {
-        return type == TransportType.THAUMIC_PIPE;
-    }
-
-    public boolean isConstruct() {
-        return type == TransportType.CONSTRUCT;
-    }
-
-    public boolean isContainer() {
-        return type == TransportType.CONTAINER;
-    }
-
-    public IAspectContainer getContainer() {
-        return container;
+    public ConnectionType getType() {
+        return type;
     }
 
     public IThaumicPipe getPipe() {
         return pipe;
+    }
+
+    public IAspectContainer getContainer() {
+        return container;
     }
 
     public IEssentiaTransport getTransport() {
@@ -65,26 +67,55 @@ public class TransportState {
     }
 
     public int getAspectSize(Aspect filter) {
+        AspectList aspectList = getAspects();
+        return aspectList == null ? 0 : aspectList.getAmount(filter);
+    }
+
+    public AspectList getAspects() {
         AspectList aspectList = null;
-        if (type == TransportType.THAUMIC_PIPE)
-            aspectList = pipe.getAspectList();
-        if (type == TransportType.CONTAINER)
-            aspectList = container.getAspects();
 
-        if (aspectList == null)
-            return 0;
+        switch (type) {
+            case ALEMBIC:
+                aspectList = container.getAspects();
+                break;
+            case CONSTRUCT:
+                aspectList = container.getAspects();
+                break;
+            case JAR:
+                aspectList = container.getAspects();
+                break;
+            case PIPE:
+                aspectList = pipe.getAspectList();
+                break;
+            case REPAIRER:
+                aspectList = container.getAspects();
+                break;
+            default:
+                break;
+        }
 
-        return aspectList.getAmount(filter);
+        return aspectList;
     }
 
     public void removeAmount(Aspect filter, int amountToRemove) {
-        if (type == TransportType.THAUMIC_PIPE)
-            pipe.removeAspect(filter, amountToRemove);
-        if (type == TransportType.CONTAINER)
-            container.takeFromContainer(filter, amountToRemove);
-    }
-
-    private enum TransportType {
-        THAUMIC_PIPE, CONSTRUCT, CONTAINER, UNKNOWN;
+        switch (type) {
+            case ALEMBIC:
+                container.takeFromContainer(filter, amountToRemove);
+                break;
+            case CONSTRUCT:
+                container.takeFromContainer(filter, amountToRemove);
+                break;
+            case JAR:
+                container.takeFromContainer(filter, amountToRemove);
+                break;
+            case PIPE:
+                pipe.removeAspect(filter, amountToRemove);
+                break;
+            case REPAIRER:
+                container.takeFromContainer(filter, amountToRemove);
+                break;
+            default:
+                break;
+        }
     }
 }

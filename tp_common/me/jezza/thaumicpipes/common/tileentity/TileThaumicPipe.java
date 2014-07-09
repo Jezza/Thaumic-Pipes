@@ -6,18 +6,17 @@ import java.util.LinkedHashSet;
 import java.util.Random;
 
 import me.jezza.thaumicpipes.client.core.NodeState;
-import me.jezza.thaumicpipes.common.core.AspectContainerList;
-import me.jezza.thaumicpipes.common.core.TPLogger;
+import me.jezza.thaumicpipes.common.core.external.ThaumcraftHelper;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
-import me.jezza.thaumicpipes.common.core.utils.ThaumicHelper;
 import me.jezza.thaumicpipes.common.core.utils.TimeTicker;
 import me.jezza.thaumicpipes.common.core.utils.TimeTickerF;
 import me.jezza.thaumicpipes.common.interfaces.IBlockInteract;
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.lib.Reference;
 import me.jezza.thaumicpipes.common.transport.ArmState;
+import me.jezza.thaumicpipes.common.transport.AspectContainerList;
+import me.jezza.thaumicpipes.common.transport.connection.TileEntityWrapper;
 import me.jezza.thaumicpipes.common.transport.connection.TransportState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -25,8 +24,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.dedicated.DedicatedPlayerList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ChatComponentText;
@@ -42,7 +39,6 @@ import cofh.api.block.IDismantleable;
 
 import com.google.common.collect.HashMultimap;
 
-import cpw.mods.fml.client.ExtendedServerListData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -57,11 +53,10 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
 
     private NodeState nodeState = null;
 
+    private TimeTickerF priorityFrame;
     private TimeTicker constructs;
     private TimeTicker pipes;
     private TimeTicker priorityPosition;
-
-    private TimeTickerF priorityFrame;
 
     public TileThaumicPipe() {
         constructs = new TimeTicker(0, 10);
@@ -72,22 +67,33 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
 
     @Override
     public void updateEntity() {
-        if (worldObj == null)
-            return;
-
-        // Get rid of the client side.
         if (worldObj.isRemote) {
             updateArmStates();
             nodeState = NodeState.createNodeState(armStateArray);
-            stepAnimation();
+            priorityPosition.tick();
+            priorityFrame.tick();
             return;
         }
 
-        // processCurrentAspects();
+        // Process the travelling aspects
 
-        processNearbyConstructs();
+        /**
+         * Should I put the TAs into a secondary loop or put it in the ticking loop.
+         * 
+         * I should add to the list, and THEN, parse it through the ticking loop.
+         * 
+         * Does it have any TAs to process?
+         * 
+         * If true Check nearby for sources that haven't been checked. Add to the pinged set.
+         * 
+         * 
+         * If false
+         */
 
-        // Take aspects from all sources.
+        // Identify who sent the ping.
+
+        // processNearbyConstructs();
+
         processNearbySources();
 
         // Handle checking and sending to jars, if leftovers, returns true and passes to next pipe.
@@ -108,11 +114,6 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
             if (amount <= 0)
                 aspectList.remove(aspect);
         }
-    }
-
-    private void stepAnimation() {
-        priorityPosition.tick();
-        priorityFrame.tick();
     }
 
     private void updateArmStates() {
@@ -144,6 +145,33 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
         aspectList = new AspectList();
     }
 
+    private void reduceAndAddTo(Aspect aspect, TransportState state) {
+        IAspectContainer container = state.getContainer();
+        if (!container.doesContainerAccept(aspect))
+            return;
+
+        int totalToAdd = aspectList.getAmount(aspect);
+        int leftOver = container.addToContainer(aspect, totalToAdd);
+        aspectList.reduce(aspect, totalToAdd - leftOver);
+    }
+
+    private void addFromAndReduce(TransportState transportState) {
+        AspectList tempList = transportState.getAspects();
+
+        if (tempList == null || tempList.aspects.isEmpty())
+            return;
+
+        for (Aspect tempAspect : tempList.getAspects()) {
+            if (tempAspect == null)
+                continue;
+
+            // int amount = tempList.getAmount(tempAspect);
+            int amount = 1;
+            if (transportState.getContainer().takeFromContainer(tempAspect, amount))
+                aspectList.add(tempAspect, amount);
+        }
+    }
+
     private void processNearbyConstructs() {
         if (!constructs.tick())
             return;
@@ -154,7 +182,7 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
 
         if (!constructStates.isEmpty())
             for (TransportState state : constructStates) {
-                if (!state.isConstruct())
+                if (!state.getType().isConstruct())
                     continue;
                 ForgeDirection direction = state.getDirection().getOpposite();
                 IEssentiaTransport transport = state.getTransport();
@@ -178,34 +206,19 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
     }
 
     private void processNearbySources() {
-        ArrayList<IAspectContainer> containerList = getNearbyAspectContainers();
+        ArrayList<TransportState> containerList = getNearbySources();
 
-        for (IAspectContainer container : containerList) {
-            if (container == null)
+        for (TransportState transportState : containerList) {
+            if (!transportState.getType().isAlembic())
                 continue;
 
-            AspectList tempList = container.getAspects();
-
-            if (tempList == null)
-                continue;
-
-            if (tempList.aspects.isEmpty())
-                continue;
-
-            for (Aspect aspect : tempList.getAspects()) {
-                if (aspect == null)
-                    continue;
-
-                int amount = tempList.getAmount(aspect);
-                if (container.takeFromContainer(aspect, amount))
-                    aspectList.add(aspect, amount);
-            }
+            addFromAndReduce(transportState);
         }
     }
 
     private boolean processPossibleJars() {
-        ArrayList<IAspectContainer> jarList = getNearbyJars();
-        HashMultimap<Aspect, IAspectContainer> placingMap = HashMultimap.create();
+        ArrayList<TransportState> jarList = getNearbyJars();
+        HashMultimap<Aspect, TransportState> placingMap = HashMultimap.create();
 
         if (jarList.isEmpty())
             return !aspectList.aspects.isEmpty();
@@ -214,34 +227,25 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
             if (aspect == null)
                 continue;
 
-            for (IAspectContainer jar : jarList)
-                if (jar.doesContainerContainAmount(aspect, 0))
+            for (TransportState jar : jarList)
+                if (jar.getContainer().doesContainerContainAmount(aspect, 0))
                     placingMap.put(aspect, jar);
 
             int amountToAdd = aspectList.getAmount(aspect);
-            for (IAspectContainer container : placingMap.get(aspect))
+            for (TransportState container : placingMap.get(aspect))
                 reduceAndAddTo(aspect, container);
 
-            for (IAspectContainer jar : jarList)
-                if (jar.doesContainerAccept(aspect))
+            for (TransportState jar : jarList)
+                if (jar.getContainer().doesContainerAccept(aspect))
                     reduceAndAddTo(aspect, jar);
         }
 
         return !aspectList.aspects.isEmpty();
     }
 
-    private void reduceAndAddTo(Aspect aspect, IAspectContainer container) {
-        if (!container.doesContainerAccept(aspect))
-            return;
-
-        int totalToAdd = aspectList.getAmount(aspect);
-        int leftOver = container.addToContainer(aspect, totalToAdd);
-        aspectList.reduce(aspect, totalToAdd - leftOver);
-    }
-
     private void processPossiblePipes() {
         TransportState pipeState = getNearbyPipe();
-        if (pipeState == null || !pipeState.isPipe())
+        if (pipeState == null || !pipeState.getType().isPipe())
             return;
 
         for (Aspect aspect : aspectList.getAspects()) {
@@ -255,81 +259,92 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
         }
     }
 
-    private ArrayList<IAspectContainer> getNearbyJars() {
+    public ArrayList<TileEntityWrapper> getConnectableTiles(HashSet<CoordSet> coordSets) {
+        ArrayList<TileEntityWrapper> tileList = new ArrayList<TileEntityWrapper>();
+        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS)
+            if (canConnectTo(direction)) {
+                CoordSet coordSet = getCoordSet().addForgeDirection(direction);
+                if (coordSets.contains(coordSet))
+                    continue;
+                coordSets.add(coordSet);
+                TileEntity tileEntity = coordSet.getTileEntity(worldObj);
+                tileList.add(new TileEntityWrapper(tileEntity, direction));
+            }
+        return tileList;
+    }
+
+    private ArrayList<TransportState> getNearbyJars() {
         return getNearbyJars(new HashSet<CoordSet>());
     }
 
-    private ArrayList<IAspectContainer> getNearbyJars(HashSet<CoordSet> coordSets) {
-        ArrayList<IAspectContainer> containerList = new ArrayList<IAspectContainer>();
-
-        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
-            if (!canConnectTo(direction))
-                continue;
-            CoordSet coordSet = getCoordSet().addForgeDirection(direction);
-            TileEntity tileEntity = coordSet.getTileEntity(worldObj);
-            if (ThaumicHelper.isJar(tileEntity)) {
-                if (coordSets.contains(coordSet))
-                    continue;
-
-                coordSets.add(coordSet);
-                containerList.add((IAspectContainer) tileEntity);
-            }
-        }
-
-        return containerList;
-    }
-
-    private ArrayList<IAspectContainer> getNearbyAspectContainers() {
-        return getNearbyAspectContainers(new HashSet<CoordSet>());
-    }
-
-    private ArrayList<IAspectContainer> getNearbyAspectContainers(HashSet<CoordSet> coordSets) {
-        ArrayList<IAspectContainer> containerList = new ArrayList<IAspectContainer>();
-
-        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
-            if (!canConnectTo(direction))
-                continue;
-            CoordSet coordSet = getCoordSet().addForgeDirection(direction);
-            TileEntity tileEntity = coordSet.getTileEntity(worldObj);
-            if (ThaumicHelper.isContainer(tileEntity)) {
-                if (coordSets.contains(coordSet))
-                    continue;
-
-                coordSets.add(coordSet);
-                containerList.add((IAspectContainer) tileEntity);
-            }
-        }
-
-        return containerList;
+    private ArrayList<TransportState> getNearbySources() {
+        return getNearbySources(new HashSet<CoordSet>());
     }
 
     private ArrayList<TransportState> getNearbyPipes() {
+        return getNearbyPipes(new HashSet<CoordSet>());
+    }
+
+    private ArrayList<TransportState> getNearbyConstructs() {
+        return getNearbyConstructs(new HashSet<CoordSet>());
+    }
+
+    private ArrayList<TransportState> getNearbyJars(HashSet<CoordSet> coordSets) {
+        ArrayList<TransportState> containerList = new ArrayList<TransportState>();
+
+        for (TileEntityWrapper wrapper : getConnectableTiles(coordSets))
+            if (ThaumcraftHelper.isJarFillable(wrapper.tileEntity))
+                containerList.add(new TransportState(wrapper.tileEntity).setDirection(wrapper.direction));
+
+        return containerList;
+    }
+
+    private ArrayList<TransportState> getNearbySources(HashSet<CoordSet> coordSets) {
+        ArrayList<TransportState> containerList = new ArrayList<TransportState>();
+
+        for (TileEntityWrapper wrapper : getConnectableTiles(coordSets))
+            if (ThaumcraftHelper.isSource(wrapper.tileEntity))
+                containerList.add(new TransportState(wrapper.tileEntity).setDirection(wrapper.direction));
+
+        return containerList;
+    }
+
+    private ArrayList<TransportState> getNearbyConstructs(HashSet<CoordSet> coordSets) {
+        ArrayList<TransportState> constructList = new ArrayList<TransportState>();
+
+        for (TileEntityWrapper wrapper : getConnectableTiles(coordSets))
+            if (ThaumcraftHelper.isAlchemicalConstruct(wrapper.tileEntity))
+                constructList.add(new TransportState(wrapper.tileEntity).setDirection(wrapper.direction));
+
+        if (constructList.isEmpty())
+            return null;
+
+        return constructList;
+    }
+
+    private ArrayList<TransportState> getNearbyPipes(HashSet<CoordSet> coordSets) {
         ArrayList<TransportState> pipeList = new ArrayList<TransportState>();
 
-        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
-            if (!canConnectTo(direction))
-                continue;
-            TileEntity tileEntity = getCoordSet().addForgeDirection(direction).getTileEntity(worldObj);
-            if (ThaumicHelper.isPipe(tileEntity)) {
-                IThaumicPipe pipe = (IThaumicPipe) tileEntity;
+        for (TileEntityWrapper wrapper : getConnectableTiles(coordSets))
+            if (ThaumcraftHelper.isThaumicPipe(wrapper.tileEntity)) {
+                IThaumicPipe pipe = (IThaumicPipe) wrapper.tileEntity;
+                ForgeDirection direction = wrapper.direction;
                 if (pipe.canReceiveFrom(direction))
-                    pipeList.add(new TransportState(pipe).setDirection(direction));
+                    pipeList.add(new TransportState(wrapper.tileEntity).setDirection(direction));
             }
-        }
-
-        if (pipeList.isEmpty())
-            return null;
 
         return pipeList;
     }
 
     private TransportState getNearbyPipe() {
-        if (priority != ForgeDirection.UNKNOWN && canConnectTo(priority)) {
-            TileEntity tileEntity = getCoordSet().addForgeDirection(priority).getTileEntity(worldObj);
-            if (ThaumicHelper.isPipe(tileEntity)) {
-                IThaumicPipe pipe = (IThaumicPipe) tileEntity;
-                if (pipe.canReceiveFrom(priority))
-                    return new TransportState(pipe).setDirection(priority);
+        if (priority != ForgeDirection.UNKNOWN) {
+            if (canConnectTo(priority)) {
+                TileEntity tileEntity = getCoordSet().addForgeDirection(priority).getTileEntity(worldObj);
+                if (ThaumcraftHelper.isThaumicPipe(tileEntity)) {
+                    IThaumicPipe pipe = (IThaumicPipe) tileEntity;
+                    if (pipe.canReceiveFrom(priority))
+                        return new TransportState(tileEntity).setDirection(priority);
+                }
             }
             cyclePriorityState();
             return getNearbyPipe();
@@ -337,27 +352,10 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
 
         ArrayList<TransportState> pipeList = getNearbyPipes();
 
-        if (pipeList == null || pipeList.isEmpty())
+        if (pipeList.isEmpty())
             return null;
 
         return pipeList.get(new Random().nextInt(pipeList.size()));
-    }
-
-    private ArrayList<TransportState> getNearbyConstructs() {
-        ArrayList<TransportState> constructList = new ArrayList<TransportState>();
-
-        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
-            if (!canConnectTo(direction))
-                continue;
-            TileEntity tileEntity = getCoordSet().addForgeDirection(direction).getTileEntity(worldObj);
-            if (ThaumicHelper.isAlchemicalConstruct(tileEntity))
-                constructList.add(new TransportState((IEssentiaTransport) tileEntity).setDirection(direction));
-        }
-
-        if (constructList.isEmpty())
-            return null;
-
-        return constructList;
     }
 
     @Override
@@ -407,9 +405,7 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
             priority = ForgeDirection.UNKNOWN;
             return 0;
         }
-
         cyclePriorityState();
-
         return 0;
     }
 
@@ -447,12 +443,14 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
 
     @Override
     public boolean canReceiveFrom(ForgeDirection direction) {
-        return canConnectTo(direction.getOpposite()) && !direction.getOpposite().equals(priority);
+        direction = direction.getOpposite();
+        return canConnectTo(direction) && !direction.equals(priority);
     }
 
     @Override
     public boolean canConnectTo(ForgeDirection direction) {
-        return ThaumicHelper.isValidConnection(getCoordSet().addForgeDirection(direction).getTileEntity(worldObj), direction);
+        TileEntity tileEntity = getCoordSet().addForgeDirection(direction).getTileEntity(worldObj);
+        return tileEntity != null && ThaumcraftHelper.isValidConnection(tileEntity, direction);
     }
 
     @Override
@@ -474,11 +472,11 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
         if (amount > 0)
             stateList.add(this);
 
-        ArrayList<IAspectContainer> containerList = getNearbyJars(pipeList);
-        containerList.addAll(getNearbyAspectContainers(pipeList));
+        ArrayList<TransportState> containerList = getNearbyJars(pipeList);
+        containerList.addAll(getNearbySources(pipeList));
 
         if (!containerList.isEmpty()) {
-            for (IAspectContainer container : containerList) {
+            for (TransportState container : containerList) {
                 AspectList tempList = container.getAspects();
 
                 if (tempList == null || tempList.aspects.isEmpty())
@@ -498,9 +496,9 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
 
         ArrayList<TransportState> tempPipeList = getNearbyPipes();
 
-        if (tempPipeList != null)
+        if (!tempPipeList.isEmpty())
             for (TransportState state : tempPipeList) {
-                if (!state.isPipe())
+                if (!state.getType().isPipe())
                     continue;
 
                 CoordSet tempSet = getCoordSet().addForgeDirection(state.getDirection());

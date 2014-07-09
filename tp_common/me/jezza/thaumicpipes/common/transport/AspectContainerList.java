@@ -1,12 +1,12 @@
-package me.jezza.thaumicpipes.common.core;
+package me.jezza.thaumicpipes.common.transport;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
+import me.jezza.thaumicpipes.common.core.TPLogger;
 import me.jezza.thaumicpipes.common.transport.connection.TransportState;
+import net.minecraft.tileentity.TileEntity;
 import thaumcraft.api.aspects.Aspect;
-import thaumcraft.api.aspects.IAspectContainer;
 
 import com.google.common.collect.Lists;
 
@@ -19,20 +19,16 @@ public class AspectContainerList implements Iterable<TransportState> {
         containerList = Lists.newArrayList();
     }
 
-    public void add(IThaumicPipe pipe) {
-        if (filter == null) {
-            TPLogger.severe("Filter not set");
-            return;
-        }
-        containerList.add(new TransportState(pipe));
+    public void add(TileEntity tileEntity) {
+        add(new TransportState(tileEntity));
     }
 
-    public void add(IAspectContainer container) {
+    public void add(TransportState transportState) {
         if (filter == null) {
             TPLogger.severe("Filter not set");
             return;
         }
-        containerList.add(new TransportState(container));
+        containerList.add(transportState);
     }
 
     public void addAll(AspectContainerList otherList) {

@@ -2,24 +2,17 @@ package me.jezza.thaumicpipes.common.blocks;
 
 import java.util.List;
 
-import me.jezza.thaumicpipes.common.core.TPLogger;
+import me.jezza.thaumicpipes.common.core.external.ThaumcraftHelper;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
-import me.jezza.thaumicpipes.common.core.utils.ThaumicHelper;
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
-import me.jezza.thaumicpipes.common.tileentity.TileTP;
 import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
-import thaumcraft.api.aspects.Aspect;
-import thaumcraft.api.aspects.AspectList;
 
 public class BlockThaumicPipe extends BlockTP {
 
@@ -43,7 +36,7 @@ public class BlockThaumicPipe extends BlockTP {
 
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
             TileEntity tileEntity = coordSet.copy().addForgeDirection(direction).getTileEntity(world);
-            if (ThaumicHelper.isMatch(tileEntity) && canConnectTo(coordSet.getTileEntity(world), direction))
+            if (ThaumcraftHelper.isMatch(tileEntity) && canConnectTo(coordSet.getTileEntity(world), direction))
                 switch (direction) {
                     case DOWN:
                         minY = 0.0F;
@@ -83,7 +76,7 @@ public class BlockThaumicPipe extends BlockTP {
 
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
             TileEntity tileEntity = coordSet.copy().addForgeDirection(direction).getTileEntity(world);
-            if (ThaumicHelper.isMatch(tileEntity) && canConnectTo(coordSet.getTileEntity(world), direction)) {
+            if (ThaumcraftHelper.isMatch(tileEntity) && canConnectTo(coordSet.getTileEntity(world), direction)) {
                 switch (direction) {
                     case DOWN:
                         minY = 0.0F;

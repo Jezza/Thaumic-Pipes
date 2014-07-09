@@ -1,13 +1,7 @@
 package me.jezza.thaumicpipes.common.lib;
 
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.glBindTexture;
-
 import java.util.ArrayList;
 
-import me.jezza.thaumicpipes.client.RenderUtils;
-import me.jezza.thaumicpipes.common.transport.ArmState;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -30,10 +24,6 @@ public class TextureMaps {
     public static final ResourceLocation[] THAUMIC_PIPE_ARM_PRIORITY = getThaumicPipeResources("thaumicPipeArmPriority");
 
     public static final ResourceLocation[] PRIORITY_ANIMATION_FRAMES = getAnimationFrames();
-
-    private static boolean confirm(ArmState currentState) {
-        return currentState.isPriority() && RenderUtils.isPlayerWearingGoogles() && RenderUtils.isPlayerHoldingWand();
-    }
 
     private static ResourceLocation[] getAnimationFrames() {
         String frameName = "priorityFrame_";

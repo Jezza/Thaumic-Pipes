@@ -1,7 +1,6 @@
 package me.jezza.thaumicpipes.common.transport;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 
