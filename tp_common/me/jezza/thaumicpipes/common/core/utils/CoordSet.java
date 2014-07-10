@@ -157,7 +157,7 @@ public class CoordSet {
         return new CoordSet(x, y, z);
     }
 
-    public boolean isThaumicPipe(World world) {
+    public boolean isThaumicPipe(IBlockAccess world) {
         return getTileEntity(world) instanceof TileThaumicPipe;
     }
 

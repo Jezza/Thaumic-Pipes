@@ -25,10 +25,11 @@ public class ThaumcraftHelper {
         return false;
     }
 
-    public static boolean isMatch(TileEntity tileEntity) {
-        boolean flag = false;
+    private static boolean isMatch(TileEntity tileEntity) {
 
-        if (ModHelper.isThaumicTinkererLoaded())
+        boolean flag = ModHelper.isThaumicTinkererLoaded();
+
+        if (flag)
             flag = ThaumicTinkerHelper.isRepairer(tileEntity);
 
         return isComponent(tileEntity) || isSource(tileEntity) || shouldSupply(tileEntity) || flag;

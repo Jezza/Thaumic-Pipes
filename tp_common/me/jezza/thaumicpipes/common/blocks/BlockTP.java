@@ -25,7 +25,7 @@ public abstract class BlockTP extends Block {
 
     public BlockTP(Material material, String name) {
         super(material);
-        setCreativeTab(ThaumicPipes.instance.thaumcraftCreativeTab);
+        setCreativeTab(ThaumicPipes.creativeTab);
         setBlockName(name);
         setName(name);
         register(name);

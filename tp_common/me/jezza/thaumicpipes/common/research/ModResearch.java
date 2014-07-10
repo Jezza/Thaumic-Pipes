@@ -13,7 +13,16 @@ public class ModResearch {
         initResearch();
     }
 
+    // @formatter:off
     private static void initResearch() {
-        new ResearchItem(Strings.THAUMIC_PIPE, "ALCHEMY", new AspectList().add(Aspect.VOID, 5).add(Aspect.AIR, 5), 7, 2, 2, new ItemStack(ModBlocks.thaumicPipe)).setPages(new ResearchPage[] { new ResearchPage("tp.research_page.thaumicPipe.1"), new ResearchPage("tp.research_page.thaumicPipe.2"), new ResearchPage("tp.research_page.thaumicPipe.3"), new ResearchPage(ModRecipes.thaumicPipeRecipe) }).setParents(new String[] { "TUBEFILTER" }).setSecondary().setConcealed().registerResearchItem();
+        ResearchPage[] pages = new ResearchPage[] {
+                new ResearchPage("tp.research_page.thaumicPipe.1"),
+                new ResearchPage("tp.research_page.thaumicPipe.2"),
+                new ResearchPage("tp.research_page.thaumicPipe.3"),
+                new ResearchPage(ModRecipes.thaumicPipeRecipe)
+        };
+        // TODO Revisit research
+        new ResearchItem(Strings.THAUMIC_PIPE, "ALCHEMY", new AspectList().add(Aspect.VOID, 5).add(Aspect.AIR, 5), 7, 2, 2, new ItemStack(ModBlocks.thaumicPipe)).setPages(pages).setParents(new String[] { "TUBEFILTER" }).setSecondary().setConcealed().registerResearchItem();
     }
+    // @formatter:on
 }

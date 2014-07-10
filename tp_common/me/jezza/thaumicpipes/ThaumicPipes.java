@@ -12,6 +12,7 @@ import me.jezza.thaumicpipes.common.lib.Reference;
 import me.jezza.thaumicpipes.common.research.ModRecipes;
 import me.jezza.thaumicpipes.common.research.ModResearch;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.Item;
 import thaumcraft.common.Thaumcraft;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -21,6 +22,8 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 @Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, dependencies = "required-after:Thaumcraft@[4.1.0g,);")
 public class ThaumicPipes {
@@ -28,7 +31,13 @@ public class ThaumicPipes {
     @Instance(Reference.MOD_ID)
     public static ThaumicPipes instance;
 
-    public static CreativeTabs thaumcraftCreativeTab = Thaumcraft.tabTC;
+    public static CreativeTabs creativeTab = new CreativeTabs(Reference.MOD_ID) {
+        @Override
+        @SideOnly(Side.CLIENT)
+        public Item getTabIconItem() {
+            return ModItems.thaumicPipe;
+        }
+    };
 
     @SidedProxy(clientSide = Reference.CLIENT_PROXY_CLASS, serverSide = Reference.SERVER_PROXY_CLASS)
     public static CommonProxy proxy;

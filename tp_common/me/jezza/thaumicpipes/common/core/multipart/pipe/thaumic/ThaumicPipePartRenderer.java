@@ -1,45 +1,54 @@
-package me.jezza.thaumicpipes.client.renderer;
+package me.jezza.thaumicpipes.common.core.multipart.pipe.thaumic;
 
-import static org.lwjgl.opengl.GL11.*;
-
+import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.GL_LIGHTING;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
+import static org.lwjgl.opengl.GL11.glColor4f;
+import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glPopMatrix;
+import static org.lwjgl.opengl.GL11.glPushMatrix;
+import static org.lwjgl.opengl.GL11.glRotatef;
+import static org.lwjgl.opengl.GL11.glScalef;
+import static org.lwjgl.opengl.GL11.glTranslated;
+import static org.lwjgl.opengl.GL11.glTranslatef;
 import me.jezza.thaumicpipes.client.RenderUtils;
 import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.client.model.ModelJarConnection;
 import me.jezza.thaumicpipes.client.model.ModelPipeExtension;
 import me.jezza.thaumicpipes.client.model.ModelThaumicPipe;
 import me.jezza.thaumicpipes.common.lib.TextureMaps;
-import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
 import me.jezza.thaumicpipes.common.transport.ArmState;
 import me.jezza.thaumicpipes.common.transport.connection.ConnectionType;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
-@SideOnly(Side.CLIENT)
-public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
+public class ThaumicPipePartRenderer {
 
     ModelThaumicPipe modelThaumicPipe;
     ModelJarConnection modelJarConnection;
     ModelPipeExtension modelPipeExtension;
 
-    public TileThaumicPipeRenderer() {
+    public ThaumicPipePartRenderer() {
         modelThaumicPipe = new ModelThaumicPipe();
         modelJarConnection = new ModelJarConnection();
         modelPipeExtension = new ModelPipeExtension();
     }
 
-    public void renderThaumicPipeAt(TileThaumicPipe thaumicPipe, double x, double y, double z, float tick) {
+    public void render(ThaumicPipePart pipe, double x, double y, double z, float tick) {
         glPushMatrix();
 
-        glTranslated(x, y, z);
+        glTranslated(x + 0.5F, y + 0.5F, z + 0.5F);
 
         float scale = 0.3850F;
 
         glScalef(scale, scale, scale);
 
-        ArmState[] armSet = thaumicPipe.getArmStateArray();
+        ArmState[] armSet = pipe.getArmStateArray();
+
+        if (armSet == null)
+            return;
 
         for (int index = 0; index < armSet.length; index++) {
             ArmState currentState = armSet[index];
@@ -49,12 +58,12 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
             renderArm(currentState, index + 1);
         }
 
-        renderNodeState(thaumicPipe.getNodeState());
+        renderNodeState(pipe.getNodeState());
 
         if (RenderUtils.canRenderPriority())
             for (ArmState state : armSet)
                 if (state.isPriority()) {
-                    RenderUtils.bindPriorityTexture(thaumicPipe.getAnimationFrame());
+                    RenderUtils.bindPriorityTexture(pipe.getAnimationFrame());
                     renderPriority(state.getDirection(), state.getPosition());
                 }
         glPopMatrix();
@@ -100,20 +109,6 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
 
         processPostArmRender(armState, index);
 
-        glPopMatrix();
-    }
-
-    private void renderNode(boolean flag) {
-        glPushMatrix();
-        RenderUtils.bindTexture(TextureMaps.THAUMIC_PIPE_CENTRE[TextureMaps.THAUMIC_TEXTURE_INDEX]);
-
-        float scale = 1.01F;
-        if (flag)
-            scale += 0.32F;
-
-        glScalef(scale, scale, scale);
-
-        modelThaumicPipe.renderPart("Centre");
         glPopMatrix();
     }
 
@@ -187,6 +182,20 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
         }
     }
 
+    private void renderNode(boolean flag) {
+        glPushMatrix();
+        RenderUtils.bindTexture(TextureMaps.THAUMIC_PIPE_CENTRE[TextureMaps.THAUMIC_TEXTURE_INDEX]);
+
+        float scale = 1.01F;
+        if (flag)
+            scale += 0.32F;
+
+        glScalef(scale, scale, scale);
+
+        modelThaumicPipe.renderPart("Centre");
+        glPopMatrix();
+    }
+
     private void renderPriority(ForgeDirection armAxis, int position) {
         glColor4f(0.49F, 0.976F, 1F, 0.4F);
         renderPriorityOnAxis(armAxis, position);
@@ -225,11 +234,5 @@ public class TileThaumicPipeRenderer extends TileEntitySpecialRenderer {
         glDisable(GL_BLEND);
         glEnable(GL_LIGHTING);
         glPopMatrix();
-    }
-
-    @Override
-    public void renderTileEntityAt(TileEntity tileEntity, double x, double y, double z, float tick) {
-        if (tileEntity instanceof TileThaumicPipe)
-            renderThaumicPipeAt((TileThaumicPipe) tileEntity, x + 0.5F, y + 0.5F, z + 0.5F, tick);
     }
 }

@@ -14,7 +14,7 @@ public class ArmState {
         this.direction = direction;
         this.priority = priority;
         this.position = position;
-        connectionType = ConnectionType.getConnectionType(tileEntity, canConnect);
+        connectionType = canConnect ? ConnectionType.getConnectionType(tileEntity) : ConnectionType.UNKNOWN;
     }
 
     public int getPosition() {

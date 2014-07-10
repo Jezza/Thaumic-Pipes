@@ -18,7 +18,7 @@ public class TransportState {
     private ForgeDirection direction = ForgeDirection.UNKNOWN;
 
     public TransportState(TileEntity tileEntity) {
-        type = ConnectionType.getConnectionType(tileEntity, true);
+        type = ConnectionType.getConnectionType(tileEntity);
         switch (type) {
             case ALEMBIC:
                 container = (IAspectContainer) tileEntity;

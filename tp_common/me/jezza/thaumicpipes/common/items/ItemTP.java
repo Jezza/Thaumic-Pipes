@@ -12,7 +12,7 @@ public abstract class ItemTP extends Item {
 
     public ItemTP(String name) {
         setName(name);
-        setCreativeTab(ThaumicPipes.instance.thaumcraftCreativeTab);
+        setCreativeTab(ThaumicPipes.creativeTab);
         register(name);
     }
 
@@ -21,7 +21,7 @@ public abstract class ItemTP extends Item {
         setTextureName(name);
     }
 
-    private void register(String name) {
+    public void register(String name) {
         GameRegistry.registerItem(this, name);
     }
 

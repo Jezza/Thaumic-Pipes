@@ -7,6 +7,7 @@ import java.util.Random;
 
 import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.common.core.external.ThaumcraftHelper;
+import me.jezza.thaumicpipes.common.core.multipart.pipe.PipePartAbstract;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.core.utils.TimeTicker;
 import me.jezza.thaumicpipes.common.core.utils.TimeTickerF;
@@ -560,5 +561,10 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
                 player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "Pipe contains no Essentia."));
         }
         return true;
+    }
+
+    @Override
+    public PipePartAbstract getPipe() {
+        return null;
     }
 }

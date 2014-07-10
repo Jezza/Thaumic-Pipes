@@ -3,9 +3,8 @@ package me.jezza.thaumicpipes.client;
 import me.jezza.thaumicpipes.CommonProxy;
 import me.jezza.thaumicpipes.client.renderer.ItemThaumicPipeRenderer;
 import me.jezza.thaumicpipes.client.renderer.TileThaumicPipeRenderer;
-import me.jezza.thaumicpipes.common.ModBlocks;
+import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
-import net.minecraft.block.Block;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
@@ -22,7 +21,7 @@ public class ClientProxy extends CommonProxy {
     public void initClientSide() {
         registerTileEntityRenderer(TileThaumicPipe.class, new TileThaumicPipeRenderer());
 
-        registerItemRenderer(ModBlocks.thaumicPipe, new ItemThaumicPipeRenderer());
+        registerItemRenderer(ModItems.thaumicPipe, new ItemThaumicPipeRenderer());
     }
 
     private void registerTileEntityRenderer(Class<? extends TileEntity> clazz, TileEntitySpecialRenderer renderer) {
@@ -30,11 +29,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     private void registerItemRenderer(Item item, IItemRenderer renderer) {
-        MinecraftForgeClient.registerItemRenderer(Item.getItemFromBlock(ModBlocks.thaumicPipe), new ItemThaumicPipeRenderer());
-    }
-
-    private void registerItemRenderer(Block block, IItemRenderer renderer) {
-        registerItemRenderer(Item.getItemFromBlock(block), renderer);
+        MinecraftForgeClient.registerItemRenderer(item, new ItemThaumicPipeRenderer());
     }
 
 }

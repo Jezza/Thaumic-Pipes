@@ -2,6 +2,7 @@ package me.jezza.thaumicpipes.common.core.multipart;
 
 import java.util.Arrays;
 
+import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
 import net.minecraft.block.Block;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,21 +21,24 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class MultiPartAbstract extends JCuboidPart implements JNormalOcclusion, JIconHitEffects {
 
+    public abstract ItemStack getStack();
+
     public abstract Block getBlock();
 
     @Override
     public void onWorldJoin() {
+        super.onWorldJoin();
         onNeighborChanged();
     }
 
     @Override
     public ItemStack pickItem(MovingObjectPosition hit) {
-        return getBlock().getPickBlock(hit, tile().getWorldObj(), tile().xCoord, tile().yCoord, tile().zCoord);
+        return getStack();
     }
 
     @Override
     public Iterable<ItemStack> getDrops() {
-        return Arrays.asList(new ItemStack(getBlock()));
+        return Arrays.asList(getStack());
     }
 
     @Override
@@ -59,7 +63,7 @@ public abstract class MultiPartAbstract extends JCuboidPart implements JNormalOc
 
     @Override
     public boolean occlusionTest(TMultiPart part) {
-        return NormalOcclusionTest.apply(this, part);
+        return part instanceof IThaumicPipe ? true : NormalOcclusionTest.apply(this, part);
     }
 
     @Override

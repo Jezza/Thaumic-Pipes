@@ -46,10 +46,7 @@ public enum ConnectionType {
         return isJar() || isAlembic() || isRepairer();
     }
 
-    public static ConnectionType getConnectionType(TileEntity tileEntity, boolean canConnect) {
-        if (!canConnect)
-            return ConnectionType.UNKNOWN;
-
+    public static ConnectionType getConnectionType(TileEntity tileEntity) {
         if (ThaumcraftHelper.isThaumicPipe(tileEntity))
             return ConnectionType.PIPE;
 

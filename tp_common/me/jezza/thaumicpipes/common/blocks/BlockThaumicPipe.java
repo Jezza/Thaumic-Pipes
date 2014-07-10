@@ -2,17 +2,15 @@ package me.jezza.thaumicpipes.common.blocks;
 
 import java.util.List;
 
-import me.jezza.thaumicpipes.common.core.external.ThaumcraftHelper;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
-import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
+import me.jezza.thaumicpipes.common.transport.ArmState;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 
 public class BlockThaumicPipe extends BlockTP {
 
@@ -26,39 +24,48 @@ public class BlockThaumicPipe extends BlockTP {
         super(material, name);
         setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         setHardness(3F);
+        setCreativeTab(null);
     }
 
     @Override
     public void setBlockBoundsBasedOnState(IBlockAccess world, int x, int y, int z) {
         CoordSet coordSet = new CoordSet(x, y, z);
-        minX = minY = minZ = MIN;
-        maxX = maxY = maxZ = MAX;
+        if (!coordSet.isThaumicPipe(world))
+            return;
+        resetBounds();
 
-        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
-            TileEntity tileEntity = coordSet.copy().addForgeDirection(direction).getTileEntity(world);
-            if (ThaumcraftHelper.isMatch(tileEntity) && canConnectTo(coordSet.getTileEntity(world), direction))
-                switch (direction) {
-                    case DOWN:
-                        minY = 0.0F;
-                        break;
-                    case UP:
-                        maxY = 1.0F;
-                        break;
-                    case NORTH:
-                        minZ = 0.0F;
-                        break;
-                    case SOUTH:
-                        maxZ = 1.0F;
-                        break;
-                    case WEST:
-                        minX = 0.0F;
-                        break;
-                    case EAST:
-                        maxX = 1.0F;
-                        break;
-                    default:
-                        break;
-                }
+        TileThaumicPipe pipe = (TileThaumicPipe) coordSet.getTileEntity(world);
+        ArmState[] armStates = pipe.getArmStateArray();
+
+        if (armStates == null)
+            return;
+
+        for (ArmState currentState : armStates) {
+            if (currentState == null || !currentState.isValid())
+                continue;
+
+            switch (currentState.getDirection()) {
+                case DOWN:
+                    minY = 0.0F;
+                    break;
+                case UP:
+                    maxY = 1.0F;
+                    break;
+                case NORTH:
+                    minZ = 0.0F;
+                    break;
+                case SOUTH:
+                    maxZ = 1.0F;
+                    break;
+                case WEST:
+                    minX = 0.0F;
+                    break;
+                case EAST:
+                    maxX = 1.0F;
+                    break;
+                default:
+                    break;
+            }
         }
 
         setBlockBounds(minX, minY, minZ, maxX, maxY, maxZ);
@@ -68,55 +75,60 @@ public class BlockThaumicPipe extends BlockTP {
     @Override
     public void addCollisionBoxesToList(World world, int x, int y, int z, AxisAlignedBB playerBoundingBox, List list, Entity entity) {
         CoordSet coordSet = new CoordSet(x, y, z);
-        minX = minY = minZ = MIN;
-        maxX = maxY = maxZ = MAX;
+        if (!coordSet.isThaumicPipe(world))
+            return;
+        resetBounds();
 
         setBlockBounds(minX, minY, minZ, maxX, maxY, maxZ);
         super.addCollisionBoxesToList(world, x, y, z, playerBoundingBox, list, entity);
 
-        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
-            TileEntity tileEntity = coordSet.copy().addForgeDirection(direction).getTileEntity(world);
-            if (ThaumcraftHelper.isMatch(tileEntity) && canConnectTo(coordSet.getTileEntity(world), direction)) {
-                switch (direction) {
-                    case DOWN:
-                        minY = 0.0F;
-                        maxY = 0.5F;
-                        break;
-                    case UP:
-                        minY = 0.5F;
-                        maxY = 1.0F;
-                        break;
-                    case NORTH:
-                        maxZ = 0.0F;
-                        maxZ = -0.5F;
-                        break;
-                    case SOUTH:
-                        maxZ = 0.5F;
-                        maxZ = 1.0F;
-                        break;
-                    case WEST:
-                        minX = 0.0F;
-                        maxX = 0.5F;
-                        break;
-                    case EAST:
-                        minX = 0.5F;
-                        maxX = 1.0F;
-                        break;
-                    default:
-                        break;
-                }
-                setBlockBounds(minX, minY, minZ, maxX, maxY, maxZ);
-                minX = minY = minZ = MIN;
-                maxX = maxY = maxZ = MAX;
-                super.addCollisionBoxesToList(world, x, y, z, playerBoundingBox, list, entity);
+        TileThaumicPipe pipe = (TileThaumicPipe) coordSet.getTileEntity(world);
+        ArmState[] armStates = pipe.getArmStateArray();
+
+        if (armStates == null)
+            return;
+
+        for (ArmState currentState : armStates) {
+            if (currentState == null || !currentState.isValid())
+                continue;
+
+            switch (currentState.getDirection()) {
+                case DOWN:
+                    minY = 0.0F;
+                    maxY = 0.5F;
+                    break;
+                case UP:
+                    minY = 0.5F;
+                    maxY = 1.0F;
+                    break;
+                case NORTH:
+                    maxZ = 0.0F;
+                    maxZ = -0.5F;
+                    break;
+                case SOUTH:
+                    maxZ = 0.5F;
+                    maxZ = 1.0F;
+                    break;
+                case WEST:
+                    minX = 0.0F;
+                    maxX = 0.5F;
+                    break;
+                case EAST:
+                    minX = 0.5F;
+                    maxX = 1.0F;
+                    break;
+                default:
+                    break;
             }
+            setBlockBounds(minX, minY, minZ, maxX, maxY, maxZ);
+            resetBounds();
+            super.addCollisionBoxesToList(world, x, y, z, playerBoundingBox, list, entity);
         }
     }
 
-    private static boolean canConnectTo(TileEntity tileEntity, ForgeDirection direction) {
-        if (tileEntity instanceof IThaumicPipe)
-            return ((IThaumicPipe) tileEntity).canConnectTo(direction);
-        return false;
+    private void resetBounds() {
+        minX = minY = minZ = MIN;
+        maxX = maxY = maxZ = MAX;
     }
 
     @Override

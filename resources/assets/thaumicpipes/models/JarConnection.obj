@@ -1,7 +1,7 @@
-# Blender v2.68 (sub 0) OBJ File: ''
+# Blender v2.68 (sub 0) OBJ File: 'jarConnection.blend'
 # www.blender.org
-mtllib JarConnection.mtl
-o Cube
+mtllib jarConnection.mtl
+o jarConnection
 v 0.250000 -0.100000 -0.250000
 v 0.250000 -0.100000 0.250000
 v -0.250000 -0.100000 0.250000

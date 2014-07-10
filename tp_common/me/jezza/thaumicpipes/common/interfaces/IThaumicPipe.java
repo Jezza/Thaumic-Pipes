@@ -2,6 +2,7 @@ package me.jezza.thaumicpipes.common.interfaces;
 
 import java.util.LinkedHashSet;
 
+import me.jezza.thaumicpipes.common.core.multipart.pipe.PipePartAbstract;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.transport.AspectContainerList;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -25,4 +26,6 @@ public interface IThaumicPipe {
     public AspectContainerList ping(Aspect pingedAspect, LinkedHashSet<CoordSet> pipeList);
 
     public void drain();
+
+    public PipePartAbstract getPipe();
 }

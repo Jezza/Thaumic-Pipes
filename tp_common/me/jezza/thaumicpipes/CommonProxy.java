@@ -1,8 +1,8 @@
 package me.jezza.thaumicpipes;
 
-import cpw.mods.fml.common.registry.GameRegistry;
 import me.jezza.thaumicpipes.common.lib.Strings;
 import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
+import cpw.mods.fml.common.registry.GameRegistry;
 
 public class CommonProxy {
 
