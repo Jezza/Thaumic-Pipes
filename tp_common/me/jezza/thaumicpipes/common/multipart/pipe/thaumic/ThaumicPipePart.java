@@ -1,5 +1,6 @@
 package me.jezza.thaumicpipes.common.multipart.pipe.thaumic;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 
 import me.jezza.thaumicpipes.client.core.NodeState;
@@ -143,7 +144,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
 
     @Override
     public Iterable<Cuboid6> getOcclusionBoxes() {
-        return occlusionTester.getOcclusionBoxes();
+        return Arrays.asList(PipeProperties.callDefault());
     }
 
     @Override
@@ -227,5 +228,10 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     @Override
     public IPartRenderer getRenderer() {
         return renderer;
+    }
+
+    @Override
+    public Iterable<Cuboid6> getAllOcclusionBoxes() {
+        return occlusionTester.getOcclusionBoxes();
     }
 }

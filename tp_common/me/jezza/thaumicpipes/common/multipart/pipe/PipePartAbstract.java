@@ -37,7 +37,7 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
 
     public void updateBoundingState() {
         Cuboid6 mainCuboid6 = null;
-        for (Cuboid6 cuboid6 : getOcclusionBoxes()) {
+        for (Cuboid6 cuboid6 : getAllOcclusionBoxes()) {
             if (mainCuboid6 == null)
                 mainCuboid6 = cuboid6.copy();
             else
@@ -66,4 +66,6 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
     }
 
     public abstract IPartRenderer getRenderer();
+
+    public abstract Iterable<Cuboid6> getAllOcclusionBoxes();
 }
