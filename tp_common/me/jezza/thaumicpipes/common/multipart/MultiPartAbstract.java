@@ -1,8 +1,7 @@
-package me.jezza.thaumicpipes.common.core.multipart;
+package me.jezza.thaumicpipes.common.multipart;
 
 import java.util.Arrays;
 
-import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
 import net.minecraft.block.Block;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.entity.player.EntityPlayer;
@@ -63,7 +62,7 @@ public abstract class MultiPartAbstract extends JCuboidPart implements JNormalOc
 
     @Override
     public boolean occlusionTest(TMultiPart part) {
-        return part instanceof IThaumicPipe ? true : NormalOcclusionTest.apply(this, part);
+        return part instanceof OcclusionPart ? true : NormalOcclusionTest.apply(this, part);
     }
 
     @Override

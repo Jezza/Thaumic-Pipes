@@ -7,13 +7,13 @@ import java.util.Random;
 
 import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.common.core.external.ThaumcraftHelper;
-import me.jezza.thaumicpipes.common.core.multipart.pipe.PipePartAbstract;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.core.utils.TimeTicker;
 import me.jezza.thaumicpipes.common.core.utils.TimeTickerF;
 import me.jezza.thaumicpipes.common.interfaces.IBlockInteract;
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.lib.Reference;
+import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
 import me.jezza.thaumicpipes.common.transport.ArmState;
 import me.jezza.thaumicpipes.common.transport.AspectContainerList;
 import me.jezza.thaumicpipes.common.transport.connection.TileEntityWrapper;

@@ -108,6 +108,10 @@ public class CoordSet {
         return net.minecraft.util.MathHelper.sqrt_double(getDistanceSq(tempSet));
     }
 
+    public TileEntity getTileFromDirection(IBlockAccess world, ForgeDirection direction) {
+        return copy().addForgeDirection(direction).getTileEntity(world);
+    }
+
     public Block getBlock(IBlockAccess world) {
         return world.getBlock(x, y, z);
     }

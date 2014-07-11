@@ -1,7 +1,7 @@
-package me.jezza.thaumicpipes.common.core.multipart;
+package me.jezza.thaumicpipes.common.multipart;
 
-import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.items.ItemTP;
+import net.minecraft.block.Block.SoundType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -30,12 +30,14 @@ public abstract class ItemMultiPartAbstract extends ItemTP {
 
     public boolean placePart(ItemStack item, EntityPlayer player, World world, BlockCoord pos, int side, Vector3 vHit) {
         TMultiPart part = getPart();
-        if ((part == null) || (!TileMultipart.canPlacePart(world, pos, part)))
+        if (part == null || !TileMultipart.canPlacePart(world, pos, part))
             return false;
 
         if (!world.isRemote) {
             TileMultipart.addPart(world, pos, part);
-            playPlacedSound(player, world, new CoordSet(pos));
+            SoundType type = getSoundType();
+            if (type != null)
+                world.playSoundEffect(pos.x + 0.5F, pos.y + 0.5F, pos.z + 0.5F, type.func_150496_b(), (type.getVolume() + 1.0F) / 2.0F, type.getPitch() * 0.8F);
         }
 
         if (!player.capabilities.isCreativeMode)
@@ -49,5 +51,5 @@ public abstract class ItemMultiPartAbstract extends ItemTP {
 
     public abstract TMultiPart getPart();
 
-    public abstract void playPlacedSound(EntityPlayer player, World world, CoordSet coordSet);
+    public abstract SoundType getSoundType();
 }

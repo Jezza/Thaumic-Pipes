@@ -1,20 +1,19 @@
-package me.jezza.thaumicpipes.common.core.multipart.pipe.thaumic;
+package me.jezza.thaumicpipes.common.multipart.pipe.thaumic;
 
 import java.util.LinkedHashSet;
 
 import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.ModItems;
-import me.jezza.thaumicpipes.common.core.TPLogger;
 import me.jezza.thaumicpipes.common.core.external.ThaumcraftHelper;
-import me.jezza.thaumicpipes.common.core.multipart.pipe.PipePartAbstract;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.core.utils.TimeTicker;
-import me.jezza.thaumicpipes.common.core.utils.TimeTickerF;
+import me.jezza.thaumicpipes.common.interfaces.IPartRenderer;
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
-import me.jezza.thaumicpipes.common.lib.Reference;
+import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
+import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
+import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
 import me.jezza.thaumicpipes.common.transport.ArmState;
-import me.jezza.thaumicpipes.common.transport.ArmStateHandler;
 import me.jezza.thaumicpipes.common.transport.AspectContainerList;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
@@ -30,10 +29,7 @@ import thaumcraft.common.items.wands.ItemWandCasting;
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.data.MCDataOutput;
 import codechicken.lib.vec.Cuboid6;
-import codechicken.lib.vec.Vector3;
 import codechicken.multipart.TMultiPart;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
 
@@ -42,22 +38,19 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     private AspectList aspectList = new AspectList();
 
     private ThaumicPipePartRenderer renderer;
-    private ArmStateHandler armStateHandler;
-    private NodeState nodeState;
 
-    private TimeTickerF priorityFrame;
     private TimeTicker priorityPosition;
 
     public ThaumicPipePart() {
         renderer = new ThaumicPipePartRenderer();
-        armStateHandler = new ArmStateHandler();
 
         priorityPosition = new TimeTicker(0, 24);
-        priorityFrame = new TimeTickerF(0.0F, Reference.PIPE_ANIMATION_SIZE).setStepAmount(0.8F);
     }
 
     @Override
     public void onNeighborChanged() {
+        super.onNeighborChanged();
+
         updateStates();
         if (world().isRemote)
             return;
@@ -85,7 +78,6 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     @Override
     public void update() {
         priorityPosition.tick();
-        priorityFrame.tick();
 
         if (shouldUpdate) {
             shouldUpdate = false;
@@ -98,6 +90,9 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     private void updateStates() {
         armStateHandler.updateArmStates(this, world(), getCoordSet(), priorityPosition.getAmount());
         nodeState = armStateHandler.createNode();
+
+        occlusionTester.updateWithArmStates(getArmStateArray());
+        updateBoundingState();
     }
 
     @Override
@@ -134,12 +129,6 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
         return false;
     }
 
-    @Override
-    @SideOnly(Side.CLIENT)
-    public void renderDynamic(Vector3 pos, float frame, int pass) {
-        renderer.render(this, pos.x, pos.y, pos.z, frame);
-    }
-
     public NodeState getNodeState() {
         return nodeState;
     }
@@ -149,12 +138,12 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     }
 
     public int getAnimationFrame() {
-        return (int) priorityFrame.getAmount();
+        return 0;
     }
 
     @Override
     public Iterable<Cuboid6> getOcclusionBoxes() {
-        return occlusionTester.fetchFromArmState(getArmStateArray());
+        return occlusionTester.getOcclusionBoxes();
     }
 
     @Override
@@ -201,10 +190,12 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
 
     @Override
     public boolean canConnectTo(ForgeDirection direction) {
-        ArmState armState = armStateHandler.getArmState(direction);
-        TileEntity tileEntity = getCoordSet().addForgeDirection(direction).getTileEntity(world());
+        OcclusionPart part = new OcclusionPart(PipeProperties.ARM_STATE_OCCLUSION_BOXES[direction.ordinal()]);
+        OcclusionPart oppositePart = new OcclusionPart(PipeProperties.ARM_STATE_OCCLUSION_BOXES[direction.getOpposite().ordinal()]);
+        TileEntity tileEntity = getCoordSet().getTileFromDirection(world(), direction);
 
-        boolean flag = tileEntity instanceof IThaumicPipe ? bothPassOcclusionTest(((IThaumicPipe) tileEntity).getPipe(), armState) : passOcclusionTest(armState);
+        boolean flag = tileEntity instanceof IThaumicPipe ? bothPassOcclusionTest(((IThaumicPipe) tileEntity).getPipe(), part, oppositePart) : passOcclusionTest(part);
+
         return tileEntity != null && ThaumcraftHelper.isValidConnection(tileEntity, direction) && flag;
     }
 
@@ -231,5 +222,10 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     @Override
     public PipePartAbstract getPipe() {
         return this;
+    }
+
+    @Override
+    public IPartRenderer getRenderer() {
+        return renderer;
     }
 }

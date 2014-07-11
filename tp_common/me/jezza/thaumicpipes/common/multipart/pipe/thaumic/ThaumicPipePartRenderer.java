@@ -1,4 +1,4 @@
-package me.jezza.thaumicpipes.common.core.multipart.pipe.thaumic;
+package me.jezza.thaumicpipes.common.multipart.pipe.thaumic;
 
 import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.GL_LIGHTING;
@@ -19,12 +19,14 @@ import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.client.model.ModelJarConnection;
 import me.jezza.thaumicpipes.client.model.ModelPipeExtension;
 import me.jezza.thaumicpipes.client.model.ModelThaumicPipe;
+import me.jezza.thaumicpipes.common.interfaces.IPartRenderer;
 import me.jezza.thaumicpipes.common.lib.TextureMaps;
+import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
 import me.jezza.thaumicpipes.common.transport.ArmState;
 import me.jezza.thaumicpipes.common.transport.connection.ConnectionType;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class ThaumicPipePartRenderer {
+public class ThaumicPipePartRenderer implements IPartRenderer {
 
     ModelThaumicPipe modelThaumicPipe;
     ModelJarConnection modelJarConnection;
@@ -234,5 +236,11 @@ public class ThaumicPipePartRenderer {
         glDisable(GL_BLEND);
         glEnable(GL_LIGHTING);
         glPopMatrix();
+    }
+
+    @Override
+    public void renderAt(PipePartAbstract part, double x, double y, double z, float frame) {
+        if (part instanceof ThaumicPipePart)
+            render((ThaumicPipePart) part, x, y, z, frame);
     }
 }

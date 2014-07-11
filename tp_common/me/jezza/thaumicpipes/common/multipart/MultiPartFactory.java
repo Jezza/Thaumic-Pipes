@@ -1,6 +1,6 @@
-package me.jezza.thaumicpipes.common.core.multipart;
+package me.jezza.thaumicpipes.common.multipart;
 
-import me.jezza.thaumicpipes.common.core.multipart.pipe.thaumic.ThaumicPipePart;
+import me.jezza.thaumicpipes.common.multipart.pipe.thaumic.ThaumicPipePart;
 import codechicken.multipart.MultiPartRegistry;
 import codechicken.multipart.MultiPartRegistry.IPartFactory;
 import codechicken.multipart.MultipartGenerator;

@@ -1,23 +1,21 @@
-package me.jezza.thaumicpipes.common.core.multipart;
+package me.jezza.thaumicpipes.common.multipart;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.ArrayList;
 
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
-
 import codechicken.lib.vec.Cuboid6;
 import codechicken.multipart.JCuboidPart;
 import codechicken.multipart.JNormalOcclusion;
 import codechicken.multipart.NormalOcclusionTest;
 import codechicken.multipart.TMultiPart;
 
-public class CuboidOcclusionTest extends JCuboidPart implements JNormalOcclusion {
-    List<Cuboid6> occlusions = new LinkedList();
+public class OcclusionPart extends JCuboidPart implements JNormalOcclusion {
+    ArrayList<Cuboid6> occlusions = new ArrayList<Cuboid6>();
     Cuboid6 bounds;
 
-    public CuboidOcclusionTest(Cuboid6 cuboid) {
-        this.bounds = cuboid;
-        this.occlusions.add(this.bounds);
+    public OcclusionPart(Cuboid6 cuboid) {
+        bounds = cuboid;
+        occlusions.add(bounds);
     }
 
     public String getType() {
