@@ -93,7 +93,7 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
 
         // Identify who sent the ping.
 
-        // processNearbyConstructs();
+        processNearbyConstructs();
 
         processNearbySources();
 
@@ -232,7 +232,7 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IWandable, 
                 if (jar.getContainer().doesContainerContainAmount(aspect, 0))
                     placingMap.put(aspect, jar);
 
-            int amountToAdd = aspectList.getAmount(aspect);
+            // int amountToAdd = aspectList.getAmount(aspect);
             for (TransportState container : placingMap.get(aspect))
                 reduceAndAddTo(aspect, container);
 

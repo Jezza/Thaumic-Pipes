@@ -9,8 +9,10 @@ import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.core.external.ThaumcraftHelper;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.core.utils.TimeTicker;
+import me.jezza.thaumicpipes.common.core.utils.TimeTickerF;
 import me.jezza.thaumicpipes.common.interfaces.IPartRenderer;
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
+import me.jezza.thaumicpipes.common.lib.Reference;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
@@ -39,13 +41,17 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     private AspectList aspectList = new AspectList();
 
     private ThaumicPipePartRenderer renderer;
+    private ThaumicPipeLogic logic;
 
     private TimeTicker priorityPosition;
+    private TimeTickerF priorityFrame;
 
     public ThaumicPipePart() {
         renderer = new ThaumicPipePartRenderer();
+        logic = new ThaumicPipeLogic();
 
         priorityPosition = new TimeTicker(0, 24);
+        priorityFrame = new TimeTickerF(0.0F, Reference.PIPE_ANIMATION_SIZE).setStepAmount(0.8F);
     }
 
     @Override
@@ -79,19 +85,18 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     @Override
     public void update() {
         priorityPosition.tick();
+        priorityFrame.tick();
 
         if (shouldUpdate) {
             shouldUpdate = false;
             updateStates();
         }
 
-        // TODO DAMN RIGHT LOGIC.
+        logic.update(this);
     }
 
-    private void updateStates() {
-        armStateHandler.updateArmStates(this, world(), getCoordSet(), priorityPosition.getAmount());
-        nodeState = armStateHandler.createNode();
-
+    public void updateStates() {
+        nodeState = armStateHandler.updateArmStates(this, world(), getCoordSet(), priorityPosition.getAmount());
         occlusionTester.updateWithArmStates(getArmStateArray());
         updateBoundingState();
     }
@@ -139,7 +144,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     }
 
     public int getAnimationFrame() {
-        return 0;
+        return (int) priorityFrame.getAmount();
     }
 
     @Override

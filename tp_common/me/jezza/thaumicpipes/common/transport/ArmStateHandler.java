@@ -17,10 +17,11 @@ public class ArmStateHandler {
         armStateArray = new ArmState[6];
     }
 
-    public void updateArmStates(IThaumicPipe pipe, World world, CoordSet coordSet, int priorityPosition) {
+    public NodeState updateArmStates(IThaumicPipe pipe, World world, CoordSet coordSet, int priorityPosition) {
         int index = 0;
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
             armStateArray[index++] = new ArmState(dir, coordSet.copy().addForgeDirection(dir).getTileEntity(world), pipe.canConnectTo(dir), dir.equals(priority), priorityPosition);
+        return createNode();
     }
 
     public ArmState[] getArmStateArray() {

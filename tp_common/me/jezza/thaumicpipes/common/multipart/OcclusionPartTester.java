@@ -2,7 +2,6 @@ package me.jezza.thaumicpipes.common.multipart;
 
 import java.util.ArrayList;
 
-import me.jezza.thaumicpipes.common.core.TPLogger;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
 import me.jezza.thaumicpipes.common.transport.ArmState;
 import codechicken.lib.vec.Cuboid6;
@@ -22,10 +21,6 @@ public class OcclusionPartTester {
             for (ArmState currentState : armStates)
                 if (currentState != null && currentState.isValid())
                     occlusionBoxes.add(currentState.getOcclusionBox());
-
-        TPLogger.info("");
-        for (Cuboid6 cuboid : occlusionBoxes)
-            TPLogger.info(cuboid.toString());
 
         return occlusionBoxes;
     }
