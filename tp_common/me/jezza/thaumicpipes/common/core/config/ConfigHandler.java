@@ -35,7 +35,7 @@ public class ConfigHandler {
     }
 
     public static void getConstants() {
-        Reference.COMMANDS = config.get(MISC, "commands", Reference.COMMANDS, "Should I implement some useful commands.\nThey aren't thaumcraft related, just some useful commands.").getBoolean(false);
+        Reference.COMMANDS = config.get(MISC, "commands", Reference.COMMANDS, "They aren't thaumcraft related, just some useful commands.").getBoolean(Reference.COMMANDS);
 
         int textureIndex = config.get(MISC, Strings.THAUMIC_PIPE_TEXTURE, TextureMaps.THAUMIC_TEXTURE_INDEX, "0 - Steam punk style texture.\n1 - Old thaumcraft style texture.\n2 - The default texture.").getInt();
         TextureMaps.THAUMIC_TEXTURE_INDEX = MathHelper.clamp_int(textureIndex, 0, 2);

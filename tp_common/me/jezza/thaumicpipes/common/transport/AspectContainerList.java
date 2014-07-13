@@ -19,6 +19,11 @@ public class AspectContainerList implements Iterable<TransportState> {
         containerList = Lists.newArrayList();
     }
 
+    public AspectContainerList setFilter(Aspect filter) {
+        this.filter = filter;
+        return this;
+    }
+
     public void add(TileEntity tileEntity) {
         add(new TransportState(tileEntity));
     }
@@ -32,18 +37,12 @@ public class AspectContainerList implements Iterable<TransportState> {
     }
 
     public void addAll(AspectContainerList otherList) {
-        for (TransportState state : otherList.containerList)
-            containerList.add(state);
+        containerList.addAll(otherList.containerList);
     }
 
     public void clear(Aspect filter) {
         containerList.clear();
         setFilter(filter);
-    }
-
-    public AspectContainerList setFilter(Aspect filter) {
-        this.filter = filter;
-        return this;
     }
 
     public Aspect getFilter() {

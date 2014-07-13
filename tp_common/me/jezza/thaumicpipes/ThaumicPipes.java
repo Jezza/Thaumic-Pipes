@@ -7,6 +7,7 @@ import me.jezza.thaumicpipes.common.core.command.CommandAirBlock;
 import me.jezza.thaumicpipes.common.core.command.CommandAreaRemove;
 import me.jezza.thaumicpipes.common.core.command.CommandAreaScan;
 import me.jezza.thaumicpipes.common.core.config.ConfigHandler;
+import me.jezza.thaumicpipes.common.core.external.ModHelper;
 import me.jezza.thaumicpipes.common.lib.Reference;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.research.ModRecipes;
@@ -59,6 +60,8 @@ public class ThaumicPipes {
         proxy.registerTileEntities();
         proxy.initServerSide();
         proxy.initClientSide();
+
+        ModHelper.getInstance().init().registerConnectionTypes();
     }
 
     @EventHandler

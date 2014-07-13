@@ -7,19 +7,21 @@ import me.jezza.thaumicpipes.common.multipart.MultiPartAbstract;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPartTester;
 import me.jezza.thaumicpipes.common.transport.ArmStateHandler;
-import codechicken.lib.vec.Cuboid6;
+import codechicken.lib.data.MCDataInput;
+import codechicken.lib.data.MCDataOutput;
 import codechicken.lib.vec.Vector3;
 import codechicken.multipart.INeighborTileChange;
+import codechicken.multipart.TMultiPart;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 public abstract class PipePartAbstract extends MultiPartAbstract implements INeighborTileChange {
 
+    private boolean shouldUpdate = false;
+
     public OcclusionPartTester occlusionTester;
     public ArmStateHandler armStateHandler;
     public NodeState nodeState;
-
-    private Cuboid6 boundingBox = PipeProperties.callDefault();
 
     public PipePartAbstract() {
         occlusionTester = new OcclusionPartTester();
@@ -31,20 +33,49 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
     }
 
     @Override
-    public Cuboid6 getBounds() {
-        return boundingBox;
+    public void update() {
+        if (shouldUpdate) {
+            shouldUpdate = false;
+            updateStates();
+        }
     }
 
-    public void updateBoundingState() {
-        Cuboid6 mainCuboid6 = null;
-        for (Cuboid6 cuboid6 : getAllOcclusionBoxes()) {
-            if (mainCuboid6 == null)
-                mainCuboid6 = cuboid6.copy();
-            else
-                mainCuboid6.enclose(cuboid6);
-        }
+    @Override
+    public void onNeighborChanged() {
+        super.onNeighborChanged();
 
-        boundingBox = mainCuboid6 != null ? mainCuboid6 : PipeProperties.callDefault();
+        updateStates();
+        if (world().isRemote)
+            return;
+
+        sendDescUpdate();
+    }
+
+    @Override
+    public void writeDesc(MCDataOutput packet) {
+        super.writeDesc(packet);
+        packet.writeBoolean(true);
+    }
+
+    @Override
+    public void readDesc(MCDataInput packet) {
+        super.readDesc(packet);
+        shouldUpdate = packet.readBoolean();
+    }
+
+    @Override
+    public void onPartChanged(TMultiPart part) {
+        updateStates();
+    }
+
+    @Override
+    public void onNeighborTileChanged(int arg0, boolean arg1) {
+        updateStates();
+    }
+
+    @Override
+    public boolean weakTileChanges() {
+        return false;
     }
 
     public boolean passOcclusionTest(OcclusionPart part) {
@@ -62,10 +93,12 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
     @Override
     @SideOnly(Side.CLIENT)
     public void renderDynamic(Vector3 pos, float frame, int pass) {
-        getRenderer().renderAt(this, pos.x, pos.y, pos.z, frame);
+        if (pass == 0)
+            getRenderer().renderAt(this, pos.x, pos.y, pos.z, frame);
     }
 
+    @SideOnly(Side.CLIENT)
     public abstract IPartRenderer getRenderer();
 
-    public abstract Iterable<Cuboid6> getAllOcclusionBoxes();
+    public abstract void updateStates();
 }

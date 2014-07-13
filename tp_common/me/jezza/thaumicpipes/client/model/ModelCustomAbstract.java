@@ -12,22 +12,32 @@ public abstract class ModelCustomAbstract {
     private IModelCustom customModel;
 
     public ModelCustomAbstract(ResourceLocation customModelLocation) {
-        this.customModel = AdvancedModelLoader.loadModel(customModelLocation);
+        // Yeah, I'm not proud of this.
+        for (int i = 0; i < 10; i++)
+            try {
+                this.customModel = AdvancedModelLoader.loadModel(customModelLocation);
+                break;
+            } catch (Exception e) {
+            }
     }
 
     public void renderAll() {
-        customModel.renderAll();
+        if (customModel != null)
+            customModel.renderAll();
     }
 
     public void renderAllExcept(String... excludedGroupNames) {
-        customModel.renderAllExcept(excludedGroupNames);
+        if (customModel != null)
+            customModel.renderAllExcept(excludedGroupNames);
     }
 
     public void renderOnly(String... groupNames) {
-        customModel.renderOnly(groupNames);
+        if (customModel != null)
+            customModel.renderOnly(groupNames);
     }
 
     public void renderPart(String part) {
-        customModel.renderPart(part);
+        if (customModel != null)
+            customModel.renderPart(part);
     }
 }

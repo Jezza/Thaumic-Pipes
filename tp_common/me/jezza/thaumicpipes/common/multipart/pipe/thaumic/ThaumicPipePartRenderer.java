@@ -1,19 +1,7 @@
 package me.jezza.thaumicpipes.common.multipart.pipe.thaumic;
 
-import static org.lwjgl.opengl.GL11.GL_BLEND;
-import static org.lwjgl.opengl.GL11.GL_LIGHTING;
-import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.glBlendFunc;
-import static org.lwjgl.opengl.GL11.glColor4f;
-import static org.lwjgl.opengl.GL11.glDisable;
-import static org.lwjgl.opengl.GL11.glEnable;
-import static org.lwjgl.opengl.GL11.glPopMatrix;
-import static org.lwjgl.opengl.GL11.glPushMatrix;
-import static org.lwjgl.opengl.GL11.glRotatef;
-import static org.lwjgl.opengl.GL11.glScalef;
-import static org.lwjgl.opengl.GL11.glTranslated;
-import static org.lwjgl.opengl.GL11.glTranslatef;
+import static org.lwjgl.opengl.GL11.*;
+
 import me.jezza.thaumicpipes.client.RenderUtils;
 import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.client.model.ModelJarConnection;
@@ -61,13 +49,6 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
         }
 
         renderNodeState(pipe.getNodeState());
-
-        if (RenderUtils.canRenderPriority())
-            for (ArmState state : armSet)
-                if (state.isPriority()) {
-                    RenderUtils.bindPriorityTexture(pipe.getAnimationFrame());
-                    renderPriority(state.getDirection(), state.getPosition());
-                }
         glPopMatrix();
     }
 
@@ -109,7 +90,8 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
 
         modelThaumicPipe.renderArm(index);
 
-        processPostArmRender(armState, index);
+        if (armState.getType().isCustomRender())
+            processPostArmRender(armState, index);
 
         glPopMatrix();
     }
@@ -195,46 +177,6 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
         glScalef(scale, scale, scale);
 
         modelThaumicPipe.renderPart("Centre");
-        glPopMatrix();
-    }
-
-    private void renderPriority(ForgeDirection armAxis, int position) {
-        glColor4f(0.49F, 0.976F, 1F, 0.4F);
-        renderPriorityOnAxis(armAxis, position);
-    }
-
-    private void renderPriorityOnAxis(ForgeDirection axis, int pixelsToShift) {
-        glPushMatrix();
-        glDisable(GL_LIGHTING);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        float xDisplace = axis.offsetX;
-        float yDisplace = axis.offsetY;
-        float zDisplace = axis.offsetZ;
-        float pixelStep = 0.05F;
-
-        glTranslatef(xDisplace * pixelStep * pixelsToShift, yDisplace * pixelStep * pixelsToShift, zDisplace * pixelStep * pixelsToShift);
-
-        switch (axis) {
-            case DOWN:
-            case UP:
-                glRotatef(90, 1.0F, 0.0F, 0.0F);
-            case SOUTH:
-            case NORTH:
-                glRotatef(90, 0.0F, 1.0F, 0.0F);
-            default:
-                break;
-        }
-
-        float scale = 1.015F;
-        glScalef(scale, scale, scale);
-
-        modelPipeExtension.renderAll();
-
-        glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        glDisable(GL_BLEND);
-        glEnable(GL_LIGHTING);
         glPopMatrix();
     }
 

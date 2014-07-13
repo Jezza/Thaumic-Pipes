@@ -1,5 +1,7 @@
 package me.jezza.thaumicpipes.client.core;
 
+import codechicken.lib.vec.Cuboid6;
+import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
 import me.jezza.thaumicpipes.common.transport.ArmState;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -68,6 +70,10 @@ public class NodeState {
 
     public ForgeDirection getDirection() {
         return direction;
+    }
+
+    public Cuboid6 getOcclusionBox() {
+        return isNode ? PipeProperties.getNode() : PipeProperties.getSlimedNode(direction.ordinal());
     }
 
 }

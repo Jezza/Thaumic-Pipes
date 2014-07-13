@@ -2,7 +2,7 @@ package me.jezza.thaumicpipes.common.multipart;
 
 import java.util.ArrayList;
 
-import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
+import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.common.transport.ArmState;
 import codechicken.lib.vec.Cuboid6;
 
@@ -13,9 +13,9 @@ public class OcclusionPartTester {
         occlusionBoxes = new ArrayList<Cuboid6>();
     }
 
-    public Iterable<Cuboid6> updateWithArmStates(ArmState[] armStates) {
+    public Iterable<Cuboid6> updateWithArmStates(ArmState[] armStates, NodeState nodeState) {
         occlusionBoxes.clear();
-        occlusionBoxes.add(PipeProperties.callDefault());
+        occlusionBoxes.add(nodeState.getOcclusionBox());
 
         if (armStates != null)
             for (ArmState currentState : armStates)

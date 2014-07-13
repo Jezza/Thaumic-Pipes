@@ -1,23 +1,23 @@
 package me.jezza.thaumicpipes.common.multipart.pipe.thaumic;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 
 import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.ModItems;
-import me.jezza.thaumicpipes.common.core.external.ThaumcraftHelper;
+import me.jezza.thaumicpipes.common.core.TPLogger;
+import me.jezza.thaumicpipes.common.core.external.ConnectionRegistry;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
-import me.jezza.thaumicpipes.common.core.utils.TimeTicker;
-import me.jezza.thaumicpipes.common.core.utils.TimeTickerF;
 import me.jezza.thaumicpipes.common.interfaces.IPartRenderer;
 import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
-import me.jezza.thaumicpipes.common.lib.Reference;
+import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
 import me.jezza.thaumicpipes.common.transport.ArmState;
-import me.jezza.thaumicpipes.common.transport.AspectContainerList;
+import me.jezza.thaumicpipes.common.transport.connection.TransportState;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -28,77 +28,156 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
-import thaumcraft.common.items.wands.ItemWandCasting;
-import codechicken.lib.data.MCDataInput;
-import codechicken.lib.data.MCDataOutput;
 import codechicken.lib.vec.Cuboid6;
-import codechicken.multipart.TMultiPart;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
 
-    private boolean shouldUpdate = false;
+    // private LinkedHashSet<TravellingAspect> travelSet;
 
-    private AspectList aspectList = new AspectList();
-
+    @SideOnly(Side.CLIENT)
     private ThaumicPipePartRenderer renderer;
-    private ThaumicPipeLogic logic;
 
-    private TimeTicker priorityPosition;
-    private TimeTickerF priorityFrame;
+    private AspectList aspectList;
 
     public ThaumicPipePart() {
-        renderer = new ThaumicPipePartRenderer();
-        logic = new ThaumicPipeLogic();
-
-        priorityPosition = new TimeTicker(0, 24);
-        priorityFrame = new TimeTickerF(0.0F, Reference.PIPE_ANIMATION_SIZE).setStepAmount(0.8F);
+        // travelSet = new LinkedHashSet<TravellingAspect>();
+        aspectList = new AspectList();
     }
 
     @Override
-    public void onNeighborChanged() {
-        super.onNeighborChanged();
+    public void onWorldJoin() {
+        super.onWorldJoin();
 
-        updateStates();
-        if (world().isRemote)
-            return;
-
-        sendDescUpdate();
+        TPLogger.info(getCoordSet());
     }
 
     @Override
-    public void writeDesc(MCDataOutput packet) {
-        super.writeDesc(packet);
-        packet.writeBoolean(true);
-    }
+    public void onWorldSeparate() {
+        super.onWorldSeparate();
 
-    @Override
-    public void readDesc(MCDataInput packet) {
-        super.readDesc(packet);
-        shouldUpdate = packet.readBoolean();
-    }
-
-    @Override
-    public void onPartChanged(TMultiPart part) {
-        updateStates();
+        TPLogger.info(getCoordSet());
     }
 
     @Override
     public void update() {
-        priorityPosition.tick();
-        priorityFrame.tick();
+        super.update();
 
-        if (shouldUpdate) {
-            shouldUpdate = false;
-            updateStates();
+        //
+
+    }
+
+    public ArrayList<TransportState> getConnectableTiles(HashSet<CoordSet> coordSets) {
+        ArrayList<TransportState> tileList = new ArrayList<TransportState>();
+
+        for (ArmState state : armStateHandler.getArmStateArray()) {
+            if (state == null || !state.isValid())
+                continue;
+            CoordSet tempSet = state.getCoordSet();
+            if (coordSets.contains(tempSet))
+                continue;
+            coordSets.add(tempSet);
+            tileList.add(state.getTransportState());
         }
 
-        logic.update(this);
+        return tileList;
     }
 
     public void updateStates() {
-        nodeState = armStateHandler.updateArmStates(this, world(), getCoordSet(), priorityPosition.getAmount());
-        occlusionTester.updateWithArmStates(getArmStateArray());
-        updateBoundingState();
+        nodeState = armStateHandler.updateArmStates(this, world(), getCoordSet());
+        occlusionTester.updateWithArmStates(armStateHandler.getArmStateArray(), nodeState);
+    }
+
+    public NodeState getNodeState() {
+        return nodeState;
+    }
+
+    public ArmState[] getArmStateArray() {
+        return armStateHandler.getArmStateArray();
+    }
+
+    @Override
+    public Iterable<Cuboid6> getOcclusionBoxes() {
+        return Arrays.asList(PipeProperties.getNode());
+    }
+
+    @Override
+    public String getType() {
+        return MultiPartFactory.thaumicPipe;
+    }
+
+    @Override
+    public Block getBlock() {
+        return ModBlocks.thaumicPipe;
+    }
+
+    @Override
+    public ItemStack getStack() {
+        return new ItemStack(ModItems.thaumicPipe);
+    }
+
+    @Override
+    public AspectList getAspectList() {
+        return aspectList;
+    }
+
+    @Override
+    public boolean addAspect(Aspect aspect, int amount, ForgeDirection forgeDirection) {
+        aspectList.add(aspect, amount);
+        return aspectList.aspects.containsKey(aspect);
+    }
+
+    @Override
+    public AspectList removeAspect(Aspect aspect, int amount) {
+        return aspectList.remove(aspect, amount);
+    }
+
+    @Override
+    public boolean reduceAspect(Aspect aspect, int amount) {
+        return aspectList.reduce(aspect, amount);
+    }
+
+    @Override
+    public boolean canReceiveFrom(ForgeDirection direction) {
+        direction = direction.getOpposite();
+        return !armStateHandler.isPriority(direction) && canConnectTo(direction);
+    }
+
+    @Override
+    public boolean canConnectTo(ForgeDirection direction) {
+        if (direction == ForgeDirection.UNKNOWN)
+            return false;
+
+        TileEntity tileEntity = getCoordSet().getTileFromDirection(world(), direction);
+        OcclusionPart part = new OcclusionPart(PipeProperties.ARM_STATE_OCCLUSION_BOXES[direction.ordinal()]);
+        OcclusionPart oppositePart = new OcclusionPart(PipeProperties.ARM_STATE_OCCLUSION_BOXES[direction.getOpposite().ordinal()]);
+
+        boolean flag = tileEntity instanceof IThaumicPipe ? bothPassOcclusionTest(((IThaumicPipe) tileEntity).getPipe(), part, oppositePart) : passOcclusionTest(part);
+        return tileEntity != null && flag && ConnectionRegistry.isValidConnection(tileEntity, direction);
+    }
+
+    @Override
+    public void drain() {
+        aspectList = new AspectList();
+    }
+
+    @Override
+    public PipePartAbstract getPipe() {
+        return this;
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public IPartRenderer getRenderer() {
+        if (renderer == null)
+            renderer = new ThaumicPipePartRenderer();
+        return renderer;
+    }
+
+    @Override
+    public Iterable<Cuboid6> getAllOcclusionBoxes() {
+        return occlusionTester.getOcclusionBoxes();
     }
 
     @Override
@@ -118,125 +197,10 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
                     player.addChatMessage(new ChatComponentText("Contains " + aspectList.getAmount(aspect) + " " + aspect.getName()));
                 }
                 if (empty)
-                    player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "Pipe contains no Essentia."));
+                    player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "The pipe is empty."));
             }
             return true;
         }
-
-        if (itemStack != null)
-            if (itemStack.getItem() instanceof ItemWandCasting) {
-                if (player.isSneaking()) {
-                    armStateHandler.resetPriority();
-                    return true;
-                }
-                armStateHandler.cyclePriorityState();
-                return true;
-            }
         return false;
-    }
-
-    public NodeState getNodeState() {
-        return nodeState;
-    }
-
-    public ArmState[] getArmStateArray() {
-        return armStateHandler.getArmStateArray();
-    }
-
-    public int getAnimationFrame() {
-        return (int) priorityFrame.getAmount();
-    }
-
-    @Override
-    public Iterable<Cuboid6> getOcclusionBoxes() {
-        return Arrays.asList(PipeProperties.callDefault());
-    }
-
-    @Override
-    public String getType() {
-        return "tp_thaumicPipe";
-    }
-
-    @Override
-    public Block getBlock() {
-        return ModBlocks.thaumicPipe;
-    }
-
-    @Override
-    public ItemStack getStack() {
-        return new ItemStack(ModItems.thaumicPipe);
-    }
-
-    @Override
-    public AspectList getAspectList() {
-        return aspectList;
-    }
-
-    @Override
-    public boolean receiveAspect(Aspect aspect, int amount, ForgeDirection forgeDirection) {
-        aspectList.add(aspect, amount);
-        return aspectList.aspects.containsKey(aspect);
-    }
-
-    @Override
-    public AspectList removeAspect(Aspect aspect, int amount) {
-        return aspectList.remove(aspect, amount);
-    }
-
-    @Override
-    public boolean reduceAspect(Aspect aspect, int amount) {
-        return aspectList.reduce(aspect, amount);
-    }
-
-    @Override
-    public boolean canReceiveFrom(ForgeDirection direction) {
-        direction = direction.getOpposite();
-        return canConnectTo(direction) && !armStateHandler.isPriority(direction);
-    }
-
-    @Override
-    public boolean canConnectTo(ForgeDirection direction) {
-        OcclusionPart part = new OcclusionPart(PipeProperties.ARM_STATE_OCCLUSION_BOXES[direction.ordinal()]);
-        OcclusionPart oppositePart = new OcclusionPart(PipeProperties.ARM_STATE_OCCLUSION_BOXES[direction.getOpposite().ordinal()]);
-        TileEntity tileEntity = getCoordSet().getTileFromDirection(world(), direction);
-
-        boolean flag = tileEntity instanceof IThaumicPipe ? bothPassOcclusionTest(((IThaumicPipe) tileEntity).getPipe(), part, oppositePart) : passOcclusionTest(part);
-
-        return tileEntity != null && ThaumcraftHelper.isValidConnection(tileEntity, direction) && flag;
-    }
-
-    @Override
-    public AspectContainerList ping(Aspect pingedAspect, LinkedHashSet<CoordSet> pipeList) {
-        return null;
-    }
-
-    @Override
-    public void drain() {
-        aspectList = new AspectList();
-    }
-
-    @Override
-    public void onNeighborTileChanged(int arg0, boolean arg1) {
-        updateStates();
-    }
-
-    @Override
-    public boolean weakTileChanges() {
-        return false;
-    }
-
-    @Override
-    public PipePartAbstract getPipe() {
-        return this;
-    }
-
-    @Override
-    public IPartRenderer getRenderer() {
-        return renderer;
-    }
-
-    @Override
-    public Iterable<Cuboid6> getAllOcclusionBoxes() {
-        return occlusionTester.getOcclusionBoxes();
     }
 }

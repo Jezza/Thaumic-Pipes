@@ -1,27 +1,32 @@
 package me.jezza.thaumicpipes.common.transport;
 
-import codechicken.lib.vec.Cuboid6;
+import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
 import me.jezza.thaumicpipes.common.transport.connection.ConnectionType;
+import me.jezza.thaumicpipes.common.transport.connection.TransportState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
+import codechicken.lib.vec.Cuboid6;
 
 public class ArmState {
+    private TileEntity tileEntity;
     private ForgeDirection direction;
     private ConnectionType connectionType;
+    private CoordSet coordSet;
     private boolean priority;
-    private int position = 0;
 
-    public ArmState(ForgeDirection direction, TileEntity tileEntity, boolean canConnect, boolean priority, int position) {
+    public ArmState(ForgeDirection direction, TileEntity tileEntity, boolean canConnect, boolean priority) {
         this.direction = direction;
         this.priority = priority;
-        this.position = position;
-        connectionType = canConnect ? ConnectionType.getConnectionType(tileEntity) : ConnectionType.UNKNOWN;
-    }
-
-    public int getPosition() {
-        return position;
+        this.tileEntity = tileEntity;
+        if (canConnect) {
+            coordSet = new CoordSet(tileEntity);
+            connectionType = ConnectionType.getConnectionType(tileEntity);
+        } else {
+            coordSet = new CoordSet(0, 0, 0);
+            connectionType = ConnectionType.UNKNOWN;
+        }
     }
 
     public boolean isValid() {
@@ -34,6 +39,14 @@ public class ArmState {
 
     public ForgeDirection getDirection() {
         return direction;
+    }
+
+    public TransportState getTransportState() {
+        return new TransportState(tileEntity).setDirection(direction);
+    }
+
+    public CoordSet getCoordSet() {
+        return coordSet.copy();
     }
 
     public boolean isPriority() {

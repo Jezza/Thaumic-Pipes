@@ -43,7 +43,11 @@ public enum ConnectionType {
     }
 
     public boolean isBigNode() {
-        return isJar() || isAlembic() || isRepairer();
+        return isConstruct() || isAlembic() || isJar() || isRepairer();
+    }
+
+    public boolean isCustomRender() {
+        return isJar() || isAlembic();
     }
 
     public static ConnectionType getConnectionType(TileEntity tileEntity) {
