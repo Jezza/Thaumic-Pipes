@@ -2,13 +2,14 @@ package me.jezza.thaumicpipes.common.tileentity;
 
 import java.util.ArrayList;
 
+import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.core.utils.TimeTicker;
 import me.jezza.thaumicpipes.common.core.utils.TimeTickerF;
 import me.jezza.thaumicpipes.common.interfaces.IBlockInteract;
-import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.lib.Reference;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
+import me.jezza.thaumicpipes.common.transport.TravellingAspect;
 import me.jezza.thaumicpipes.common.transport.connection.TransportState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -319,5 +320,13 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IDismantlea
     @Override
     public PipePartAbstract getPipe() {
         return null;
+    }
+
+    @Override
+    public void addTravellingAspect(TravellingAspect tA) {
+    }
+
+    @Override
+    public void processTravellingAspects() {
     }
 }

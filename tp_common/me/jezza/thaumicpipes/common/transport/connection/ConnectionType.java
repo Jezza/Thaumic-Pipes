@@ -1,8 +1,8 @@
 package me.jezza.thaumicpipes.common.transport.connection;
 
-import me.jezza.thaumicpipes.common.core.external.ModHelper;
 import me.jezza.thaumicpipes.common.core.external.ThaumcraftHelper;
 import me.jezza.thaumicpipes.common.core.external.ThaumicTinkerHelper;
+import me.jezza.thaumicpipes.common.core.utils.Utils;
 import net.minecraft.tileentity.TileEntity;
 
 public enum ConnectionType {
@@ -43,7 +43,7 @@ public enum ConnectionType {
     }
 
     public boolean isBigNode() {
-        return isConstruct() || isAlembic() || isJar() || isRepairer();
+        return !isPipe();
     }
 
     public boolean isCustomRender() {
@@ -63,7 +63,7 @@ public enum ConnectionType {
         if (ThaumcraftHelper.isAlchemicalConstruct(tileEntity))
             return ConnectionType.CONSTRUCT;
 
-        if (ModHelper.isThaumicTinkererLoaded() && ThaumicTinkerHelper.isRepairer(tileEntity))
+        if (Utils.isThaumicTinkererLoaded() && ThaumicTinkerHelper.isRepairer(tileEntity))
             return ConnectionType.REPAIRER;
 
         return ConnectionType.UNKNOWN;

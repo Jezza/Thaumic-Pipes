@@ -1,23 +1,20 @@
 package me.jezza.thaumicpipes.common.multipart.pipe.thaumic;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 
+import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
+import me.jezza.thaumicpipes.api.registry.ConnectionRegistry;
 import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.core.TPLogger;
-import me.jezza.thaumicpipes.common.core.external.ConnectionRegistry;
-import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.interfaces.IPartRenderer;
-import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
 import me.jezza.thaumicpipes.common.transport.ArmState;
-import me.jezza.thaumicpipes.common.transport.connection.TransportState;
+import me.jezza.thaumicpipes.common.transport.TravellingAspect;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -28,6 +25,8 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
+import thaumcraft.api.aspects.IEssentiaTransport;
+import thaumcraft.common.tiles.TileJarFillable;
 import codechicken.lib.vec.Cuboid6;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -49,44 +48,29 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     @Override
     public void onWorldJoin() {
         super.onWorldJoin();
-
-        TPLogger.info(getCoordSet());
     }
 
     @Override
     public void onWorldSeparate() {
         super.onWorldSeparate();
-
-        TPLogger.info(getCoordSet());
     }
 
     @Override
     public void update() {
         super.update();
 
-        //
+    }
+
+    @Override
+    public void addTravellingAspect(TravellingAspect tA) {
+        // TODO Auto-generated method stub
 
     }
 
-    public ArrayList<TransportState> getConnectableTiles(HashSet<CoordSet> coordSets) {
-        ArrayList<TransportState> tileList = new ArrayList<TransportState>();
+    @Override
+    public void processTravellingAspects() {
+        // TODO Auto-generated method stub
 
-        for (ArmState state : armStateHandler.getArmStateArray()) {
-            if (state == null || !state.isValid())
-                continue;
-            CoordSet tempSet = state.getCoordSet();
-            if (coordSets.contains(tempSet))
-                continue;
-            coordSets.add(tempSet);
-            tileList.add(state.getTransportState());
-        }
-
-        return tileList;
-    }
-
-    public void updateStates() {
-        nodeState = armStateHandler.updateArmStates(this, world(), getCoordSet());
-        occlusionTester.updateWithArmStates(armStateHandler.getArmStateArray(), nodeState);
     }
 
     public NodeState getNodeState() {
@@ -95,6 +79,11 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
 
     public ArmState[] getArmStateArray() {
         return armStateHandler.getArmStateArray();
+    }
+
+    public void updateStates() {
+        nodeState = armStateHandler.updateArmStates(this, world(), getCoordSet());
+        occlusionTester.updateWithArmStates(armStateHandler.getArmStateArray(), nodeState);
     }
 
     @Override
@@ -154,7 +143,23 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
         OcclusionPart oppositePart = new OcclusionPart(PipeProperties.ARM_STATE_OCCLUSION_BOXES[direction.getOpposite().ordinal()]);
 
         boolean flag = tileEntity instanceof IThaumicPipe ? bothPassOcclusionTest(((IThaumicPipe) tileEntity).getPipe(), part, oppositePart) : passOcclusionTest(part);
-        return tileEntity != null && flag && ConnectionRegistry.isValidConnection(tileEntity, direction);
+        return tileEntity != null && flag && isConnectable(tileEntity, direction);
+    }
+
+    private boolean isConnectable(TileEntity tileEntity, ForgeDirection direction) {
+        boolean flag = ConnectionRegistry.isValidConnection(tileEntity);
+
+        if (flag) {
+            if (tileEntity instanceof TileJarFillable)
+                return true;
+            if (tileEntity instanceof IEssentiaTransport) {
+                // if (tileEntity instanceof TileAlembic)
+                // TPLogger.info(((TileAlembic) tileEntity).facing);
+                return ((IEssentiaTransport) tileEntity).isConnectable(direction.getOpposite());
+            }
+        }
+
+        return flag;
     }
 
     @Override
@@ -182,12 +187,14 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
 
     @Override
     public boolean activate(EntityPlayer player, MovingObjectPosition hit, ItemStack itemStack) {
+        TPLogger.info(getConnectableTiles(null).size());
         if (player.getCurrentEquippedItem() == null) {
             if (player.worldObj.isRemote)
                 return true;
 
             if (player.isSneaking()) {
                 drain();
+                player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "Pipe was drained."));
             } else {
                 boolean empty = true;
                 for (Aspect aspect : aspectList.getAspects()) {

@@ -1,16 +1,18 @@
 package me.jezza.thaumicpipes.common.core.external;
 
-import me.jezza.thaumicpipes.common.core.external.ConnectionRegistry.Priority;
-import me.jezza.thaumicpipes.common.interfaces.IConnectionRegister;
+import me.jezza.thaumicpipes.api.AbstractRegistry;
+import me.jezza.thaumicpipes.api.registry.Priority;
 import net.minecraft.tileentity.TileEntity;
 import vazkii.tinkerer.common.block.tile.TileRepairer;
 import cpw.mods.fml.common.Optional;
 
-public class ThaumicTinkerHelper implements IConnectionRegister {
+public class ThaumicTinkerHelper extends AbstractRegistry {
 
     @Override
     public void init() {
-        ConnectionRegistry.registerRequester(Priority.NORMAL, TileRepairer.class);
+        register();
+
+        registerRequester(TileRepairer.class, Priority.NORMAL, 0.0F);
     }
 
     @Optional.Method(modid = "ThaumicTinkerer")

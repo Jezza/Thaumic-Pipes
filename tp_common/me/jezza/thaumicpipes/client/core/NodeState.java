@@ -24,7 +24,7 @@ public class NodeState {
         boolean bigNode = false;
 
         for (ArmState armState : armStateArray) {
-            if (armState == null)
+            if (armState == null || !armState.isValid())
                 continue;
 
             if (armState.getType().isBigNode()) {

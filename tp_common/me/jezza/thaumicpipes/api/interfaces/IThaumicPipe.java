@@ -1,11 +1,16 @@
-package me.jezza.thaumicpipes.common.interfaces;
+package me.jezza.thaumicpipes.api.interfaces;
 
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
+import me.jezza.thaumicpipes.common.transport.TravellingAspect;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
 
 public interface IThaumicPipe {
+
+    public void addTravellingAspect(TravellingAspect tA);
+
+    public void processTravellingAspects();
 
     public AspectList getAspectList();
 
@@ -18,8 +23,6 @@ public interface IThaumicPipe {
     public boolean canReceiveFrom(ForgeDirection forgeDirection);
 
     public boolean canConnectTo(ForgeDirection direction);
-
-    // public AspectContainerList ping(Aspect pingedAspect, LinkedHashSet<CoordSet> pipeList);
 
     public void drain();
 

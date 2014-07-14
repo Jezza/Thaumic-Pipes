@@ -1,11 +1,16 @@
 package me.jezza.thaumicpipes.common.multipart.pipe;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+
+import net.minecraft.tileentity.TileEntity;
 import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.interfaces.IPartRenderer;
 import me.jezza.thaumicpipes.common.multipart.MultiPartAbstract;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPartTester;
+import me.jezza.thaumicpipes.common.transport.ArmState;
 import me.jezza.thaumicpipes.common.transport.ArmStateHandler;
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.data.MCDataOutput;
@@ -38,6 +43,24 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
             shouldUpdate = false;
             updateStates();
         }
+    }
+
+    public ArrayList<TileEntity> getConnectableTiles(HashSet<CoordSet> coordSets) {
+        if (coordSets == null)
+            coordSets = new HashSet<CoordSet>();
+        ArrayList<TileEntity> tileList = new ArrayList<TileEntity>();
+
+        for (ArmState state : armStateHandler.getArmStateArray()) {
+            if (state == null || !state.isValid())
+                continue;
+            CoordSet tempSet = state.getCoordSet();
+            if (coordSets.contains(tempSet))
+                continue;
+            coordSets.add(tempSet);
+            tileList.add(state.getTileEntity());
+        }
+
+        return tileList;
     }
 
     @Override

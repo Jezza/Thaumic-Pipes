@@ -1,5 +1,6 @@
 package me.jezza.thaumicpipes;
 
+import me.jezza.thaumicpipes.api.ModHelper;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.core.TPLogger;
@@ -7,7 +8,9 @@ import me.jezza.thaumicpipes.common.core.command.CommandAirBlock;
 import me.jezza.thaumicpipes.common.core.command.CommandAreaRemove;
 import me.jezza.thaumicpipes.common.core.command.CommandAreaScan;
 import me.jezza.thaumicpipes.common.core.config.ConfigHandler;
-import me.jezza.thaumicpipes.common.core.external.ModHelper;
+import me.jezza.thaumicpipes.common.core.external.ThaumcraftHelper;
+import me.jezza.thaumicpipes.common.core.external.ThaumicTinkerHelper;
+import me.jezza.thaumicpipes.common.core.utils.Utils;
 import me.jezza.thaumicpipes.common.lib.Reference;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.research.ModRecipes;
@@ -61,13 +64,17 @@ public class ThaumicPipes {
         proxy.initServerSide();
         proxy.initClientSide();
 
-        ModHelper.getInstance().init().registerConnectionTypes();
+        new ThaumcraftHelper().init();
+        if (Utils.isThaumicTinkererLoaded())
+            new ThaumicTinkerHelper().init();
     }
 
     @EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         ModRecipes.init();
         ModResearch.init();
+        
+        ModHelper.postInit();
     }
 
     @EventHandler

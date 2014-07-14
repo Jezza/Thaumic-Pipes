@@ -1,24 +1,26 @@
 package me.jezza.thaumicpipes.common.core.external;
 
-import me.jezza.thaumicpipes.common.core.external.ConnectionRegistry.Priority;
-import me.jezza.thaumicpipes.common.interfaces.IConnectionRegister;
-import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
+import me.jezza.thaumicpipes.api.AbstractRegistry;
+import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
+import me.jezza.thaumicpipes.api.registry.Priority;
 import net.minecraft.tileentity.TileEntity;
 import thaumcraft.common.tiles.TileAlembic;
 import thaumcraft.common.tiles.TileJarFillable;
 import thaumcraft.common.tiles.TileThaumatorium;
 import thaumcraft.common.tiles.TileThaumatoriumTop;
 
-public class ThaumcraftHelper implements IConnectionRegister {
+public class ThaumcraftHelper extends AbstractRegistry {
 
     @Override
     public void init() {
-        ConnectionRegistry.registerSource(Priority.NORMAL, TileAlembic.class);
-        ConnectionRegistry.registerSource(Priority.LOWEST, TileJarFillable.class);
+        register();
 
-        ConnectionRegistry.registerRequester(Priority.NORMAL, TileThaumatorium.class);
-        ConnectionRegistry.registerRequester(Priority.NORMAL, TileThaumatoriumTop.class);
-        ConnectionRegistry.registerRequester(Priority.LOWEST, TileJarFillable.class);
+        registerSource(TileAlembic.class, Priority.NORMAL, 0.5F);
+        registerSource(TileJarFillable.class, Priority.LOWEST, 0.1F);
+
+        registerRequester(TileThaumatorium.class, Priority.NORMAL, 0.0F);
+        registerRequester(TileThaumatoriumTop.class, Priority.NORMAL, 0.0F);
+        registerRequester(TileJarFillable.class, Priority.LOWEST, 0.1F);
     }
 
     public static boolean isThaumicPipe(TileEntity tileEntity) {

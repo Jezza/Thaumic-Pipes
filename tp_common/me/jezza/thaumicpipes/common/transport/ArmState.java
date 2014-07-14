@@ -1,5 +1,6 @@
 package me.jezza.thaumicpipes.common.transport;
 
+import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
@@ -14,19 +15,22 @@ public class ArmState {
     private ForgeDirection direction;
     private ConnectionType connectionType;
     private CoordSet coordSet;
-    private boolean priority;
 
-    public ArmState(ForgeDirection direction, TileEntity tileEntity, boolean canConnect, boolean priority) {
+    private ArmState(ForgeDirection direction, TileEntity tileEntity, ConnectionType connectionType) {
         this.direction = direction;
-        this.priority = priority;
         this.tileEntity = tileEntity;
-        if (canConnect) {
-            coordSet = new CoordSet(tileEntity);
-            connectionType = ConnectionType.getConnectionType(tileEntity);
-        } else {
-            coordSet = new CoordSet(0, 0, 0);
-            connectionType = ConnectionType.UNKNOWN;
-        }
+        this.connectionType = connectionType;
+        if (connectionType.isValid())
+            this.coordSet = new CoordSet(tileEntity);
+    }
+
+    public static ArmState create(ForgeDirection direction, TileEntity tileEntity, IThaumicPipe pipe) {
+        ConnectionType type = ConnectionType.UNKNOWN;
+
+        if (pipe.canConnectTo(direction))
+            type = ConnectionType.getConnectionType(tileEntity);
+
+        return new ArmState(direction, tileEntity, type);
     }
 
     public boolean isValid() {
@@ -41,16 +45,16 @@ public class ArmState {
         return direction;
     }
 
+    public TileEntity getTileEntity() {
+        return tileEntity;
+    }
+
     public TransportState getTransportState() {
-        return new TransportState(tileEntity).setDirection(direction);
+        return new TransportState(tileEntity, direction, connectionType);
     }
 
     public CoordSet getCoordSet() {
         return coordSet.copy();
-    }
-
-    public boolean isPriority() {
-        return isValid() && priority;
     }
 
     public Cuboid6 getOcclusionBox() {

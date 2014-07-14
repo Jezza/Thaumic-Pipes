@@ -2,7 +2,7 @@ package me.jezza.thaumicpipes.common.multipart;
 
 import java.util.ArrayList;
 
-import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
+import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
 import codechicken.lib.vec.Cuboid6;
 import codechicken.multipart.JCuboidPart;
 import codechicken.multipart.JNormalOcclusion;

@@ -2,9 +2,9 @@ package me.jezza.thaumicpipes.common.transport;
 
 import java.util.ArrayList;
 
+import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
-import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -19,8 +19,8 @@ public class ArmStateHandler {
 
     public NodeState updateArmStates(IThaumicPipe pipe, World world, CoordSet coordSet) {
         int index = 0;
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS)
-            armStateArray[index++] = new ArmState(dir, coordSet.copy().addForgeDirection(dir).getTileEntity(world), pipe.canConnectTo(dir), dir.equals(priority));
+        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS)
+            armStateArray[index++] = ArmState.create(direction, coordSet.copy().addForgeDirection(direction).getTileEntity(world), pipe);
         return createNode();
     }
 

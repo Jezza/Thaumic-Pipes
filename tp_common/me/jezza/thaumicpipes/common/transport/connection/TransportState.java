@@ -1,6 +1,6 @@
 package me.jezza.thaumicpipes.common.transport.connection;
 
-import me.jezza.thaumicpipes.common.interfaces.IThaumicPipe;
+import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
@@ -17,8 +17,9 @@ public class TransportState {
     private ConnectionType type = ConnectionType.UNKNOWN;
     private ForgeDirection direction = ForgeDirection.UNKNOWN;
 
-    public TransportState(TileEntity tileEntity) {
-        type = ConnectionType.getConnectionType(tileEntity);
+    public TransportState(TileEntity tileEntity, ForgeDirection direction, ConnectionType type) {
+        this.type = type;
+        this.direction = direction;
         switch (type) {
             case ALEMBIC:
                 container = (IAspectContainer) tileEntity;
@@ -39,11 +40,6 @@ public class TransportState {
             default:
                 break;
         }
-    }
-
-    public TransportState setDirection(ForgeDirection direction) {
-        this.direction = direction;
-        return this;
     }
 
     public ForgeDirection getDirection() {

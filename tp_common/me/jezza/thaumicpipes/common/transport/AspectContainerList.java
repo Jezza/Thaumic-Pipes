@@ -5,7 +5,6 @@ import java.util.Iterator;
 
 import me.jezza.thaumicpipes.common.core.TPLogger;
 import me.jezza.thaumicpipes.common.transport.connection.TransportState;
-import net.minecraft.tileentity.TileEntity;
 import thaumcraft.api.aspects.Aspect;
 
 import com.google.common.collect.Lists;
@@ -24,8 +23,8 @@ public class AspectContainerList implements Iterable<TransportState> {
         return this;
     }
 
-    public void add(TileEntity tileEntity) {
-        add(new TransportState(tileEntity));
+    public void add(ArmState armState) {
+        add(armState.getTransportState());
     }
 
     public void add(TransportState transportState) {
