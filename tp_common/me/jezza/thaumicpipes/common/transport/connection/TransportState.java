@@ -14,104 +14,67 @@ public class TransportState {
     private IAspectContainer container = null;
     private IEssentiaTransport transport = null;
 
-    private ConnectionType type = ConnectionType.UNKNOWN;
     private ForgeDirection direction = ForgeDirection.UNKNOWN;
 
-    public TransportState(TileEntity tileEntity, ForgeDirection direction, ConnectionType type) {
-        this.type = type;
+    public TransportState(TileEntity tileEntity, ForgeDirection direction) {
         this.direction = direction;
-        switch (type) {
-            case ALEMBIC:
-                container = (IAspectContainer) tileEntity;
-                break;
-            case CONSTRUCT:
-                container = (IAspectContainer) tileEntity;
-                transport = (IEssentiaTransport) tileEntity;
-                break;
-            case JAR:
-                container = (IAspectContainer) tileEntity;
-                break;
-            case PIPE:
-                pipe = (IThaumicPipe) tileEntity;
-                break;
-            case REPAIRER:
-                container = (IAspectContainer) tileEntity;
-                break;
-            default:
-                break;
-        }
+
+        if (tileEntity instanceof IAspectContainer)
+            container = (IAspectContainer) tileEntity;
+        if (tileEntity instanceof IEssentiaTransport)
+            transport = (IEssentiaTransport) tileEntity;
+        if (tileEntity instanceof IThaumicPipe)
+            pipe = (IThaumicPipe) tileEntity;
     }
 
     public ForgeDirection getDirection() {
         return direction;
     }
 
-    public ConnectionType getType() {
-        return type;
+    public boolean isPipe() {
+        return pipe != null;
     }
 
     public IThaumicPipe getPipe() {
         return pipe;
     }
 
+    public boolean isContainer() {
+        return container != null;
+    }
+
     public IAspectContainer getContainer() {
         return container;
+    }
+
+    public boolean isTransport() {
+        return container != null;
     }
 
     public IEssentiaTransport getTransport() {
         return transport;
     }
 
-    public int getAspectSize(Aspect filter) {
+    public int getAspectSize(Aspect aspect) {
         AspectList aspectList = getAspects();
-        return aspectList == null ? 0 : aspectList.getAmount(filter);
+        return aspectList == null ? 0 : aspectList.getAmount(aspect);
     }
 
     public AspectList getAspects() {
         AspectList aspectList = null;
 
-        switch (type) {
-            case ALEMBIC:
-                aspectList = container.getAspects();
-                break;
-            case CONSTRUCT:
-                aspectList = container.getAspects();
-                break;
-            case JAR:
-                aspectList = container.getAspects();
-                break;
-            case PIPE:
-                aspectList = pipe.getAspectList();
-                break;
-            case REPAIRER:
-                aspectList = container.getAspects();
-                break;
-            default:
-                break;
-        }
+        if (isContainer())
+            aspectList = container.getAspects();
+        else if (isPipe())
+            aspectList = pipe.getAspectList();
 
         return aspectList;
     }
 
-    public void removeAmount(Aspect filter, int amountToRemove) {
-        switch (type) {
-            case ALEMBIC:
-                container.takeFromContainer(filter, amountToRemove);
-                break;
-            case CONSTRUCT:
-                container.takeFromContainer(filter, amountToRemove);
-                break;
-            case JAR:
-                container.takeFromContainer(filter, amountToRemove);
-                break;
-            case PIPE:
-                pipe.removeAspect(filter, amountToRemove);
-                break;
-            case REPAIRER:
-                container.takeFromContainer(filter, amountToRemove);
-                break;
-            default:
-                break;
-        }
+    public void removeAmount(Aspect aspect, int amountToRemove) {
+        if (isContainer())
+            container.takeFromContainer(aspect, amountToRemove);
+        else if (isPipe())
+            pipe.removeAspect(aspect, amountToRemove);
     }
 }

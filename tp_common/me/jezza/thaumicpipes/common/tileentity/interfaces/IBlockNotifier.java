@@ -1,4 +1,4 @@
-package me.jezza.thaumicpipes.common.interfaces;
+package me.jezza.thaumicpipes.common.tileentity.interfaces;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;

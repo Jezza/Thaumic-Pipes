@@ -1,4 +1,4 @@
-package me.jezza.thaumicpipes.common.interfaces;
+package me.jezza.thaumicpipes.client;
 
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
 

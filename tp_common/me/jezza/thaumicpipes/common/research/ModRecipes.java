@@ -14,6 +14,6 @@ public class ModRecipes {
     public static IArcaneRecipe thaumicPipeRecipe;
 
     public static void init() {
-        thaumicPipeRecipe = ThaumcraftApi.addArcaneCraftingRecipe(Strings.THAUMIC_PIPE, new ItemStack(ModBlocks.thaumicPipe, 6), new AspectList().add(Aspect.ORDER, 5).add(Aspect.ENTROPY, 5), "TFT", "TET", "TFT", 'T', ItemApi.getBlock("blockTube", 0), 'E', new ItemStack(Items.ender_pearl), 'F', ItemApi.getItem("itemResource", 8));
+        thaumicPipeRecipe = ThaumcraftApi.addArcaneCraftingRecipe(Strings.THAUMIC_PIPE, new ItemStack(ModBlocks.thaumicPipe, 6), new AspectList().add(Aspect.ORDER, 5).add(Aspect.ENTROPY, 5), "TFT", "TET", "TFT", Character.valueOf('T'), ItemApi.getBlock("blockTube", 0), Character.valueOf('E'), new ItemStack(Items.ender_pearl), Character.valueOf('F'), ItemApi.getItem("itemResource", 8));
     }
 }

@@ -3,15 +3,15 @@ package me.jezza.thaumicpipes.common.multipart.pipe;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import net.minecraft.tileentity.TileEntity;
+import me.jezza.thaumicpipes.client.IPartRenderer;
 import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
-import me.jezza.thaumicpipes.common.interfaces.IPartRenderer;
 import me.jezza.thaumicpipes.common.multipart.MultiPartAbstract;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPartTester;
 import me.jezza.thaumicpipes.common.transport.ArmState;
 import me.jezza.thaumicpipes.common.transport.ArmStateHandler;
+import net.minecraft.tileentity.TileEntity;
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.data.MCDataOutput;
 import codechicken.lib.vec.Vector3;
@@ -65,9 +65,7 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
 
     @Override
     public void onNeighborChanged() {
-        super.onNeighborChanged();
-
-        updateStates();
+        shouldUpdate = true;
         if (world().isRemote)
             return;
 
@@ -88,12 +86,12 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
 
     @Override
     public void onPartChanged(TMultiPart part) {
-        updateStates();
+        shouldUpdate = true;
     }
 
     @Override
     public void onNeighborTileChanged(int arg0, boolean arg1) {
-        updateStates();
+        shouldUpdate = true;
     }
 
     @Override

@@ -4,11 +4,8 @@ import java.util.ArrayList;
 
 import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.ModItems;
-import me.jezza.thaumicpipes.common.core.utils.TimeTicker;
-import me.jezza.thaumicpipes.common.core.utils.TimeTickerF;
-import me.jezza.thaumicpipes.common.interfaces.IBlockInteract;
-import me.jezza.thaumicpipes.common.lib.Reference;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
+import me.jezza.thaumicpipes.common.tileentity.interfaces.IBlockInteract;
 import me.jezza.thaumicpipes.common.transport.TravellingAspect;
 import me.jezza.thaumicpipes.common.transport.connection.TransportState;
 import net.minecraft.entity.item.EntityItem;
@@ -20,7 +17,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
 import thaumcraft.api.aspects.IAspectContainer;
-import thaumcraft.api.aspects.IEssentiaTransport;
 import cofh.api.block.IDismantleable;
 
 import com.google.common.collect.HashMultimap;
@@ -30,54 +26,16 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IDismantlea
 
     private AspectList aspectList = new AspectList();
 
-    // Client side for the render state
-    private TimeTickerF priorityFrame;
-    private TimeTicker constructs;
-    private TimeTicker pipes;
-    private TimeTicker priorityPosition;
-
     public TileThaumicPipe() {
-        constructs = new TimeTicker(0, 10);
-        pipes = new TimeTicker(0, 10);
-        priorityPosition = new TimeTicker(0, 24);
-        priorityFrame = new TimeTickerF(0.0F, Reference.PIPE_ANIMATION_SIZE).setStepAmount(0.8F);
+    }
+
+    @Override
+    public boolean canUpdate() {
+        return false;
     }
 
     @Override
     public void updateEntity() {
-        if (worldObj.isRemote) {
-            priorityPosition.tick();
-            priorityFrame.tick();
-            return;
-        }
-
-        // Process the travelling aspects
-
-        /**
-         * Should I put the TAs into a secondary loop or put it in the ticking loop.
-         * 
-         * I should add to the list, and THEN, parse it through the ticking loop.
-         * 
-         * Does it have any TAs to process?
-         * 
-         * If true Check nearby for sources that haven't been checked. Add to the pinged set.
-         * 
-         * 
-         * If false
-         */
-
-        // Identify who sent the ping.
-
-        processNearbyConstructs();
-
-        processNearbySources();
-
-        // Handle checking and sending to jars, if leftovers, returns true and passes to next pipe.
-        if (processPossibleJars() && pipes.tick()) {
-            // Passes next pipes along the line.
-            // Note: Will always try to send to priority, if can't manage, will not do anything.
-            processPossiblePipes();
-        }
     }
 
     private void reduceAndAddTo(Aspect aspect, TransportState state) {
@@ -107,50 +65,6 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IDismantlea
         }
     }
 
-    private void processNearbyConstructs() {
-        if (!constructs.tick())
-            return;
-
-        ArrayList<TransportState> constructStates = Lists.newArrayList();
-        if (constructStates == null)
-            return;
-
-        if (!constructStates.isEmpty())
-            for (TransportState state : constructStates) {
-                if (!state.getType().isConstruct())
-                    continue;
-                ForgeDirection direction = state.getDirection().getOpposite();
-                IEssentiaTransport transport = state.getTransport();
-
-                Aspect requiredAspect = transport.getSuctionType(direction);
-
-                if (requiredAspect == null)
-                    continue;
-
-                // AspectContainerList tempList = ping(requiredAspect, new LinkedHashSet<CoordSet>());
-
-                // if (tempList != null)
-                // for (TransportState container : tempList) {
-                // int amountAdded = transport.addEssentia(requiredAspect, 1, direction);
-                // if (amountAdded > 0) {
-                // container.removeAmount(requiredAspect, amountAdded);
-                // break;
-                // }
-                // }
-            }
-    }
-
-    private void processNearbySources() {
-        ArrayList<TransportState> containerList = Lists.newArrayList();
-
-        for (TransportState transportState : containerList) {
-            if (!transportState.getType().isAlembic())
-                continue;
-
-            addFromAndReduce(transportState);
-        }
-    }
-
     private boolean processPossibleJars() {
         ArrayList<TransportState> jarList = Lists.newArrayList();
         HashMultimap<Aspect, TransportState> placingMap = HashMultimap.create();
@@ -176,22 +90,6 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IDismantlea
         }
 
         return !aspectList.aspects.isEmpty();
-    }
-
-    private void processPossiblePipes() {
-        // TransportState pipeState = getNearbyPipe();
-        // if (pipeState == null || !pipeState.getType().isPipe())
-        // return;
-        //
-        // for (Aspect aspect : aspectList.getAspects()) {
-        // if (aspect == null)
-        // continue;
-        //
-        // int totalToAdd = aspectList.getAmount(aspect);
-        //
-        // if (pipeState.getPipe().addAspect(aspect, totalToAdd, pipeState.getDirection().getOpposite()))
-        // aspectList.reduce(aspect, totalToAdd);
-        // }
     }
 
     @Override
@@ -229,7 +127,6 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IDismantlea
         return false;
     }
 
-    // @Override
     // public AspectContainerList ping(Aspect pingedAspect, LinkedHashSet<CoordSet> pipeList) {
     // pipeList.add(getCoordSet());
     // stateList.clear(pingedAspect);
@@ -306,14 +203,8 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IDismantlea
 
     @Override
     public boolean onActivated(World world, int x, int y, int z, EntityPlayer player, int side, float hitVecX, float hitVecY, float hitVecZ) {
-        if (player.getCurrentEquippedItem() != null)
-            return false;
-
-        if (world.isRemote)
-            return true;
-
-        player.addChatMessage(new ChatComponentText("Break and replace this block."));
         player.addChatMessage(new ChatComponentText("This block needs to be converted."));
+        player.addChatMessage(new ChatComponentText("Break and replace this block."));
         return true;
     }
 

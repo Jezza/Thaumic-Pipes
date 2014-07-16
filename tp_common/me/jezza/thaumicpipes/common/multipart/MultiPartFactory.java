@@ -2,10 +2,11 @@ package me.jezza.thaumicpipes.common.multipart;
 
 import java.util.Arrays;
 
-import net.minecraft.block.Block;
-import net.minecraft.world.World;
+import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.multipart.pipe.thaumic.ThaumicPipePart;
+import net.minecraft.block.Block;
+import net.minecraft.world.World;
 import codechicken.lib.vec.BlockCoord;
 import codechicken.multipart.MultiPartRegistry;
 import codechicken.multipart.MultiPartRegistry.IPartConverter;
@@ -21,7 +22,7 @@ public class MultiPartFactory implements IPartFactory, IPartConverter {
         MultiPartRegistry.registerConverter(this);
         MultiPartRegistry.registerParts(this, new String[] { thaumicPipe });
 
-        MultipartGenerator.registerPassThroughInterface("me.jezza.thaumicpipes.common.interfaces.IThaumicPipe");
+        MultipartGenerator.registerPassThroughInterface(IThaumicPipe.class.getCanonicalName());
     }
 
     @Override

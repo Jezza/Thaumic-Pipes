@@ -63,10 +63,26 @@ public abstract class AbstractRegistry implements IConnectionRegister {
         ModHelper.addRegister(this);
     }
 
+    public RegistryEntry registerSource(Class<? extends TileEntity> clazz) {
+        return registerSource(clazz, Priority.NORMAL);
+    }
+
+    public RegistryEntry registerSource(Class<? extends TileEntity> clazz, Priority priority) {
+        return registerSource(clazz, priority, 0.0F);
+    }
+
     public RegistryEntry registerSource(Class<? extends TileEntity> clazz, Priority priority, float extensionSize) {
         RegistryEntry entry = new RegistryEntry(clazz, priority, extensionSize);
         sourceList.add(entry);
         return entry;
+    }
+
+    public RegistryEntry registerRequester(Class<? extends TileEntity> clazz) {
+        return registerRequester(clazz, Priority.NORMAL);
+    }
+
+    public RegistryEntry registerRequester(Class<? extends TileEntity> clazz, Priority priority) {
+        return registerRequester(clazz, priority, 0.0F);
     }
 
     public RegistryEntry registerRequester(Class<? extends TileEntity> clazz, Priority priority, float extensionSize) {

@@ -1,9 +1,9 @@
 package me.jezza.thaumicpipes.client.core;
 
-import codechicken.lib.vec.Cuboid6;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
 import me.jezza.thaumicpipes.common.transport.ArmState;
 import net.minecraftforge.common.util.ForgeDirection;
+import codechicken.lib.vec.Cuboid6;
 
 public class NodeState {
 
@@ -27,7 +27,7 @@ public class NodeState {
             if (armState == null || !armState.isValid())
                 continue;
 
-            if (armState.getType().isBigNode()) {
+            if (!armState.isPipe()) {
                 bigNode = true;
                 break;
             }

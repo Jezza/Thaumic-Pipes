@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.core.TPLogger;
 import net.minecraft.tileentity.TileEntity;
 
@@ -26,6 +25,15 @@ public class ConnectionRegistry {
     private static HashMap<Class<? extends TileEntity>, RegistryEntry> sourceRegistry = Maps.newHashMapWithExpectedSize(EXPECTED_SIZE);
     private static HashMap<Class<? extends TileEntity>, RegistryEntry> requesterRegistry = Maps.newHashMapWithExpectedSize(EXPECTED_SIZE);
 
+    public static RegistryEntry getRegistryEntry(TileEntity tileEntity) {
+        if (tileEntity == null)
+            return null;
+        RegistryEntry entry = getRegistryEntry(sourceRegistry, tileEntity);
+        if (entry == null)
+            entry = getRegistryEntry(requesterRegistry, tileEntity);
+        return entry;
+    }
+
     private static RegistryEntry getRegistryEntry(HashMap<Class<? extends TileEntity>, RegistryEntry> map, TileEntity tileEntity) {
         Class<? extends TileEntity> clazz = getClassOf(map, tileEntity);
         if (clazz == null)
@@ -41,8 +49,8 @@ public class ConnectionRegistry {
     }
 
     public static boolean isValidConnection(TileEntity tileEntity) {
-        if (tileEntity instanceof IThaumicPipe)
-            return true;
+        if (tileEntity == null)
+            return false;
         if (isSource(tileEntity))
             return true;
         if (isRequester(tileEntity))
@@ -59,10 +67,13 @@ public class ConnectionRegistry {
     }
 
     private static List<TileEntity> sortPriority(HashMap<Class<? extends TileEntity>, RegistryEntry> map, TileEntity... tileEntities) {
-        List<TileEntity> tileList = Arrays.asList(tileEntities);
+        return sortPriority(map, Arrays.asList(tileEntities));
+    }
+
+    private static List<TileEntity> sortPriority(HashMap<Class<? extends TileEntity>, RegistryEntry> map, Iterable<TileEntity> tileEntities) {
         List<TileEntity> sortedList = new ArrayList<TileEntity>();
 
-        for (TileEntity tileEntity : tileList) {
+        for (TileEntity tileEntity : tileEntities) {
             boolean added = false;
             Priority priority = getRegistryEntry(map, tileEntity).getPriority();
 
@@ -77,9 +88,8 @@ public class ConnectionRegistry {
                 }
             }
 
-            if (!added) {
+            if (!added)
                 sortedList.add(tileEntity);
-            }
         }
 
         return sortedList;
@@ -88,17 +98,17 @@ public class ConnectionRegistry {
     private static boolean register(HashMap<Class<? extends TileEntity>, RegistryEntry> map, RegistryEntry entry) {
         if (entry == null)
             throw new IllegalArgumentException("Invalid argument: entry should not be null.");
-        if (!entry.isValid())
+        if (entry.getClazz() == null)
+            throw new IllegalArgumentException("Invalid argument: entry clazz should not be null");
+        if (entry.getPriority() == null)
             throw new IllegalArgumentException("Invalid argument: entry clazz should not be null");
 
         Class<? extends TileEntity> clazz = entry.getClazz();
-        if (!map.containsKey(clazz)) {
+        if (!map.containsKey(clazz))
             map.put(clazz, entry);
-        }
         boolean flag = map.containsKey(clazz);
-        if (!flag) {
+        if (!flag)
             TPLogger.severe("Failed to add ");
-        }
         return flag;
     }
 

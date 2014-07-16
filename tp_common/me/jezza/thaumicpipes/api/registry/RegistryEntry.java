@@ -1,6 +1,7 @@
 package me.jezza.thaumicpipes.api.registry;
 
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.MathHelper;
 
 public class RegistryEntry {
 
@@ -19,7 +20,7 @@ public class RegistryEntry {
     public RegistryEntry(Class<? extends TileEntity> clazz, Priority priority, float extensionSize) {
         this.clazz = clazz;
         this.priority = priority;
-        this.extensionSize = extensionSize;
+        this.extensionSize = MathHelper.clamp_float(extensionSize, 0.0F, 1.0F);
     }
 
     public Class<? extends TileEntity> getClazz() {
@@ -36,10 +37,6 @@ public class RegistryEntry {
 
     public float getExtensionSize() {
         return extensionSize;
-    }
-
-    public boolean isValid() {
-        return clazz != null;
     }
 
     @Override

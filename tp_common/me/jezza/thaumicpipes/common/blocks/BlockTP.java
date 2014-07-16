@@ -3,9 +3,9 @@ package me.jezza.thaumicpipes.common.blocks;
 import java.util.List;
 
 import me.jezza.thaumicpipes.ThaumicPipes;
-import me.jezza.thaumicpipes.common.interfaces.IBlockInteract;
-import me.jezza.thaumicpipes.common.interfaces.IBlockNotifier;
 import me.jezza.thaumicpipes.common.lib.Reference;
+import me.jezza.thaumicpipes.common.tileentity.interfaces.IBlockInteract;
+import me.jezza.thaumicpipes.common.tileentity.interfaces.IBlockNotifier;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.texture.IIconRegister;

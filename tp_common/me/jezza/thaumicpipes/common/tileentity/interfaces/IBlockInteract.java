@@ -1,4 +1,4 @@
-package me.jezza.thaumicpipes.common.interfaces;
+package me.jezza.thaumicpipes.common.tileentity.interfaces;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;

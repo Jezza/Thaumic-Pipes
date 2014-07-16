@@ -20,7 +20,7 @@ public class ArmStateHandler {
     public NodeState updateArmStates(IThaumicPipe pipe, World world, CoordSet coordSet) {
         int index = 0;
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS)
-            armStateArray[index++] = ArmState.create(direction, coordSet.copy().addForgeDirection(direction).getTileEntity(world), pipe);
+            armStateArray[index++] = new ArmState(direction, coordSet.copy().addForgeDirection(direction).getTileEntity(world), pipe.canConnectTo(direction));
         return createNode();
     }
 

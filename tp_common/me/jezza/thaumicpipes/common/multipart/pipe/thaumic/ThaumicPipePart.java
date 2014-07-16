@@ -4,11 +4,10 @@ import java.util.Arrays;
 
 import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.api.registry.ConnectionRegistry;
+import me.jezza.thaumicpipes.client.IPartRenderer;
 import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.ModItems;
-import me.jezza.thaumicpipes.common.core.TPLogger;
-import me.jezza.thaumicpipes.common.interfaces.IPartRenderer;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
@@ -59,6 +58,25 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     public void update() {
         super.update();
 
+        // @formatter:off
+        /**
+         * Start with sources.
+         * Can you pull out of it?
+         * add to ping list.
+         * 
+         * Identify what aspects are currently waiting to be processed.
+         * 
+         * Process necessary TAs
+         * Eg, Ones waiting to be added.
+         * 
+         * Don't pull out of LOWEST when LOWEST is the requester
+         * Don't process LOWEST requests UNLESS there is a LOWER or higher source.
+         * 
+         * 
+         * 
+         */
+        // @formatter:on
+
     }
 
     @Override
@@ -81,6 +99,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
         return armStateHandler.getArmStateArray();
     }
 
+    @Override
     public void updateStates() {
         nodeState = armStateHandler.updateArmStates(this, world(), getCoordSet());
         occlusionTester.updateWithArmStates(armStateHandler.getArmStateArray(), nodeState);
@@ -138,7 +157,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
         if (direction == ForgeDirection.UNKNOWN)
             return false;
 
-        TileEntity tileEntity = getCoordSet().getTileFromDirection(world(), direction);
+        TileEntity tileEntity = getCoordSet().addForgeDirection(direction).getTileEntity(world());
         OcclusionPart part = new OcclusionPart(PipeProperties.ARM_STATE_OCCLUSION_BOXES[direction.ordinal()]);
         OcclusionPart oppositePart = new OcclusionPart(PipeProperties.ARM_STATE_OCCLUSION_BOXES[direction.getOpposite().ordinal()]);
 
@@ -147,16 +166,16 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     }
 
     private boolean isConnectable(TileEntity tileEntity, ForgeDirection direction) {
+        if (tileEntity instanceof IThaumicPipe)
+            return true;
+
         boolean flag = ConnectionRegistry.isValidConnection(tileEntity);
 
         if (flag) {
             if (tileEntity instanceof TileJarFillable)
                 return true;
-            if (tileEntity instanceof IEssentiaTransport) {
-                // if (tileEntity instanceof TileAlembic)
-                // TPLogger.info(((TileAlembic) tileEntity).facing);
+            if (tileEntity instanceof IEssentiaTransport)
                 return ((IEssentiaTransport) tileEntity).isConnectable(direction.getOpposite());
-            }
         }
 
         return flag;
@@ -187,7 +206,6 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
 
     @Override
     public boolean activate(EntityPlayer player, MovingObjectPosition hit, ItemStack itemStack) {
-        TPLogger.info(getConnectableTiles(null).size());
         if (player.getCurrentEquippedItem() == null) {
             if (player.worldObj.isRemote)
                 return true;
