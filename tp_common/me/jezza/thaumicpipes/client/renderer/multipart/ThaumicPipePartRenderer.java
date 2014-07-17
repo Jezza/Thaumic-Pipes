@@ -1,4 +1,4 @@
-package me.jezza.thaumicpipes.common.multipart.pipe.thaumic;
+package me.jezza.thaumicpipes.client.renderer.multipart;
 
 import static org.lwjgl.opengl.GL11.glPopMatrix;
 import static org.lwjgl.opengl.GL11.glPushMatrix;
@@ -15,10 +15,14 @@ import me.jezza.thaumicpipes.client.model.ModelPipeExtension;
 import me.jezza.thaumicpipes.client.model.ModelThaumicPipe;
 import me.jezza.thaumicpipes.common.lib.TextureMaps;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
+import me.jezza.thaumicpipes.common.multipart.pipe.thaumic.ThaumicPipePart;
 import me.jezza.thaumicpipes.common.transport.ArmState;
 import me.jezza.thaumicpipes.common.transport.connection.RenderType;
 import net.minecraftforge.common.util.ForgeDirection;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
+@SideOnly(Side.CLIENT)
 public class ThaumicPipePartRenderer implements IPartRenderer {
 
     ModelThaumicPipe modelThaumicPipe;
@@ -97,12 +101,8 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
         RenderType renderType = currentState.getRenderOverride();
         RegistryEntry registryEntry = currentState.getEntry();
 
-        if (registryEntry == null)
+        if (registryEntry == null || registryEntry.getExtensionSize() == 0.0F)
             return;
-
-        float xDisplace = currentDir.offsetX;
-        float yDisplace = currentDir.offsetY;
-        float zDisplace = currentDir.offsetZ;
 
         glPushMatrix();
         switch (renderType) {
@@ -113,7 +113,9 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
                 break;
             case DEFAULT:
                 float extensionSize = registryEntry.getExtensionSize();
-                glTranslatef(xDisplace * extensionSize, yDisplace * extensionSize, zDisplace * extensionSize);
+                if (extensionSize == 0.0F)
+                    break;
+                glTranslatef(currentDir.offsetX * extensionSize, currentDir.offsetY * extensionSize, currentDir.offsetZ * extensionSize);
                 glScalef(0.9999F, 0.9999F, 0.9999F);
                 modelThaumicPipe.renderArm(index);
             default:

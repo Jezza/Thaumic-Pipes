@@ -6,6 +6,7 @@ import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.api.registry.ConnectionRegistry;
 import me.jezza.thaumicpipes.client.IPartRenderer;
 import me.jezza.thaumicpipes.client.core.NodeState;
+import me.jezza.thaumicpipes.client.renderer.multipart.ThaumicPipePartRenderer;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
