@@ -1,4 +1,6 @@
 tile.thaumicPipe.name=神秘管道
+item.itemThaumicPipe.name=神秘管道
+itemGroup.ThaumicPipe=神秘管道
 
 tc.research_name.thaumicPipe=智能源质运输
 tc.research_text.thaumicPipe=别抱怨吸力了,虽然也好不到哪里去...
