@@ -1,34 +1,18 @@
 package me.jezza.thaumicpipes.common.transport;
 
-import java.util.ArrayList;
-
+import me.jezza.thaumicpipes.common.core.TPLogger;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
+import me.jezza.thaumicpipes.common.grid.MessageLocated;
+import me.jezza.thaumicpipes.common.multipart.pipe.thaumic.ThaumicPipePart;
 
-public class TravellingAspect {
+public class TravellingAspect extends MessageLocated {
 
-    private CoordSet finalSet;
-    private ArrayList<CoordSet> mapList;
-
-    public TravellingAspect(ArrayList<CoordSet> mapList) {
-        this.mapList = mapList;
-        finalSet = mapList.get(mapList.size() - 1);
+    public TravellingAspect(CoordSet destination) {
+        super(destination);
     }
 
-    public boolean isNextLocation(CoordSet coordSet) {
-        if (mapList.isEmpty())
-            return false;
-
-        CoordSet nextSet = mapList.get(0);
-        return nextSet.equals(coordSet);
+    @Override
+    public void onDisposal(ThaumicPipePart part, CoordSet coordSet) {
+        TPLogger.info("Processing Travelling Aspect.");
     }
-
-    public boolean movedTo(CoordSet coordSet) {
-        mapList = (ArrayList<CoordSet>) mapList.subList(mapList.indexOf(coordSet), mapList.size() - 1);
-        return true;
-    }
-
-    public boolean isAtDestination(CoordSet coordSet) {
-        return mapList.isEmpty() && coordSet.equals(finalSet);
-    }
-
 }

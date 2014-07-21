@@ -1,11 +1,10 @@
-package me.jezza.thaumicpipes.common.transport;
+package me.jezza.thaumicpipes.common.transport.connection;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
-import me.jezza.thaumicpipes.client.core.NodeState;
-import me.jezza.thaumicpipes.common.core.utils.CoordSet;
-import net.minecraft.world.World;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
 public class ArmStateHandler {
@@ -17,15 +16,42 @@ public class ArmStateHandler {
         armStateArray = new ArmState[6];
     }
 
-    public NodeState updateArmStates(IThaumicPipe pipe, World world, CoordSet coordSet) {
+    public NodeState updateArmStates(IThaumicPipe pipe, TileEntity[] tileEntities) {
         int index = 0;
-        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS)
-            armStateArray[index++] = new ArmState(direction, coordSet.copy().addForgeDirection(direction).getTileEntity(world), pipe.canConnectTo(direction));
+        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
+            TileEntity tileEntity = tileEntities[index];
+            boolean isValidConnection = tileEntity != null ? pipe.canConnectTo(direction) : false;
+            armStateArray[index++] = new ArmState(direction, tileEntity, isValidConnection);
+        }
         return createNode();
     }
 
     public ArmState[] getArmStateArray() {
         return armStateArray;
+    }
+
+    public List<ArmState> getPipeConnections() {
+        ArrayList<ArmState> armList = new ArrayList<ArmState>();
+        for (ArmState armState : armStateArray)
+            if (armState != null && armState.isValid() && armState.isPipe())
+                armList.add(armState);
+        return armList;
+    }
+
+    public List<ArmState> getSourceConnections() {
+        ArrayList<ArmState> armList = new ArrayList<ArmState>();
+        for (ArmState armState : armStateArray)
+            if (armState != null && armState.isValid() && armState.getEntry().getType().isSource())
+                armList.add(armState);
+        return armList;
+    }
+
+    public List<ArmState> getRequesterConnections() {
+        ArrayList<ArmState> armList = new ArrayList<ArmState>();
+        for (ArmState armState : armStateArray)
+            if (armState != null && armState.isValid() && armState.getEntry().getType().isRequester())
+                armList.add(armState);
+        return armList;
     }
 
     public ArmState getArmState(ForgeDirection direction) {

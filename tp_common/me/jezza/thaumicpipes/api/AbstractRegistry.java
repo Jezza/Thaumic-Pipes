@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import me.jezza.thaumicpipes.api.interfaces.IConnectionRegister;
 import me.jezza.thaumicpipes.api.registry.Priority;
 import me.jezza.thaumicpipes.api.registry.RegistryEntry;
+import me.jezza.thaumicpipes.api.registry.RegistryEntry.Type;
 import net.minecraft.tileentity.TileEntity;
 
 import com.google.common.collect.Lists;
@@ -72,7 +73,7 @@ public abstract class AbstractRegistry implements IConnectionRegister {
     }
 
     public RegistryEntry registerSource(Class<? extends TileEntity> clazz, Priority priority, float extensionSize) {
-        RegistryEntry entry = new RegistryEntry(clazz, priority, extensionSize);
+        RegistryEntry entry = new RegistryEntry(Type.SOURCE, clazz, priority, extensionSize);
         sourceList.add(entry);
         return entry;
     }
@@ -86,7 +87,7 @@ public abstract class AbstractRegistry implements IConnectionRegister {
     }
 
     public RegistryEntry registerRequester(Class<? extends TileEntity> clazz, Priority priority, float extensionSize) {
-        RegistryEntry entry = new RegistryEntry(clazz, priority, extensionSize);
+        RegistryEntry entry = new RegistryEntry(Type.REQUESTER, clazz, priority, extensionSize);
         requesterList.add(entry);
         return entry;
     }

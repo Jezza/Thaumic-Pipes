@@ -9,14 +9,14 @@ import static org.lwjgl.opengl.GL11.glTranslatef;
 import me.jezza.thaumicpipes.api.registry.RegistryEntry;
 import me.jezza.thaumicpipes.client.IPartRenderer;
 import me.jezza.thaumicpipes.client.RenderUtils;
-import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.client.model.ModelJarConnection;
 import me.jezza.thaumicpipes.client.model.ModelPipeExtension;
 import me.jezza.thaumicpipes.client.model.ModelThaumicPipe;
 import me.jezza.thaumicpipes.common.lib.TextureMaps;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
 import me.jezza.thaumicpipes.common.multipart.pipe.thaumic.ThaumicPipePart;
-import me.jezza.thaumicpipes.common.transport.ArmState;
+import me.jezza.thaumicpipes.common.transport.connection.ArmState;
+import me.jezza.thaumicpipes.common.transport.connection.NodeState;
 import me.jezza.thaumicpipes.common.transport.connection.RenderType;
 import net.minecraftforge.common.util.ForgeDirection;
 import cpw.mods.fml.relauncher.Side;
@@ -101,7 +101,7 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
         RenderType renderType = currentState.getRenderOverride();
         RegistryEntry registryEntry = currentState.getEntry();
 
-        if (registryEntry == null || registryEntry.getExtensionSize() == 0.0F)
+        if (registryEntry == null)
             return;
 
         glPushMatrix();

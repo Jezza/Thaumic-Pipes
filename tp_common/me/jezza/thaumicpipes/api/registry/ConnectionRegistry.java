@@ -1,13 +1,13 @@
 package me.jezza.thaumicpipes.api.registry;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import me.jezza.thaumicpipes.common.core.TPLogger;
 import net.minecraft.tileentity.TileEntity;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
@@ -67,7 +67,13 @@ public class ConnectionRegistry {
     }
 
     private static List<TileEntity> sortPriority(HashMap<Class<? extends TileEntity>, RegistryEntry> map, TileEntity... tileEntities) {
-        return sortPriority(map, Arrays.asList(tileEntities));
+        List<TileEntity> tileList = Lists.newArrayList();
+
+        for (TileEntity tileEntity : tileEntities)
+            if (exists(map, tileEntity))
+                tileList.add(tileEntity);
+
+        return sortPriority(map, tileList);
     }
 
     private static List<TileEntity> sortPriority(HashMap<Class<? extends TileEntity>, RegistryEntry> map, Iterable<TileEntity> tileEntities) {

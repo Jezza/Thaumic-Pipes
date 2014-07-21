@@ -1,7 +1,6 @@
-package me.jezza.thaumicpipes.client.core;
+package me.jezza.thaumicpipes.common.transport.connection;
 
 import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
-import me.jezza.thaumicpipes.common.transport.ArmState;
 import net.minecraftforge.common.util.ForgeDirection;
 import codechicken.lib.vec.Cuboid6;
 
@@ -20,21 +19,13 @@ public class NodeState {
     }
 
     public static NodeState createNodeState(ArmState[] armStateArray) {
-        boolean isNode = true;
-        boolean bigNode = false;
-
-        for (ArmState armState : armStateArray) {
-            if (armState == null || !armState.isValid())
-                continue;
-
-            if (!armState.isPipe()) {
-                bigNode = true;
-                break;
-            }
-        }
+        for (ArmState armState : armStateArray)
+            if (armState != null && armState.isValid() && !armState.isPipe())
+                return new NodeState(true, true, 0);
 
         int count = 0;
         int side = 0;
+        boolean isNode = true;
 
         for (int i = 0; i <= 5; i += 2) {
             ArmState firstState = armStateArray[i];
@@ -50,14 +41,14 @@ public class NodeState {
 
             if (firstValid && secondValid) {
                 side = i;
-                isNode = !firstState.getDirection().getOpposite().equals(secondState.getDirection());
+                isNode = !firstState.isOppositeSide(secondState);
             }
         }
 
         if (count != 2)
             isNode = true;
 
-        return new NodeState(isNode, bigNode, side);
+        return new NodeState(isNode, false, side);
     }
 
     public boolean isNode() {

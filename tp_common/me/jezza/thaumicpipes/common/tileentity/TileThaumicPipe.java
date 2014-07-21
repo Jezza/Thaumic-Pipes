@@ -2,18 +2,14 @@ package me.jezza.thaumicpipes.common.tileentity;
 
 import java.util.ArrayList;
 
-import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.ModItems;
-import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
 import me.jezza.thaumicpipes.common.tileentity.interfaces.IBlockInteract;
-import me.jezza.thaumicpipes.common.transport.TravellingAspect;
 import me.jezza.thaumicpipes.common.transport.connection.TransportState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
 import thaumcraft.api.aspects.IAspectContainer;
@@ -22,8 +18,7 @@ import cofh.api.block.IDismantleable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 
-public class TileThaumicPipe extends TileTP implements IThaumicPipe, IDismantleable, IBlockInteract {
-
+public class TileThaumicPipe extends TileTP implements IDismantleable, IBlockInteract {
     private AspectList aspectList = new AspectList();
 
     public TileThaumicPipe() {
@@ -90,41 +85,6 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IDismantlea
         }
 
         return !aspectList.aspects.isEmpty();
-    }
-
-    @Override
-    public void drain() {
-        aspectList = new AspectList();
-    }
-
-    @Override
-    public boolean addAspect(Aspect aspect, int amount, ForgeDirection forgeDirection) {
-        return false;
-    }
-
-    @Override
-    public AspectList getAspectList() {
-        return aspectList;
-    }
-
-    @Override
-    public boolean canReceiveFrom(ForgeDirection direction) {
-        return false;
-    }
-
-    @Override
-    public boolean canConnectTo(ForgeDirection direction) {
-        return false;
-    }
-
-    @Override
-    public AspectList removeAspect(Aspect aspect, int amount) {
-        return aspectList.copy();
-    }
-
-    @Override
-    public boolean reduceAspect(Aspect aspect, int amount) {
-        return false;
     }
 
     // public AspectContainerList ping(Aspect pingedAspect, LinkedHashSet<CoordSet> pipeList) {
@@ -206,18 +166,5 @@ public class TileThaumicPipe extends TileTP implements IThaumicPipe, IDismantlea
         player.addChatMessage(new ChatComponentText("This block needs to be converted."));
         player.addChatMessage(new ChatComponentText("Break and replace this block."));
         return true;
-    }
-
-    @Override
-    public PipePartAbstract getPipe() {
-        return null;
-    }
-
-    @Override
-    public void addTravellingAspect(TravellingAspect tA) {
-    }
-
-    @Override
-    public void processTravellingAspects() {
     }
 }

@@ -2,8 +2,8 @@ package me.jezza.thaumicpipes.common.multipart;
 
 import java.util.ArrayList;
 
-import me.jezza.thaumicpipes.client.core.NodeState;
-import me.jezza.thaumicpipes.common.transport.ArmState;
+import me.jezza.thaumicpipes.common.transport.connection.ArmState;
+import me.jezza.thaumicpipes.common.transport.connection.NodeState;
 import codechicken.lib.vec.Cuboid6;
 
 public class OcclusionPartTester {

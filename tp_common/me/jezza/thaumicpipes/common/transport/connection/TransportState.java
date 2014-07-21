@@ -1,6 +1,5 @@
 package me.jezza.thaumicpipes.common.transport.connection;
 
-import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
@@ -10,7 +9,6 @@ import thaumcraft.api.aspects.IEssentiaTransport;
 
 public class TransportState {
 
-    private IThaumicPipe pipe = null;
     private IAspectContainer container = null;
     private IEssentiaTransport transport = null;
 
@@ -23,20 +21,10 @@ public class TransportState {
             container = (IAspectContainer) tileEntity;
         if (tileEntity instanceof IEssentiaTransport)
             transport = (IEssentiaTransport) tileEntity;
-        if (tileEntity instanceof IThaumicPipe)
-            pipe = (IThaumicPipe) tileEntity;
     }
 
     public ForgeDirection getDirection() {
         return direction;
-    }
-
-    public boolean isPipe() {
-        return pipe != null;
-    }
-
-    public IThaumicPipe getPipe() {
-        return pipe;
     }
 
     public boolean isContainer() {
@@ -65,16 +53,13 @@ public class TransportState {
 
         if (isContainer())
             aspectList = container.getAspects();
-        else if (isPipe())
-            aspectList = pipe.getAspectList();
 
         return aspectList;
     }
 
-    public void removeAmount(Aspect aspect, int amountToRemove) {
+    public boolean removeAmount(Aspect aspect, int amountToRemove) {
         if (isContainer())
-            container.takeFromContainer(aspect, amountToRemove);
-        else if (isPipe())
-            pipe.removeAspect(aspect, amountToRemove);
+            return container.takeFromContainer(aspect, amountToRemove);
+        return false;
     }
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import me.jezza.thaumicpipes.common.core.TPLogger;
+import me.jezza.thaumicpipes.common.transport.connection.ArmState;
 import me.jezza.thaumicpipes.common.transport.connection.TransportState;
 import thaumcraft.api.aspects.Aspect;
 

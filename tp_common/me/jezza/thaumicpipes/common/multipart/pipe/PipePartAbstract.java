@@ -1,17 +1,14 @@
 package me.jezza.thaumicpipes.common.multipart.pipe;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-
 import me.jezza.thaumicpipes.client.IPartRenderer;
-import me.jezza.thaumicpipes.client.core.NodeState;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
+import me.jezza.thaumicpipes.common.grid.interfaces.INetworkHandler;
 import me.jezza.thaumicpipes.common.multipart.MultiPartAbstract;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPartTester;
-import me.jezza.thaumicpipes.common.transport.ArmState;
-import me.jezza.thaumicpipes.common.transport.ArmStateHandler;
+import me.jezza.thaumicpipes.common.transport.connection.NodeState;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.common.util.ForgeDirection;
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.data.MCDataOutput;
 import codechicken.lib.vec.Vector3;
@@ -23,18 +20,22 @@ import cpw.mods.fml.relauncher.SideOnly;
 public abstract class PipePartAbstract extends MultiPartAbstract implements INeighborTileChange {
 
     private boolean shouldUpdate = false;
+    private TileEntity[] tileCache;
 
     public OcclusionPartTester occlusionTester;
-    public ArmStateHandler armStateHandler;
     public NodeState nodeState;
 
     public PipePartAbstract() {
+        tileCache = new TileEntity[6];
         occlusionTester = new OcclusionPartTester();
-        armStateHandler = new ArmStateHandler();
     }
 
     public CoordSet getCoordSet() {
         return new CoordSet(tile());
+    }
+
+    public TileEntity[] getTileCache() {
+        return tileCache;
     }
 
     @Override
@@ -45,22 +46,10 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
         }
     }
 
-    public ArrayList<TileEntity> getConnectableTiles(HashSet<CoordSet> coordSets) {
-        if (coordSets == null)
-            coordSets = new HashSet<CoordSet>();
-        ArrayList<TileEntity> tileList = new ArrayList<TileEntity>();
-
-        for (ArmState state : armStateHandler.getArmStateArray()) {
-            if (state == null || !state.isValid())
-                continue;
-            CoordSet tempSet = state.getCoordSet();
-            if (coordSets.contains(tempSet))
-                continue;
-            coordSets.add(tempSet);
-            tileList.add(state.getTileEntity());
-        }
-
-        return tileList;
+    public void updateStates() {
+        int index = 0;
+        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS)
+            tileCache[index++] = getCoordSet().addForgeDirection(direction).getTileEntity(world());
     }
 
     @Override
@@ -118,8 +107,8 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
             getRenderer().renderAt(this, pos.x, pos.y, pos.z, frame);
     }
 
+    public abstract INetworkHandler getNetworkHandler();
+
     @SideOnly(Side.CLIENT)
     public abstract IPartRenderer getRenderer();
-
-    public abstract void updateStates();
 }

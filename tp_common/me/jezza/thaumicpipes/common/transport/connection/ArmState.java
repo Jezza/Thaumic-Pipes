@@ -1,26 +1,23 @@
-package me.jezza.thaumicpipes.common.transport;
+package me.jezza.thaumicpipes.common.transport.connection;
 
 import me.jezza.thaumicpipes.api.registry.ConnectionRegistry;
 import me.jezza.thaumicpipes.api.registry.RegistryEntry;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
-import me.jezza.thaumicpipes.common.transport.connection.RenderType;
-import me.jezza.thaumicpipes.common.transport.connection.TransportState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import codechicken.lib.vec.Cuboid6;
 
 public class ArmState {
+    private boolean isValidConnection = true;
+
     private TileEntity tileEntity;
     private ForgeDirection direction;
     private CoordSet coordSet;
-
-    private boolean isValidConnection = true;
+    private RegistryEntry entry;
 
     private RenderType renderOverride = RenderType.DEFAULT;
-
-    private RegistryEntry entry;
 
     public ArmState(ForgeDirection direction, TileEntity tileEntity, boolean isValidConnection) {
         this.direction = direction;
@@ -63,6 +60,10 @@ public class ArmState {
 
     public CoordSet getCoordSet() {
         return coordSet.copy();
+    }
+
+    public boolean isOppositeSide(ArmState secondState) {
+        return direction.getOpposite().equals(secondState.getDirection());
     }
 
     public Cuboid6 getOcclusionBox() {
