@@ -1,6 +1,8 @@
 package me.jezza.thaumicpipes.common.multipart.pipe;
 
 import codechicken.lib.vec.Cuboid6;
+import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
+import net.minecraftforge.common.util.ForgeDirection;
 
 public class PipeProperties {
 
@@ -24,6 +26,10 @@ public class PipeProperties {
         NODE_OCCLUSION_BOXES[0] = new Cuboid6(PIPE_MIN, MIN, PIPE_MIN, PIPE_MAX, MAX, PIPE_MAX);
         NODE_OCCLUSION_BOXES[1] = new Cuboid6(PIPE_MIN, PIPE_MIN, MIN, PIPE_MAX, PIPE_MAX, MAX);
         NODE_OCCLUSION_BOXES[2] = new Cuboid6(MIN, PIPE_MIN, PIPE_MIN, MAX, PIPE_MAX, PIPE_MAX);
+    }
+
+    public static OcclusionPart getOcclusionPart(ForgeDirection direction) {
+        return new OcclusionPart(ARM_STATE_OCCLUSION_BOXES[direction.ordinal()]);
     }
 
     public static Cuboid6 getNode() {

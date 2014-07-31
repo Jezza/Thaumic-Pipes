@@ -1,13 +1,16 @@
 package me.jezza.thaumicpipes.common.transport.connection;
 
+import codechicken.lib.vec.Cuboid6;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import me.jezza.thaumicpipes.api.registry.ConnectionRegistry;
 import me.jezza.thaumicpipes.api.registry.RegistryEntry;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
+import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
-import codechicken.lib.vec.Cuboid6;
 
 public class ArmState {
     private boolean isValidConnection = true;
@@ -17,6 +20,7 @@ public class ArmState {
     private CoordSet coordSet;
     private RegistryEntry entry;
 
+    @SideOnly(Side.CLIENT)
     private RenderType renderOverride = RenderType.DEFAULT;
 
     public ArmState(ForgeDirection direction, TileEntity tileEntity, boolean isValidConnection) {
@@ -26,7 +30,10 @@ public class ArmState {
         if (isValidConnection) {
             this.coordSet = new CoordSet(tileEntity);
             entry = ConnectionRegistry.getRegistryEntry(tileEntity);
-            renderOverride = RenderType.getType(tileEntity);
+            if (entry == null)
+                entry = new RegistryEntry(RegistryEntry.Type.PIPE, TileThaumicPipe.class);
+            if (tileEntity.getWorldObj().isRemote)
+                renderOverride = RenderType.getType(tileEntity);
         }
     }
 
@@ -38,6 +45,7 @@ public class ArmState {
         return isValidConnection;
     }
 
+    @SideOnly(Side.CLIENT)
     public boolean isPipe() {
         return renderOverride.isPipe();
     }

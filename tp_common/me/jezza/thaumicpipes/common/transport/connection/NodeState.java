@@ -1,8 +1,8 @@
 package me.jezza.thaumicpipes.common.transport.connection;
 
+import codechicken.lib.vec.Cuboid6;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
 import net.minecraftforge.common.util.ForgeDirection;
-import codechicken.lib.vec.Cuboid6;
 
 public class NodeState {
 
@@ -20,11 +20,11 @@ public class NodeState {
 
     public static NodeState createNodeState(ArmState[] armStateArray) {
         for (ArmState armState : armStateArray)
-            if (armState != null && armState.isValid() && !armState.isPipe())
+            if (armState != null && armState.isValid() && !armState.getEntry().getType().isPipe())
                 return new NodeState(true, true, 0);
 
-        int count = 0;
         int side = 0;
+        int count = 0;
         boolean isNode = true;
 
         for (int i = 0; i <= 5; i += 2) {

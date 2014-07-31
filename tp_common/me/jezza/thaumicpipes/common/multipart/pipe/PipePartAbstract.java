@@ -107,8 +107,6 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
             getRenderer().renderAt(this, pos.x, pos.y, pos.z, frame);
     }
 
-    public abstract INetworkHandler getNetworkHandler();
-
     @SideOnly(Side.CLIENT)
     public abstract IPartRenderer getRenderer();
 }

@@ -29,63 +29,32 @@ public class TileThaumicPipe extends TileTP implements IDismantleable, IBlockInt
         return false;
     }
 
-    @Override
-    public void updateEntity() {
-    }
-
-    private void reduceAndAddTo(Aspect aspect, TransportState state) {
-        IAspectContainer container = state.getContainer();
-        if (!container.doesContainerAccept(aspect))
-            return;
-
-        int totalToAdd = aspectList.getAmount(aspect);
-        int leftOver = container.addToContainer(aspect, totalToAdd);
-        aspectList.reduce(aspect, totalToAdd - leftOver);
-    }
-
-    private void addFromAndReduce(TransportState transportState) {
-        AspectList tempList = transportState.getAspects();
-
-        if (tempList == null || tempList.aspects.isEmpty())
-            return;
-
-        for (Aspect tempAspect : tempList.getAspects()) {
-            if (tempAspect == null)
-                continue;
-
-            // int amount = tempList.getAmount(tempAspect);
-            int amount = 1;
-            if (transportState.getContainer().takeFromContainer(tempAspect, amount))
-                aspectList.add(tempAspect, amount);
-        }
-    }
-
-    private boolean processPossibleJars() {
-        ArrayList<TransportState> jarList = Lists.newArrayList();
-        HashMultimap<Aspect, TransportState> placingMap = HashMultimap.create();
-
-        if (jarList.isEmpty())
-            return !aspectList.aspects.isEmpty();
-
-        for (Aspect aspect : aspectList.getAspects()) {
-            if (aspect == null)
-                continue;
-
-            for (TransportState jar : jarList)
-                if (jar.getContainer().doesContainerContainAmount(aspect, 0))
-                    placingMap.put(aspect, jar);
-
-            // int amountToAdd = aspectList.getAmount(aspect);
-            for (TransportState container : placingMap.get(aspect))
-                reduceAndAddTo(aspect, container);
-
-            for (TransportState jar : jarList)
-                if (jar.getContainer().doesContainerAccept(aspect))
-                    reduceAndAddTo(aspect, jar);
-        }
-
-        return !aspectList.aspects.isEmpty();
-    }
+//    private boolean processPossibleJars() {
+//        ArrayList<TransportState> jarList = Lists.newArrayList();
+//        HashMultimap<Aspect, TransportState> placingMap = HashMultimap.create();
+//
+//        if (jarList.isEmpty())
+//            return !aspectList.aspects.isEmpty();
+//
+//        for (Aspect aspect : aspectList.getAspects()) {
+//            if (aspect == null)
+//                continue;
+//
+//            for (TransportState jar : jarList)
+//                if (jar.getContainer().doesContainerContainAmount(aspect, 0))
+//                    placingMap.put(aspect, jar);
+//
+//            // int amountToAdd = aspectList.getAmount(aspect);
+//            for (TransportState container : placingMap.get(aspect))
+//                reduceAndAddTo(aspect, container);
+//
+//            for (TransportState jar : jarList)
+//                if (jar.getContainer().doesContainerAccept(aspect))
+//                    reduceAndAddTo(aspect, jar);
+//        }
+//
+//        return !aspectList.aspects.isEmpty();
+//    }
 
     // public AspectContainerList ping(Aspect pingedAspect, LinkedHashSet<CoordSet> pipeList) {
     // pipeList.add(getCoordSet());

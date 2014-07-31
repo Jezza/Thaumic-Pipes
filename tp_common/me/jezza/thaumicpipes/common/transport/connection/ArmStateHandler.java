@@ -1,11 +1,11 @@
 package me.jezza.thaumicpipes.common.transport.connection;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ArmStateHandler {
 

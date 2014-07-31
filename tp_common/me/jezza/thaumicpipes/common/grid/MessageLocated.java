@@ -1,22 +1,23 @@
 package me.jezza.thaumicpipes.common.grid;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-
-import me.jezza.thaumicpipes.common.core.TPLogger;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.grid.interfaces.INetworkHandler;
 import me.jezza.thaumicpipes.common.grid.interfaces.INetworkMessage;
 import me.jezza.thaumicpipes.common.multipart.pipe.thaumic.ThaumicPipePart;
+import me.jezza.thaumicpipes.common.transport.connection.ArmState;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 public abstract class MessageLocated implements INetworkMessage {
 
-    private LinkedList<CoordSet> mapTo;
     private final CoordSet destination;
+    private LinkedList<CoordSet> mapTo;
 
-    public MessageLocated(CoordSet destination) {
+    public MessageLocated(CoordSet destination, LinkedList<CoordSet> mapTo) {
         this.destination = destination;
-        mapTo = new LinkedList<CoordSet>();
+        this.mapTo = mapTo;
     }
 
     public void setMap(LinkedList<CoordSet> mapTo) {
@@ -37,13 +38,11 @@ public abstract class MessageLocated implements INetworkMessage {
         return mapTo.isEmpty() ? null : mapTo.get(0);
     }
 
-    @Override
     public boolean shouldMoveTo(CoordSet coordSet) {
         return mapTo.isEmpty() ? false : getNextSet().equals(coordSet);
     }
 
-    @Override
-    public void moveTo(INetworkHandler handler, CoordSet coordSet) {
+    public void moveTo(CoordSet coordSet) {
         if (shouldMoveTo(coordSet))
             mapTo.removeFirst();
         else
@@ -55,19 +54,36 @@ public abstract class MessageLocated implements INetworkMessage {
     }
 
     @Override
-    public boolean shouldDisposeOf(ThaumicPipePart part, CoordSet coordSet) {
-        return false;
+    public void onDisposal(INetworkHandler handler, ThaumicPipePart part, CoordSet coordSet) {
     }
 
     @Override
-    public void process(ThaumicPipePart part, CoordSet coordSet) {
-        if (hasArrived(coordSet))
-            TPLogger.info("HALP");
+    public void process(INetworkHandler handler, ThaumicPipePart part, CoordSet coordSet) {
+        if (hasArrived(coordSet)) {
+            handler.dispose(this);
+            onArrival(part);
+            return;
+        }
+
+        List<ArmState> armList = part.getArmStateHandler().getPipeConnections();
+
+        boolean moved = false;
+
+        for (ArmState armState : armList) {
+            if (shouldMoveTo(coordSet)) {
+                moveTo(coordSet);
+//                ((IThaumicPipe) armState.getTileEntity()).getPipe().getNetworkHandler().receiveMessage(this);
+                moved = true;
+                break;
+            }
+        }
+
+        if (moved) {
+            handler.dispose(this);
+        } else {
+            // TODO Handle no movement, because that means he's lost.
+        }
     }
 
-    @Override
-    public TransmitType getTransmitType() {
-        return TransmitType.DIRECTIONAL;
-    }
-
+    public abstract void onArrival(ThaumicPipePart part);
 }

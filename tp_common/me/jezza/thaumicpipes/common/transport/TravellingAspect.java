@@ -5,14 +5,16 @@ import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.grid.MessageLocated;
 import me.jezza.thaumicpipes.common.multipart.pipe.thaumic.ThaumicPipePart;
 
+import java.util.LinkedList;
+
 public class TravellingAspect extends MessageLocated {
 
-    public TravellingAspect(CoordSet destination) {
-        super(destination);
+    public TravellingAspect(CoordSet destination, LinkedList<CoordSet> mapTo) {
+        super(destination, mapTo);
     }
 
     @Override
-    public void onDisposal(ThaumicPipePart part, CoordSet coordSet) {
+    public void onArrival(ThaumicPipePart part) {
         TPLogger.info("Processing Travelling Aspect.");
     }
 }

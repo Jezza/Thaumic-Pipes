@@ -29,10 +29,6 @@ public class RegistryEntry {
         return clazz;
     }
 
-    public boolean isInstance(TileEntity tileEntity) {
-        return clazz.isInstance(tileEntity);
-    }
-
     public Type getType() {
         return type;
     }
@@ -58,7 +54,7 @@ public class RegistryEntry {
     }
 
     public static enum Type {
-        SOURCE, REQUESTER;
+        SOURCE, REQUESTER, PIPE;
 
         public boolean isSource() {
             return this == SOURCE;
@@ -66,6 +62,10 @@ public class RegistryEntry {
 
         public boolean isRequester() {
             return this == REQUESTER;
+        }
+
+        public boolean isPipe() {
+            return this == PIPE;
         }
     }
 }

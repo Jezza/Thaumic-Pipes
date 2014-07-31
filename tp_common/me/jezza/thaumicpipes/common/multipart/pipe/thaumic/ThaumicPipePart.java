@@ -1,29 +1,28 @@
 package me.jezza.thaumicpipes.common.multipart.pipe.thaumic;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-
+import codechicken.lib.vec.Cuboid6;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.api.registry.ConnectionRegistry;
+import me.jezza.thaumicpipes.api.registry.Priority;
 import me.jezza.thaumicpipes.client.IPartRenderer;
 import me.jezza.thaumicpipes.client.renderer.multipart.ThaumicPipePartRenderer;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.ModItems;
-import me.jezza.thaumicpipes.common.core.TPLogger;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
-import me.jezza.thaumicpipes.common.grid.interfaces.INetworkHandler;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
-import me.jezza.thaumicpipes.common.transport.MessageHandler;
 import me.jezza.thaumicpipes.common.transport.connection.ArmState;
 import me.jezza.thaumicpipes.common.transport.connection.ArmStateHandler;
 import me.jezza.thaumicpipes.common.transport.connection.NodeState;
+import me.jezza.thaumicpipes.common.transport.connection.TransportState;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
@@ -31,16 +30,18 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
+import thaumcraft.api.aspects.IAspectContainer;
 import thaumcraft.api.aspects.IEssentiaTransport;
 import thaumcraft.common.tiles.TileJarFillable;
-import codechicken.lib.vec.Cuboid6;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 
 public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
 
     private ArmStateHandler armStateHandler;
-    private MessageHandler messageHandler;
 
     @SideOnly(Side.CLIENT)
     private ThaumicPipePartRenderer renderer;
@@ -49,7 +50,6 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
 
     public ThaumicPipePart() {
         armStateHandler = new ArmStateHandler();
-        messageHandler = new MessageHandler();
         aspectList = new AspectList();
     }
 
@@ -61,18 +61,66 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
          * Start with sources?
          * Can you pull out of it?
          * add to ping list.
-         * 
+         *
          * Identify what aspects are currently waiting to be processed.
-         * 
+         *
          * Process necessary TAs
          * Eg, Ones waiting to be added.
-         * 
+         *
          * Don't pull out of LOWEST when LOWEST is the requester
          * Don't process LOWEST requests UNLESS there is a LOWER or higher source.
          */
         // @formatter:on
 
-        messageHandler.processMessages(this);
+        // Pull from sources greater than LOWEST
+        pullFromImportantSources();
+    }
+
+    private void pullFromImportantSources() {
+        List<ArmState> armList = armStateHandler.getSourceConnections();
+        if (armList.isEmpty())
+            return;
+
+        for (ArmState armState : armList)
+            if (!armState.getEntry().getPriority().equals(Priority.LOWEST))
+                addFromAndReduce(armState.getTransportState());
+    }
+
+    private void reduceAndAddTo(Aspect aspect, TransportState state) {
+        IAspectContainer container = state.getContainer();
+        if (!container.doesContainerAccept(aspect))
+            return;
+
+        int totalToAdd = aspectList.getAmount(aspect);
+        int leftOver = container.addToContainer(aspect, totalToAdd);
+        aspectList.reduce(aspect, totalToAdd - leftOver);
+    }
+
+    private void addFromAndReduce(TransportState transportState) {
+        AspectList tempList = transportState.getAspects();
+
+        if (tempList == null || tempList.aspects.isEmpty())
+            return;
+
+        for (Aspect tempAspect : tempList.getAspects()) {
+            if (tempAspect == null)
+                continue;
+
+            // int amount = tempList.getAmount(tempAspect);
+            int amount = 1;
+            if (transportState.getContainer().takeFromContainer(tempAspect, amount))
+                aspectList.add(tempAspect, amount);
+        }
+    }
+
+    @Override
+    public void save(NBTTagCompound tag) {
+        aspectList.writeToNBT(tag);
+    }
+
+    @Override
+    public void load(NBTTagCompound tag) {
+        aspectList.readFromNBT(tag);
     }
 
     public NodeState getNodeState() {
@@ -85,11 +133,6 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
 
     public ArmStateHandler getArmStateHandler() {
         return armStateHandler;
-    }
-
-    @Override
-    public INetworkHandler getNetworkHandler() {
-        return messageHandler;
     }
 
     @Override
@@ -175,17 +218,14 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
         TileEntity tileEntity = getTileCache()[direction.ordinal()];
         if (tileEntity == null)
             return false;
-        OcclusionPart part = new OcclusionPart(PipeProperties.ARM_STATE_OCCLUSION_BOXES[direction.ordinal()]);
-        OcclusionPart oppositePart = new OcclusionPart(PipeProperties.ARM_STATE_OCCLUSION_BOXES[direction.getOpposite().ordinal()]);
 
-        boolean flag = tileEntity instanceof IThaumicPipe ? bothPassOcclusionTest(((IThaumicPipe) tileEntity).getPipe(), part, oppositePart) : passOcclusionTest(part);
-        return tileEntity != null && flag && isConnectable(tileEntity, direction);
+        OcclusionPart part = PipeProperties.getOcclusionPart(direction);
+        if (tileEntity instanceof IThaumicPipe)
+            return bothPassOcclusionTest(((IThaumicPipe) tileEntity).getPipe(), part, PipeProperties.getOcclusionPart(direction.getOpposite()));
+        return passOcclusionTest(part) && isConnectable(tileEntity, direction);
     }
 
     private boolean isConnectable(TileEntity tileEntity, ForgeDirection direction) {
-        if (tileEntity instanceof IThaumicPipe)
-            return true;
-
         boolean flag = ConnectionRegistry.isValidConnection(tileEntity);
 
         if (flag) {
@@ -221,10 +261,6 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
 
     @Override
     public boolean activate(EntityPlayer player, MovingObjectPosition hit, ItemStack itemStack) {
-        if (!player.worldObj.isRemote) {
-            messageHandler.sendPing(getCoordSet());
-            TPLogger.info(getCoordSet());
-        }
         if (player.getCurrentEquippedItem() == null) {
             if (player.worldObj.isRemote)
                 return true;
@@ -238,7 +274,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
                     if (aspect == null)
                         continue;
                     empty = false;
-                    player.addChatMessage(new ChatComponentText("Contains " + aspectList.getAmount(aspect) + " " + aspect.getName()));
+                    player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "Contains " + aspectList.getAmount(aspect) + " " + aspect.getName()));
                 }
                 if (empty)
                     player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "The pipe is empty."));
