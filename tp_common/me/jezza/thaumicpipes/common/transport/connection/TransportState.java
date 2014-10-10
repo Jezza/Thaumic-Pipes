@@ -36,7 +36,7 @@ public class TransportState {
     }
 
     public boolean isTransport() {
-        return container != null;
+        return transport != null;
     }
 
     public IEssentiaTransport getTransport() {

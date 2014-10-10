@@ -20,7 +20,7 @@ public class NodeState {
 
     public static NodeState createNodeState(ArmState[] armStateArray) {
         for (ArmState armState : armStateArray)
-            if (armState != null && armState.isValid() && !armState.getEntry().getType().isPipe())
+            if (armState != null && armState.isValid() && !armState.isPipe())
                 return new NodeState(true, true, 0);
 
         int side = 0;
@@ -64,7 +64,7 @@ public class NodeState {
     }
 
     public Cuboid6 getOcclusionBox() {
-        return isNode ? PipeProperties.getNode() : PipeProperties.getSlimedNode(direction.ordinal());
+        return isNode ? PipeProperties.getNode() : PipeProperties.getSmallNode(direction.ordinal());
     }
 
 }

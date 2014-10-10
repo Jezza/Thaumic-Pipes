@@ -20,7 +20,7 @@ public class ArmStateHandler {
         int index = 0;
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
             TileEntity tileEntity = tileEntities[index];
-            boolean isValidConnection = tileEntity != null ? pipe.canConnectTo(direction) : false;
+            boolean isValidConnection = tileEntity != null && pipe.canConnectTo(direction);
             armStateArray[index++] = new ArmState(direction, tileEntity, isValidConnection);
         }
         return createNode();
@@ -30,26 +30,18 @@ public class ArmStateHandler {
         return armStateArray;
     }
 
+    public List<ArmState> getOtherConnections() {
+        ArrayList<ArmState> armList = new ArrayList<ArmState>();
+        for (ArmState armState : armStateArray)
+            if (armState != null && armState.isValid() && !armState.isPipe())
+                armList.add(armState);
+        return armList;
+    }
+
     public List<ArmState> getPipeConnections() {
         ArrayList<ArmState> armList = new ArrayList<ArmState>();
         for (ArmState armState : armStateArray)
             if (armState != null && armState.isValid() && armState.isPipe())
-                armList.add(armState);
-        return armList;
-    }
-
-    public List<ArmState> getSourceConnections() {
-        ArrayList<ArmState> armList = new ArrayList<ArmState>();
-        for (ArmState armState : armStateArray)
-            if (armState != null && armState.isValid() && armState.getEntry().getType().isSource())
-                armList.add(armState);
-        return armList;
-    }
-
-    public List<ArmState> getRequesterConnections() {
-        ArrayList<ArmState> armList = new ArrayList<ArmState>();
-        for (ArmState armState : armStateArray)
-            if (armState != null && armState.isValid() && armState.getEntry().getType().isRequester())
                 armList.add(armState);
         return armList;
     }

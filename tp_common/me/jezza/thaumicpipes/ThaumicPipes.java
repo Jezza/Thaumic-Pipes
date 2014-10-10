@@ -1,23 +1,5 @@
 package me.jezza.thaumicpipes;
 
-import me.jezza.thaumicpipes.api.ModHelper;
-import me.jezza.thaumicpipes.common.ModBlocks;
-import me.jezza.thaumicpipes.common.ModItems;
-import me.jezza.thaumicpipes.common.core.TPLogger;
-import me.jezza.thaumicpipes.common.core.command.CommandAirBlock;
-import me.jezza.thaumicpipes.common.core.command.CommandAreaRemove;
-import me.jezza.thaumicpipes.common.core.command.CommandAreaScan;
-import me.jezza.thaumicpipes.common.core.config.ConfigHandler;
-import me.jezza.thaumicpipes.common.core.external.ThaumcraftHelper;
-import me.jezza.thaumicpipes.common.core.external.ThaumicTinkerHelper;
-import me.jezza.thaumicpipes.common.core.utils.Utils;
-import me.jezza.thaumicpipes.common.lib.Reference;
-import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
-import me.jezza.thaumicpipes.common.research.ModRecipes;
-import me.jezza.thaumicpipes.common.research.ModResearch;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.Item;
-import thaumcraft.common.Thaumcraft;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -28,6 +10,20 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import me.jezza.thaumicpipes.common.ModBlocks;
+import me.jezza.thaumicpipes.common.ModItems;
+import me.jezza.thaumicpipes.common.core.TPLogger;
+import me.jezza.thaumicpipes.common.core.command.CommandAirBlock;
+import me.jezza.thaumicpipes.common.core.command.CommandAreaRemove;
+import me.jezza.thaumicpipes.common.core.command.CommandAreaScan;
+import me.jezza.thaumicpipes.common.core.config.ConfigHandler;
+import me.jezza.thaumicpipes.common.lib.Reference;
+import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
+import me.jezza.thaumicpipes.common.research.ModRecipes;
+import me.jezza.thaumicpipes.common.research.ModResearch;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.Item;
+import thaumcraft.common.Thaumcraft;
 
 @Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, dependencies = "required-after:Thaumcraft@[4.1.0g,);")
 public class ThaumicPipes {
@@ -63,18 +59,12 @@ public class ThaumicPipes {
         proxy.registerTileEntities();
         proxy.initServerSide();
         proxy.initClientSide();
-
-        new ThaumcraftHelper().init();
-        if (Utils.isThaumicTinkererLoaded())
-            new ThaumicTinkerHelper().init();
     }
 
     @EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         ModRecipes.init();
         ModResearch.init();
-        
-        ModHelper.postInit();
     }
 
     @EventHandler

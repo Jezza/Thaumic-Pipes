@@ -3,12 +3,9 @@ package me.jezza.thaumicpipes.common.transport.connection;
 import codechicken.lib.vec.Cuboid6;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import me.jezza.thaumicpipes.api.registry.ConnectionRegistry;
-import me.jezza.thaumicpipes.api.registry.RegistryEntry;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipeProperties;
-import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -18,10 +15,8 @@ public class ArmState {
     private TileEntity tileEntity;
     private ForgeDirection direction;
     private CoordSet coordSet;
-    private RegistryEntry entry;
 
-    @SideOnly(Side.CLIENT)
-    private RenderType renderOverride = RenderType.DEFAULT;
+    private RenderProperties renderOverride = RenderProperties.DEFAULT;
 
     public ArmState(ForgeDirection direction, TileEntity tileEntity, boolean isValidConnection) {
         this.direction = direction;
@@ -29,15 +24,11 @@ public class ArmState {
         this.isValidConnection = isValidConnection;
         if (isValidConnection) {
             this.coordSet = new CoordSet(tileEntity);
-            entry = ConnectionRegistry.getRegistryEntry(tileEntity);
-            if (entry == null)
-                entry = new RegistryEntry(RegistryEntry.Type.PIPE, TileThaumicPipe.class);
-            if (tileEntity.getWorldObj().isRemote)
-                renderOverride = RenderType.getType(tileEntity);
+            renderOverride = RenderProperties.getProperties(tileEntity);
         }
     }
 
-    public RenderType getRenderOverride() {
+    public RenderProperties getRenderOverride() {
         return renderOverride;
     }
 
@@ -48,10 +39,6 @@ public class ArmState {
     @SideOnly(Side.CLIENT)
     public boolean isPipe() {
         return renderOverride.isPipe();
-    }
-
-    public RegistryEntry getEntry() {
-        return entry;
     }
 
     public ForgeDirection getDirection() {

@@ -2,7 +2,6 @@ package me.jezza.thaumicpipes.common.multipart.pipe;
 
 import me.jezza.thaumicpipes.client.IPartRenderer;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
-import me.jezza.thaumicpipes.common.grid.interfaces.INetworkHandler;
 import me.jezza.thaumicpipes.common.multipart.MultiPartAbstract;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPartTester;
@@ -92,12 +91,12 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
         return tile().occlusionTest(tile().partList(), part);
     }
 
-    public boolean theyPassOcculsionTest(PipePartAbstract them, OcclusionPart part) {
+    public boolean theyPassOcclusionTest(PipePartAbstract them, OcclusionPart part) {
         return them.tile().occlusionTest(them.tile().partList(), part);
     }
 
     public boolean bothPassOcclusionTest(PipePartAbstract them, OcclusionPart part, OcclusionPart oppositePart) {
-        return theyPassOcculsionTest(them, oppositePart) && passOcclusionTest(part);
+        return theyPassOcclusionTest(them, oppositePart) && passOcclusionTest(part);
     }
 
     @Override

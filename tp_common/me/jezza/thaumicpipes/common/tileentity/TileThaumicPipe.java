@@ -1,22 +1,14 @@
 package me.jezza.thaumicpipes.common.tileentity;
 
-import java.util.ArrayList;
-
 import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.tileentity.interfaces.IBlockInteract;
-import me.jezza.thaumicpipes.common.transport.connection.TransportState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
-import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
-import thaumcraft.api.aspects.IAspectContainer;
 import cofh.api.block.IDismantleable;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 
 public class TileThaumicPipe extends TileTP implements IDismantleable, IBlockInteract {
     private AspectList aspectList = new AspectList();

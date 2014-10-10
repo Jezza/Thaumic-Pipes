@@ -6,7 +6,8 @@ import static org.lwjgl.opengl.GL11.glRotatef;
 import static org.lwjgl.opengl.GL11.glScalef;
 import static org.lwjgl.opengl.GL11.glTranslated;
 import static org.lwjgl.opengl.GL11.glTranslatef;
-import me.jezza.thaumicpipes.api.registry.RegistryEntry;
+
+import me.jezza.thaumicpipes.api.registry.ConnectionEntry;
 import me.jezza.thaumicpipes.client.IPartRenderer;
 import me.jezza.thaumicpipes.client.RenderUtils;
 import me.jezza.thaumicpipes.client.model.ModelJarConnection;
@@ -17,7 +18,7 @@ import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
 import me.jezza.thaumicpipes.common.multipart.pipe.thaumic.ThaumicPipePart;
 import me.jezza.thaumicpipes.common.transport.connection.ArmState;
 import me.jezza.thaumicpipes.common.transport.connection.NodeState;
-import me.jezza.thaumicpipes.common.transport.connection.RenderType;
+import me.jezza.thaumicpipes.common.transport.connection.RenderProperties;
 import net.minecraftforge.common.util.ForgeDirection;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -98,27 +99,25 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
         modelThaumicPipe.renderArm(index);
 
         ForgeDirection currentDir = currentState.getDirection();
-        RenderType renderType = currentState.getRenderOverride();
-        RegistryEntry registryEntry = currentState.getEntry();
+        RenderProperties renderProperties = currentState.getRenderOverride();
 
-        if (registryEntry == null)
+        if (renderProperties == null)
             return;
 
         glPushMatrix();
-        switch (renderType) {
+        switch (renderProperties) {
             case JAR:
                 renderJarConnections(currentState, index);
                 break;
             case PIPE:
                 break;
-            case DEFAULT:
-                float extensionSize = registryEntry.getExtensionSize();
+            default:
+                float extensionSize = renderProperties.getExtensionSize();
                 if (extensionSize == 0.0F)
                     break;
                 glTranslatef(currentDir.offsetX * extensionSize, currentDir.offsetY * extensionSize, currentDir.offsetZ * extensionSize);
                 glScalef(0.9999F, 0.9999F, 0.9999F);
                 modelThaumicPipe.renderArm(index);
-            default:
                 break;
         }
         glPopMatrix();

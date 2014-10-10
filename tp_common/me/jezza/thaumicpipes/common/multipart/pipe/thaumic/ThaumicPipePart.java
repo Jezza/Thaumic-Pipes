@@ -4,12 +4,11 @@ import codechicken.lib.vec.Cuboid6;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
-import me.jezza.thaumicpipes.api.registry.ConnectionRegistry;
-import me.jezza.thaumicpipes.api.registry.Priority;
 import me.jezza.thaumicpipes.client.IPartRenderer;
 import me.jezza.thaumicpipes.client.renderer.multipart.ThaumicPipePartRenderer;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.ModItems;
+import me.jezza.thaumicpipes.common.core.TPLogger;
 import me.jezza.thaumicpipes.common.core.utils.CoordSet;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
@@ -24,8 +23,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
@@ -37,7 +34,6 @@ import thaumcraft.common.tiles.TileJarFillable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 
 public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
 
@@ -56,7 +52,6 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     @Override
     public void update() {
         super.update();
-        // @formatter:off
         /**
          * Start with sources?
          * Can you pull out of it?
@@ -70,20 +65,50 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
          * Don't pull out of LOWEST when LOWEST is the requester
          * Don't process LOWEST requests UNLESS there is a LOWER or higher source.
          */
-        // @formatter:on
 
         // Pull from sources greater than LOWEST
-        pullFromImportantSources();
+        // pullFromImportantSources();
+
+        // TileAlembic
+        //
     }
 
-    private void pullFromImportantSources() {
-        List<ArmState> armList = armStateHandler.getSourceConnections();
-        if (armList.isEmpty())
-            return;
+    private void process() {
+        for (ArmState armState : armStateHandler.getOtherConnections()) {
+            ForgeDirection direction = armState.getDirection().getOpposite();
+            TileEntity tileEntity = armState.getTileEntity();
+            if (tileEntity instanceof TileJarFillable) {
+                TileJarFillable tileJarFillable = (TileJarFillable) tileEntity;
+                TPLogger.info("-Begin DEBUG-");
+                TPLogger.info(tileJarFillable.canInputFrom(direction));
+                TPLogger.info(tileJarFillable.canOutputTo(direction));
+                // canInputFrom should return true.
+                // canOutputTo should also return true.
+                // Shouldn't worry about these calls, as 5 / 6 times it will return false regardless.
 
-        for (ArmState armState : armList)
-            if (!armState.getEntry().getPriority().equals(Priority.LOWEST))
-                addFromAndReduce(armState.getTransportState());
+
+                TPLogger.info(tileJarFillable.getSuctionType(direction));
+                TPLogger.info(tileJarFillable.getEssentiaType(direction));
+                // If it's null, means it's empty.
+
+
+                TPLogger.info(tileJarFillable.getSuctionAmount(null));
+                TPLogger.info(tileJarFillable.getEssentiaAmount(null));
+
+                TPLogger.info("-Finish DEBUG-");
+                continue;
+            }
+
+            if (tileEntity instanceof IEssentiaTransport) {
+                IEssentiaTransport transport = (IEssentiaTransport) tileEntity;
+                Aspect aspect = transport.getSuctionType(direction);
+                Aspect aspect1 = transport.getEssentiaType(direction);
+                TPLogger.info(transport.canInputFrom(direction));
+                TPLogger.info(transport.canOutputTo(direction));
+                TPLogger.info(aspect == null ? "No suction." : "Suction type: " + aspect.getName());
+                TPLogger.info(aspect1 == null ? "No essentia." : "Essentia type: " + aspect1.getName());
+            }
+        }
     }
 
     private void reduceAndAddTo(Aspect aspect, TransportState state) {
@@ -142,50 +167,18 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
         occlusionTester.updateWithArmStates(armStateHandler.getArmStateArray(), nodeState);
     }
 
-    public ArrayList<TileEntity> getSourceTiles(HashSet<CoordSet> coordSets) {
+    public ArrayList<TileEntity> getTiles(HashSet<CoordSet> coordSets) {
         if (coordSets == null)
             coordSets = new HashSet<CoordSet>();
         ArrayList<TileEntity> tileList = new ArrayList<TileEntity>();
 
-        for (ArmState state : armStateHandler.getSourceConnections()) {
-            CoordSet tempSet = state.getCoordSet();
-            if (coordSets.contains(tempSet))
-                continue;
-            coordSets.add(tempSet);
-            tileList.add(state.getTileEntity());
-        }
-
-        return tileList;
-    }
-
-    public ArrayList<TileEntity> getRequesterTiles(HashSet<CoordSet> coordSets) {
-        if (coordSets == null)
-            coordSets = new HashSet<CoordSet>();
-        ArrayList<TileEntity> tileList = new ArrayList<TileEntity>();
-
-        for (ArmState state : armStateHandler.getRequesterConnections()) {
-            CoordSet tempSet = state.getCoordSet();
-            if (coordSets.contains(tempSet))
-                continue;
-            coordSets.add(tempSet);
-            tileList.add(state.getTileEntity());
-        }
-
-        return tileList;
-    }
-
-    public ArrayList<TileEntity> getPipeTiles(HashSet<CoordSet> coordSets) {
-        if (coordSets == null)
-            coordSets = new HashSet<CoordSet>();
-        ArrayList<TileEntity> tileList = new ArrayList<TileEntity>();
-
-        for (ArmState state : armStateHandler.getPipeConnections()) {
-            CoordSet tempSet = state.getCoordSet();
-            if (coordSets.contains(tempSet))
-                continue;
-            coordSets.add(tempSet);
-            tileList.add(state.getTileEntity());
-        }
+//        for (ArmState state : armStateHandler.) {
+//            CoordSet tempSet = state.getCoordSet();
+//            if (coordSets.contains(tempSet))
+//                continue;
+//            coordSets.add(tempSet);
+//            tileList.add(state.getTileEntity());
+//        }
 
         return tileList;
     }
@@ -214,7 +207,6 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     public boolean canConnectTo(ForgeDirection direction) {
         if (direction == ForgeDirection.UNKNOWN)
             return false;
-
         TileEntity tileEntity = getTileCache()[direction.ordinal()];
         if (tileEntity == null)
             return false;
@@ -222,20 +214,15 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
         OcclusionPart part = PipeProperties.getOcclusionPart(direction);
         if (tileEntity instanceof IThaumicPipe)
             return bothPassOcclusionTest(((IThaumicPipe) tileEntity).getPipe(), part, PipeProperties.getOcclusionPart(direction.getOpposite()));
-        return passOcclusionTest(part) && isConnectable(tileEntity, direction);
+        return passOcclusionTest(part) && isValidConnection(tileEntity, direction);
     }
 
-    private boolean isConnectable(TileEntity tileEntity, ForgeDirection direction) {
-        boolean flag = ConnectionRegistry.isValidConnection(tileEntity);
-
-        if (flag) {
-            if (tileEntity instanceof TileJarFillable)
-                return true;
-            if (tileEntity instanceof IEssentiaTransport)
-                return ((IEssentiaTransport) tileEntity).isConnectable(direction.getOpposite());
-        }
-
-        return flag;
+    private boolean isValidConnection(TileEntity tileEntity, ForgeDirection direction) {
+        if (tileEntity instanceof TileJarFillable)
+            return true;
+        if (tileEntity instanceof IEssentiaTransport)
+            return ((IEssentiaTransport) tileEntity).isConnectable(direction.getOpposite());
+        return false;
     }
 
     @Override
@@ -261,26 +248,29 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
 
     @Override
     public boolean activate(EntityPlayer player, MovingObjectPosition hit, ItemStack itemStack) {
-        if (player.getCurrentEquippedItem() == null) {
-            if (player.worldObj.isRemote)
-                return true;
-
-            if (player.isSneaking()) {
-                drain();
-                player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "Pipe was drained."));
-            } else {
-                boolean empty = true;
-                for (Aspect aspect : aspectList.getAspects()) {
-                    if (aspect == null)
-                        continue;
-                    empty = false;
-                    player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "Contains " + aspectList.getAmount(aspect) + " " + aspect.getName()));
-                }
-                if (empty)
-                    player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "The pipe is empty."));
-            }
-            return true;
-        }
-        return false;
+        if (!player.worldObj.isRemote)
+            process();
+        return true;
+//        if (player.getCurrentEquippedItem() == null) {
+//            if (player.worldObj.isRemote)
+//                return true;
+//
+//            if (player.isSneaking()) {
+//                drain();
+//                player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "Pipe was drained."));
+//            } else {
+//                boolean empty = true;
+//                for (Aspect aspect : aspectList.getAspects()) {
+//                    if (aspect == null)
+//                        continue;
+//                    empty = false;
+//                    player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "Contains " + aspectList.getAmount(aspect) + " " + aspect.getName()));
+//                }
+//                if (empty)
+//                    player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "The pipe is empty."));
+//            }
+//            return true;
+//        }
+//        return false;
     }
 }

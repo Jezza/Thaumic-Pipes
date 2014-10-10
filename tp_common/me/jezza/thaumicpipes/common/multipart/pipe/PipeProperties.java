@@ -36,7 +36,7 @@ public class PipeProperties {
         return new Cuboid6(MIN, MIN, MIN, MAX, MAX, MAX);
     }
 
-    public static Cuboid6 getSlimedNode(int direction) {
+    public static Cuboid6 getSmallNode(int direction) {
         switch (direction) {
             case 0:
             case 1:

@@ -87,9 +87,9 @@ public abstract class BlockTP extends Block {
     }
 
     @Override
-    public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z) {
+    public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
         onBlockRemoval(world, x, y, z);
-        return super.removedByPlayer(world, player, x, y, z);
+        return super.removedByPlayer(world, player, x, y, z, willHarvest);
     }
 
     public void onBlockRemoval(World world, int x, int y, int z) {

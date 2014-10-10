@@ -4,7 +4,6 @@ public class Reference {
 
     public static final String MOD_ID = "ThaumicPipes";
     public static final String MOD_NAME = "Thaumic Pipes";
-    public static final String CHANNEL_NAME = "ThaumicPipes";
 
     public static final String MOD_IDENTIFIER = MOD_ID + ":";
 
