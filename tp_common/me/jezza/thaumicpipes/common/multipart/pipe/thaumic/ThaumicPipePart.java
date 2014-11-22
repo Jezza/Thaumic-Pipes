@@ -3,6 +3,12 @@ package me.jezza.thaumicpipes.common.multipart.pipe.thaumic;
 import codechicken.lib.vec.Cuboid6;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import me.jezza.oc.api.NetworkResponse.MessageResponse;
+import me.jezza.oc.api.NetworkResponse.NetworkOverride;
+import me.jezza.oc.api.interfaces.IMessageProcessor;
+import me.jezza.oc.api.interfaces.INetworkMessage;
+import me.jezza.oc.api.interfaces.INetworkNode;
+import me.jezza.thaumicpipes.ThaumicPipes;
 import me.jezza.thaumicpipes.client.IPartRenderer;
 import me.jezza.thaumicpipes.client.renderer.ThaumicPipePartRenderer;
 import me.jezza.thaumicpipes.common.ModBlocks;
@@ -17,18 +23,22 @@ import me.jezza.thaumicpipes.common.transport.connection.ArmState;
 import me.jezza.thaumicpipes.common.transport.connection.ArmStateHandler;
 import me.jezza.thaumicpipes.common.transport.connection.NodeState;
 import net.minecraft.block.Block;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.IEssentiaTransport;
 import thaumcraft.common.tiles.TileJarFillable;
 import thaumcraft.common.tiles.TileTube;
 
 import java.util.Arrays;
+import java.util.Collection;
 
-public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
+public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, INetworkNode {
 
+    private IMessageProcessor messageProcessor;
     private ArmStateHandler armStateHandler;
 
     @SideOnly(Side.CLIENT)
@@ -53,6 +63,11 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
         // TODO LOAD SHIT
     }
 
+    @Override
+    public boolean activate(EntityPlayer player, MovingObjectPosition hit, ItemStack item) {
+        return super.activate(player, hit, item);
+    }
+
     public NodeState getNodeState() {
         return nodeState;
     }
@@ -64,11 +79,19 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     @Override
     public void updateStates() {
         super.updateStates();
+
+        ThaumicPipes.proxy.updateNetworkNode(this);
+
         nodeState = armStateHandler.updateArmStates(this, getTileCache());
         IOcclusionPart[] occlusionParts = new IOcclusionPart[7];
         System.arraycopy(armStateHandler.getArmStateArray(), 0, occlusionParts, 0, 6);
         occlusionParts[6] = nodeState;
         occlusionTester.update(occlusionParts);
+    }
+
+    @Override
+    public void onWorldSeparate() {
+        ThaumicPipes.proxy.removeNetworkNode(this);
     }
 
     @Override
@@ -126,5 +149,40 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     @Override
     public ItemStack getDropStack() {
         return new ItemStack(ModItems.thaumicPipe);
+    }
+
+    @Override
+    public NetworkOverride onMessagePosted(INetworkMessage message) {
+        return NetworkOverride.IGNORE;
+    }
+
+    @Override
+    public NetworkOverride onMessageReceived(INetworkMessage message) {
+        return NetworkOverride.IGNORE;
+    }
+
+    @Override
+    public MessageResponse onMessageComplete(INetworkMessage message) {
+        return MessageResponse.VALID;
+    }
+
+    @Override
+    public Collection<INetworkNode> getNearbyNodes() {
+        return armStateHandler.getValidConnections(getTileCache());
+    }
+
+    @Override
+    public void setIMessageProcessor(IMessageProcessor messageProcessor) {
+        this.messageProcessor = messageProcessor;
+    }
+
+    @Override
+    public IMessageProcessor getIMessageProcessor() {
+        return messageProcessor;
+    }
+
+    @Override
+    public boolean registerMessagePostedOverride() {
+        return false;
     }
 }

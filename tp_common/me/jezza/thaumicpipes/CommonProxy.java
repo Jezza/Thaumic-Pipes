@@ -3,6 +3,7 @@ package me.jezza.thaumicpipes;
 import me.jezza.oc.api.NetworkInstance;
 import me.jezza.oc.api.NetworkResponse.NodeAdded;
 import me.jezza.oc.api.NetworkResponse.NodeRemoved;
+import me.jezza.oc.api.NetworkResponse.NodeUpdated;
 import me.jezza.oc.api.interfaces.INetworkNode;
 
 public class CommonProxy {
@@ -36,8 +37,14 @@ public class CommonProxy {
         return response;
     }
 
-    public void updateNetworkNode() {
-
+    public NodeUpdated updateNetworkNode(INetworkNode node) {
+        NodeUpdated response;
+        try {
+            response = networkInstance.updateNetworkNode(node);
+        } catch (Exception e) {
+            response = NodeUpdated.NETWORK_FAILED_TO_UPDATE;
+        }
+        return response;
     }
 
 }

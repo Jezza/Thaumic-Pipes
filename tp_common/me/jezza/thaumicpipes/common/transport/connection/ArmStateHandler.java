@@ -1,8 +1,12 @@
 package me.jezza.thaumicpipes.common.transport.connection;
 
+import me.jezza.oc.api.interfaces.INetworkNode;
 import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import java.util.Collection;
+import java.util.LinkedList;
 
 public class ArmStateHandler {
 
@@ -36,6 +40,15 @@ public class ArmStateHandler {
         return armState.setFields(direction, tileEntity, isValidConnection);
     }
 
+    public Collection<INetworkNode> getValidConnections(TileEntity[] tileEntities) {
+        LinkedList<INetworkNode> validConnections = new LinkedList<>();
+        for (int i = 0; i <= 5; i++) {
+            ArmState armState = armStateArray[i];
+            if (armState.isPipe())
+                validConnections.add((INetworkNode) tileEntities[i]);
+        }
+        return validConnections;
+    }
 
     public ArmState[] getArmStateArray() {
         return armStateArray;
