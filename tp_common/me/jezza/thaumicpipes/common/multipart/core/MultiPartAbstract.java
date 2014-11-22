@@ -1,14 +1,5 @@
-package me.jezza.thaumicpipes.common.multipart;
+package me.jezza.thaumicpipes.common.multipart.core;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-
-import net.minecraft.block.Block;
-import net.minecraft.client.particle.EffectRenderer;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
-import net.minecraft.util.MovingObjectPosition;
 import codechicken.lib.raytracer.IndexedCuboid6;
 import codechicken.lib.render.EntityDigIconFX;
 import codechicken.lib.vec.Cuboid6;
@@ -18,12 +9,18 @@ import codechicken.multipart.NormalOcclusionTest;
 import codechicken.multipart.TMultiPart;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import me.jezza.thaumicpipes.common.multipart.occlusion.OcclusionPart;
+import net.minecraft.block.Block;
+import net.minecraft.client.particle.EffectRenderer;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.IIcon;
+import net.minecraft.util.MovingObjectPosition;
+
+import java.util.Arrays;
+import java.util.LinkedList;
 
 public abstract class MultiPartAbstract extends TMultiPart implements JNormalOcclusion {
-
-    public abstract ItemStack getStack();
-
-    public abstract Block getBlock();
 
     @Override
     public void onWorldJoin() {
@@ -33,18 +30,18 @@ public abstract class MultiPartAbstract extends TMultiPart implements JNormalOcc
 
     @Override
     public ItemStack pickItem(MovingObjectPosition hit) {
-        return getStack();
+        return getDropStack();
     }
 
     @Override
     public Iterable<ItemStack> getDrops() {
-        return Arrays.asList(getStack());
+        return Arrays.asList(getDropStack());
     }
 
     @Override
     public Iterable<IndexedCuboid6> getSubParts() {
         Iterable<Cuboid6> occlusionBoxes = getAllOcclusionBoxes();
-        LinkedList<IndexedCuboid6> partList = new LinkedList<IndexedCuboid6>();
+        LinkedList<IndexedCuboid6> partList = new LinkedList<>();
         for (Cuboid6 c : occlusionBoxes)
             partList.add(new IndexedCuboid6(0, c));
         return partList;
@@ -74,7 +71,7 @@ public abstract class MultiPartAbstract extends TMultiPart implements JNormalOcc
     @Override
     @SideOnly(Side.CLIENT)
     public void addDestroyEffects(EffectRenderer effectRenderer) {
-        EntityDigIconFX.addBlockDestroyEffects(world(), Cuboid6.full.copy().add(Vector3.fromTileEntity(tile())), new IIcon[] { getIcon(), getIcon(), getIcon(), getIcon(), getIcon(), getIcon() }, effectRenderer);
+        EntityDigIconFX.addBlockDestroyEffects(world(), Cuboid6.full.copy().add(Vector3.fromTileEntity(tile())), new IIcon[]{getIcon(), getIcon(), getIcon(), getIcon(), getIcon(), getIcon()}, effectRenderer);
     }
 
     @Override
@@ -87,6 +84,10 @@ public abstract class MultiPartAbstract extends TMultiPart implements JNormalOcc
     public IIcon getIcon() {
         return getBlock().getIcon(0, 0);
     }
+
+    public abstract Block getBlock();
+
+    public abstract ItemStack getDropStack();
 
     public abstract Iterable<Cuboid6> getAllOcclusionBoxes();
 }

@@ -1,39 +1,30 @@
-package me.jezza.thaumicpipes.client.renderer.multipart;
+package me.jezza.thaumicpipes.client.renderer;
 
-import static org.lwjgl.opengl.GL11.glPopMatrix;
-import static org.lwjgl.opengl.GL11.glPushMatrix;
-import static org.lwjgl.opengl.GL11.glRotatef;
-import static org.lwjgl.opengl.GL11.glScalef;
-import static org.lwjgl.opengl.GL11.glTranslated;
-import static org.lwjgl.opengl.GL11.glTranslatef;
-
-import me.jezza.thaumicpipes.api.registry.ConnectionEntry;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import me.jezza.thaumicpipes.client.IPartRenderer;
 import me.jezza.thaumicpipes.client.RenderUtils;
 import me.jezza.thaumicpipes.client.model.ModelJarConnection;
 import me.jezza.thaumicpipes.client.model.ModelPipeExtension;
 import me.jezza.thaumicpipes.client.model.ModelThaumicPipe;
 import me.jezza.thaumicpipes.common.lib.TextureMaps;
-import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
-import me.jezza.thaumicpipes.common.multipart.pipe.thaumic.ThaumicPipePart;
+import me.jezza.thaumicpipes.common.multipart.part.PipePartAbstract;
+import me.jezza.thaumicpipes.common.multipart.part.thaumic.ThaumicPipePart;
 import me.jezza.thaumicpipes.common.transport.connection.ArmState;
+import me.jezza.thaumicpipes.common.transport.connection.ConnectionType;
 import me.jezza.thaumicpipes.common.transport.connection.NodeState;
-import me.jezza.thaumicpipes.common.transport.connection.RenderProperties;
 import net.minecraftforge.common.util.ForgeDirection;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+
+import static org.lwjgl.opengl.GL11.*;
 
 @SideOnly(Side.CLIENT)
 public class ThaumicPipePartRenderer implements IPartRenderer {
 
-    ModelThaumicPipe modelThaumicPipe;
-    ModelJarConnection modelJarConnection;
-    ModelPipeExtension modelPipeExtension;
+    ModelThaumicPipe modelThaumicPipe = new ModelThaumicPipe();
+    ModelJarConnection modelJarConnection = new ModelJarConnection();
+    ModelPipeExtension modelPipeExtension = new ModelPipeExtension();
 
     public ThaumicPipePartRenderer() {
-        modelThaumicPipe = new ModelThaumicPipe();
-        modelJarConnection = new ModelJarConnection();
-        modelPipeExtension = new ModelPipeExtension();
     }
 
     public void render(ThaumicPipePart pipe, double x, double y, double z, float tick) {
@@ -46,15 +37,9 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
         glScalef(scale, scale, scale);
 
         ArmState[] armSet = pipe.getArmStateArray();
-
-        if (armSet == null) {
-            glPopMatrix();
-            return;
-        }
-
         for (int index = 0; index < armSet.length; index++) {
             ArmState currentState = armSet[index];
-            if (currentState != null && currentState.isValid())
+            if (currentState.isPartValid())
                 renderArm(currentState, index + 1);
         }
 
@@ -63,34 +48,34 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
     }
 
     private void renderNodeState(NodeState nodeState) {
-        if (nodeState == null)
-            return;
-
-        if (nodeState.isNode()) {
-            RenderUtils.bindTexture(TextureMaps.THAUMIC_PIPE_CENTRE[TextureMaps.THAUMIC_TEXTURE_INDEX]);
-
-            float scale = nodeState.isBigNode() ? 1.33F : 1.01F;
-            glScalef(scale, scale, scale);
-
-            modelThaumicPipe.renderPart("centre");
-        } else {
-            RenderUtils.bindBorderlessTexture();
-            switch (nodeState.getDirection()) {
-                case DOWN:
-                    glRotatef(90, 1.0F, 0.0F, 0.0F);
-                case NORTH:
-                    glRotatef(90, 0.0F, 1.0F, 0.0F);
-                case WEST:
-                    glTranslatef(-0.2F, 0.0F, 0.0F);
-                    modelPipeExtension.renderAll();
-                    glTranslatef(0.2F, 0.0F, 0.0F);
-                    modelPipeExtension.renderAll();
-                    glTranslatef(0.2F, 0.0F, 0.0F);
-                    modelPipeExtension.renderAll();
-                    break;
-                default:
-                    break;
-            }
+        float scale = 1.01F;
+        switch (nodeState) {
+            case BIG_NODE:
+                scale = 1.33F;
+            case NORMAL_NODE:
+            default:
+                RenderUtils.bindTexture(TextureMaps.THAUMIC_PIPE_CENTRE[TextureMaps.THAUMIC_TEXTURE_INDEX]);
+                glScalef(scale, scale, scale);
+                modelThaumicPipe.renderPart("centre");
+                break;
+            case DIRECTIONAL_SECTION:
+                RenderUtils.bindBorderlessTexture();
+                switch (nodeState.getDirection()) {
+                    case DOWN:
+                        glRotatef(90, 1.0F, 0.0F, 0.0F);
+                    case NORTH:
+                        glRotatef(90, 0.0F, 1.0F, 0.0F);
+                    case WEST:
+                        glTranslatef(-0.2F, 0.0F, 0.0F);
+                        modelPipeExtension.renderAll();
+                        glTranslatef(0.2F, 0.0F, 0.0F);
+                        modelPipeExtension.renderAll();
+                        glTranslatef(0.2F, 0.0F, 0.0F);
+                        modelPipeExtension.renderAll();
+                        break;
+                    default:
+                        break;
+                }
         }
     }
 
@@ -99,20 +84,17 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
         modelThaumicPipe.renderArm(index);
 
         ForgeDirection currentDir = currentState.getDirection();
-        RenderProperties renderProperties = currentState.getRenderOverride();
-
-        if (renderProperties == null)
-            return;
+        ConnectionType connectionType = currentState.getConnectionType();
 
         glPushMatrix();
-        switch (renderProperties) {
+        switch (connectionType) {
             case JAR:
                 renderJarConnections(currentState, index);
                 break;
             case PIPE:
                 break;
             default:
-                float extensionSize = renderProperties.getExtensionSize();
+                float extensionSize = connectionType.getExtensionSize();
                 if (extensionSize == 0.0F)
                     break;
                 glTranslatef(currentDir.offsetX * extensionSize, currentDir.offsetY * extensionSize, currentDir.offsetZ * extensionSize);
@@ -124,15 +106,15 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
     }
 
     private void renderJarConnections(ArmState currentState, int index) {
-        ForgeDirection currentDir = currentState.getDirection();
+        ForgeDirection direction = currentState.getDirection();
 
-        float xDisplace = currentDir.offsetX;
-        float yDisplace = currentDir.offsetY;
-        float zDisplace = currentDir.offsetZ;
+        float xDisplace = direction.offsetX;
+        float yDisplace = direction.offsetY;
+        float zDisplace = direction.offsetZ;
 
         glTranslatef(xDisplace, yDisplace, zDisplace);
 
-        if (currentDir != ForgeDirection.UP) {
+        if (direction != ForgeDirection.UP) {
             glPushMatrix();
 
             float distance = 0.4F;
@@ -140,10 +122,10 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
 
             glRotatef(90F, xDisplace, zDisplace, yDisplace);
 
-            if (currentDir == ForgeDirection.NORTH)
+            if (direction == ForgeDirection.NORTH)
                 glRotatef(180F, 0.0F, 0.0F, 1.0F);
 
-            if (currentDir == ForgeDirection.DOWN) {
+            if (direction == ForgeDirection.DOWN) {
                 glRotatef(180, 0.0F, 1.0F, 0.0F);
                 RenderUtils.bindBorderlessTexture();
                 modelPipeExtension.renderAll();
@@ -157,18 +139,18 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
             glPopMatrix();
         }
 
-        if (currentDir != ForgeDirection.DOWN) {
+        if (direction != ForgeDirection.DOWN) {
             glPushMatrix();
             RenderUtils.bindTexture(TextureMaps.JAR_CONNECTION);
 
             float distance = 0.173F;
-            glTranslatef(currentDir.offsetX * distance, currentDir.offsetY * distance, currentDir.offsetZ * distance);
+            glTranslatef(direction.offsetX * distance, direction.offsetY * distance, direction.offsetZ * distance);
 
-            if (currentDir != ForgeDirection.UP) {
+            if (direction != ForgeDirection.UP) {
                 float secondaryTranslate = 0.455F;
 
-                glTranslatef(currentDir.offsetX * secondaryTranslate, 0.0F, currentDir.offsetZ * secondaryTranslate);
-                glRotatef(90F, currentDir.offsetZ, currentDir.offsetY, currentDir.offsetX);
+                glTranslatef(direction.offsetX * secondaryTranslate, 0.0F, direction.offsetZ * secondaryTranslate);
+                glRotatef(90F, direction.offsetZ, direction.offsetY, direction.offsetX);
             }
 
             glScalef(1.95F, 1.55F, 1.95F);

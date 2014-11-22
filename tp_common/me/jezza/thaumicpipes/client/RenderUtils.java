@@ -1,6 +1,8 @@
 package me.jezza.thaumicpipes.client;
 
-import me.jezza.thaumicpipes.common.lib.Reference;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import me.jezza.thaumicpipes.common.lib.CoreProperties;
 import me.jezza.thaumicpipes.common.lib.TextureMaps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -9,8 +11,6 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import thaumcraft.api.IGoggles;
 import thaumcraft.api.ItemApi;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class RenderUtils {
@@ -21,7 +21,7 @@ public class RenderUtils {
     }
 
     public static void bindPriorityTexture(int animationFrame) {
-        animationFrame = MathHelper.clamp_int(animationFrame, 0, Reference.PIPE_ANIMATION_SIZE);
+        animationFrame = MathHelper.clamp_int(animationFrame, 0, CoreProperties.PIPE_ANIMATION_SIZE);
         RenderUtils.bindTexture(TextureMaps.PRIORITY_ANIMATION_FRAMES[animationFrame]);
     }
 
@@ -38,10 +38,10 @@ public class RenderUtils {
     }
 
     public static boolean canRenderPriority() {
-        return isPlayerHoldingWand() && isPlayerWearingGoogles();
+        return isPlayerHoldingWand() && isPlayerWearingGoggles();
     }
 
-    public static boolean isPlayerWearingGoogles() {
+    public static boolean isPlayerWearingGoggles() {
         EntityPlayer player = Minecraft.getMinecraft().thePlayer;
         if (player == null)
             return false;

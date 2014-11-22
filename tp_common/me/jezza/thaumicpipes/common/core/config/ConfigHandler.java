@@ -1,13 +1,13 @@
 package me.jezza.thaumicpipes.common.core.config;
 
-import java.io.File;
-
-import me.jezza.thaumicpipes.common.core.TPLogger;
-import me.jezza.thaumicpipes.common.lib.Reference;
 import me.jezza.thaumicpipes.common.lib.Strings;
 import me.jezza.thaumicpipes.common.lib.TextureMaps;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.common.config.Configuration;
+
+import java.io.File;
+
+import static me.jezza.thaumicpipes.common.lib.CoreProperties.*;
 
 public class ConfigHandler {
 
@@ -21,11 +21,11 @@ public class ConfigHandler {
         try {
             config.load();
 
-            TPLogger.info("Configs started to load");
+            logger.info("Configs started to load");
 
             getConstants();
 
-            TPLogger.info("Configs loaded successfully");
+            logger.info("Configs loaded successfully");
 
         } catch (Exception e) {
 
@@ -35,7 +35,7 @@ public class ConfigHandler {
     }
 
     public static void getConstants() {
-        Reference.COMMANDS = config.get(MISC, "commands", Reference.COMMANDS, "They aren't thaumcraft related, just some useful commands.").getBoolean(Reference.COMMANDS);
+        COMMANDS = config.get(MISC, "commands", COMMANDS, "They aren't thaumcraft related, just some useful commands.").getBoolean(COMMANDS);
 
         int textureIndex = config.get(MISC, Strings.THAUMIC_PIPE_TEXTURE, TextureMaps.THAUMIC_TEXTURE_INDEX, "0 - Steam punk style texture.\n1 - Old thaumcraft style texture.\n2 - The default texture.").getInt();
         TextureMaps.THAUMIC_TEXTURE_INDEX = MathHelper.clamp_int(textureIndex, 0, 2);

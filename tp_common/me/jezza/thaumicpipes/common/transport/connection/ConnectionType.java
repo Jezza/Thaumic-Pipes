@@ -1,28 +1,32 @@
 package me.jezza.thaumicpipes.common.transport.connection;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
+import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
 import thaumcraft.common.tiles.TileAlembic;
 import thaumcraft.common.tiles.TileJarFillable;
 
-@SideOnly(Side.CLIENT)
-public enum RenderProperties {
-    DEFAULT, ALBEMIC(0.5F), JAR, PIPE;
+public enum ConnectionType {
+    DEFAULT,
+    ALBEMIC(0.5F),
+    JAR,
+    PIPE;
 
     private float extensionSize = 0.0F;
 
-    RenderProperties() {
+    ConnectionType() {
     }
 
-    RenderProperties(float extensionSize) {
+    ConnectionType(float extensionSize) {
         this.extensionSize = MathHelper.clamp_float(extensionSize, 0.0F, 1.0F);
     }
 
     public boolean isPipe() {
         return this == PIPE;
+    }
+
+    public boolean isAlbemic() {
+        return this == ALBEMIC;
     }
 
     public boolean isJar() {
@@ -37,7 +41,7 @@ public enum RenderProperties {
         return extensionSize;
     }
 
-    public static RenderProperties getProperties(TileEntity tileEntity) {
+    public static ConnectionType getProperties(TileEntity tileEntity) {
         if (tileEntity instanceof IThaumicPipe)
             return PIPE;
         if (tileEntity instanceof TileJarFillable)

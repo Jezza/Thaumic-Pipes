@@ -1,16 +1,16 @@
 package me.jezza.thaumicpipes.common.blocks;
 
-import java.util.List;
-
-import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
+import me.jezza.oc.common.blocks.BlockAbstract;
+import me.jezza.thaumicpipes.common.lib.CoreProperties;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-public class BlockThaumicPipe extends BlockTP {
+import java.util.List;
+
+public class BlockThaumicPipe extends BlockAbstract {
 
     private static final float MIN = 0.3125F;
     private static final float MAX = 0.6875F;
@@ -19,6 +19,11 @@ public class BlockThaumicPipe extends BlockTP {
         super(material, name);
         setHardness(3F);
         setCreativeTab(null);
+    }
+
+    @Override
+    public String getModIdentifier() {
+        return CoreProperties.MOD_IDENTIFIER;
     }
 
     @Override
@@ -33,13 +38,4 @@ public class BlockThaumicPipe extends BlockTP {
         super.addCollisionBoxesToList(world, x, y, z, playerBoundingBox, list, entity);
     }
 
-    @Override
-    public TileEntity getTileEntity() {
-        return new TileThaumicPipe();
-    }
-
-    @Override
-    public boolean renderWithModel() {
-        return true;
-    }
 }

@@ -1,19 +1,43 @@
 package me.jezza.thaumicpipes;
 
-import me.jezza.thaumicpipes.common.lib.Strings;
-import me.jezza.thaumicpipes.common.tileentity.TileThaumicPipe;
-import cpw.mods.fml.common.registry.GameRegistry;
+import me.jezza.oc.api.NetworkInstance;
+import me.jezza.oc.api.NetworkResponse.NodeAdded;
+import me.jezza.oc.api.NetworkResponse.NodeRemoved;
+import me.jezza.oc.api.interfaces.INetworkNode;
 
 public class CommonProxy {
 
-    public void registerTileEntities() {
-        GameRegistry.registerTileEntity(TileThaumicPipe.class, Strings.THAUMIC_PIPE);
-    }
+    private static NetworkInstance networkInstance;
 
     public void initServerSide() {
-
+        networkInstance = new NetworkInstance();
     }
 
     public void initClientSide() {
     }
+
+    public NodeAdded addNetworkNode(INetworkNode node) {
+        NodeAdded response;
+        try {
+            response = networkInstance.addNetworkNode(node);
+        } catch (Exception e) {
+            response = NodeAdded.NETWORK_FAILED_TO_ADD;
+        }
+        return response;
+    }
+
+    public NodeRemoved removeNetworkNode(INetworkNode node) {
+        NodeRemoved response;
+        try {
+            response = networkInstance.removeNetworkNode(node);
+        } catch (Exception e) {
+            response = NodeRemoved.NETWORK_FAILED_TO_REMOVE;
+        }
+        return response;
+    }
+
+    public void updateNetworkNode() {
+
+    }
+
 }

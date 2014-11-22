@@ -1,17 +1,16 @@
-package me.jezza.thaumicpipes.common.multipart;
+package me.jezza.thaumicpipes.common.multipart.occlusion;
 
-import java.util.ArrayList;
-
-import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
 import codechicken.lib.vec.Cuboid6;
 import codechicken.multipart.JCuboidPart;
 import codechicken.multipart.JNormalOcclusion;
 import codechicken.multipart.NormalOcclusionTest;
 import codechicken.multipart.TMultiPart;
-import me.jezza.thaumicpipes.common.core.TPLogger;
+import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
+
+import java.util.ArrayList;
 
 public class OcclusionPart extends JCuboidPart implements JNormalOcclusion {
-    private ArrayList<Cuboid6> occlusions = new ArrayList<Cuboid6>();
+    private ArrayList<Cuboid6> occlusions = new ArrayList<>();
     private Cuboid6 bounds;
 
     public OcclusionPart(Cuboid6 cuboid) {
@@ -35,7 +34,7 @@ public class OcclusionPart extends JCuboidPart implements JNormalOcclusion {
     }
 
     @Override
-    public boolean occlusionTest(TMultiPart npart) {
-        return (npart instanceof IThaumicPipe) ? true : NormalOcclusionTest.apply(this, npart);
+    public boolean occlusionTest(TMultiPart part) {
+        return (part instanceof IThaumicPipe) ? true : NormalOcclusionTest.apply(this, part);
     }
 }

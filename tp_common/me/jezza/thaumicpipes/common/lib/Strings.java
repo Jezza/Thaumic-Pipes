@@ -10,4 +10,7 @@ public class Strings {
 
     // Config
     public static final String THAUMIC_PIPE_TEXTURE = "Thaumic Pipe Texture";
+
+    // Research
+    public static final String RESEARCH_NAME = "THAUMIC_PIPES";
 }

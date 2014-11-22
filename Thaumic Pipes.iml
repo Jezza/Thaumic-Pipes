@@ -9,6 +9,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="forge" />
+    <orderEntry type="module" module-name="OmnisCore" />
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
@@ -31,4 +32,3 @@
     </orderEntry>
   </component>
 </module>
-

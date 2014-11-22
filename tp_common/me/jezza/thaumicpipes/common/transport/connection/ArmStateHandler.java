@@ -1,15 +1,12 @@
 package me.jezza.thaumicpipes.common.transport.connection;
 
-import me.jezza.thaumicpipes.api.interfaces.IThaumicPipe;
+import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ArmStateHandler {
 
-    private ForgeDirection priority = ForgeDirection.UNKNOWN;
+    private final ArmState CACHE = new ArmState();
     private ArmState[] armStateArray;
 
     public ArmStateHandler() {
@@ -17,64 +14,31 @@ public class ArmStateHandler {
     }
 
     public NodeState updateArmStates(IThaumicPipe pipe, TileEntity[] tileEntities) {
-        int index = 0;
-        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
-            TileEntity tileEntity = tileEntities[index];
-            boolean isValidConnection = tileEntity != null && pipe.canConnectTo(direction);
-            armStateArray[index++] = new ArmState(direction, tileEntity, isValidConnection);
+        ForgeDirection[] directions = ForgeDirection.VALID_DIRECTIONS;
+        for (int i = 0; i <= 5; i++) {
+            ForgeDirection direction = directions[i];
+            TileEntity tileEntity = tileEntities[i];
+            boolean isValidConnection = pipe.canConnectTo(tileEntity, direction);
+            armStateArray[i] = createArmState(direction, tileEntity, isValidConnection);
         }
+
         return createNode();
     }
 
-    public ArmState[] getArmStateArray() {
-        return armStateArray;
-    }
-
-    public List<ArmState> getOtherConnections() {
-        ArrayList<ArmState> armList = new ArrayList<ArmState>();
-        for (ArmState armState : armStateArray)
-            if (armState != null && armState.isValid() && !armState.isPipe())
-                armList.add(armState);
-        return armList;
-    }
-
-    public List<ArmState> getPipeConnections() {
-        ArrayList<ArmState> armList = new ArrayList<ArmState>();
-        for (ArmState armState : armStateArray)
-            if (armState != null && armState.isValid() && armState.isPipe())
-                armList.add(armState);
-        return armList;
-    }
-
-    public ArmState getArmState(ForgeDirection direction) {
-        return armStateArray[direction.ordinal()];
-    }
-
-    public void resetPriority() {
-        priority = ForgeDirection.UNKNOWN;
-    }
-
-    public void cyclePriorityState() {
-        ArrayList<ForgeDirection> validDirections = new ArrayList<ForgeDirection>();
-        validDirections.add(ForgeDirection.UNKNOWN);
-
-        for (int i = 0; i < armStateArray.length; i++) {
-            ArmState currentState = armStateArray[i];
-            if (currentState != null && currentState.isValid())
-                validDirections.add(currentState.getDirection());
+    private ArmState createArmState(ForgeDirection direction, TileEntity tileEntity, boolean isValidConnection) {
+        ArmState armState;
+        try {
+            armState = (ArmState) CACHE.clone();
+        } catch (CloneNotSupportedException e) {
+            armState = new ArmState(direction, tileEntity, isValidConnection);
         }
 
-        int direction = priority.ordinal();
-        do {
-            if (++direction == 7)
-                direction = 0;
-        } while (!validDirections.contains(ForgeDirection.getOrientation(direction)));
-
-        priority = ForgeDirection.getOrientation(direction);
+        return armState.setFields(direction, tileEntity, isValidConnection);
     }
 
-    public boolean isPriority(ForgeDirection direction) {
-        return direction == priority;
+
+    public ArmState[] getArmStateArray() {
+        return armStateArray;
     }
 
     public NodeState createNode() {

@@ -1,16 +1,17 @@
-package me.jezza.thaumicpipes.common.multipart;
+package me.jezza.thaumicpipes.common.multipart.core;
 
-import me.jezza.thaumicpipes.common.items.ItemTP;
-import net.minecraft.block.Block.SoundType;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
 import codechicken.lib.vec.BlockCoord;
 import codechicken.lib.vec.Vector3;
 import codechicken.multipart.TMultiPart;
 import codechicken.multipart.TileMultipart;
+import me.jezza.oc.common.items.ItemAbstract;
+import me.jezza.thaumicpipes.common.lib.CoreProperties;
+import net.minecraft.block.Block.SoundType;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 
-public abstract class ItemMultiPartAbstract extends ItemTP {
+public abstract class ItemMultiPartAbstract extends ItemAbstract {
 
     public ItemMultiPartAbstract(String name) {
         super(name);
@@ -52,4 +53,9 @@ public abstract class ItemMultiPartAbstract extends ItemTP {
     public abstract TMultiPart getPart();
 
     public abstract SoundType getSoundType();
+
+    @Override
+    public String getModIdentifier() {
+        return CoreProperties.MOD_IDENTIFIER;
+    }
 }

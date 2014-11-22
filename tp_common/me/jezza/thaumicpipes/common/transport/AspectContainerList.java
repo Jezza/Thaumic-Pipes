@@ -1,14 +1,14 @@
 package me.jezza.thaumicpipes.common.transport;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import me.jezza.thaumicpipes.common.core.TPLogger;
+import com.google.common.collect.Lists;
 import me.jezza.thaumicpipes.common.transport.connection.ArmState;
 import me.jezza.thaumicpipes.common.transport.connection.TransportState;
 import thaumcraft.api.aspects.Aspect;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import static me.jezza.thaumicpipes.common.lib.CoreProperties.logger;
 
 public class AspectContainerList implements Iterable<TransportState> {
 
@@ -25,12 +25,12 @@ public class AspectContainerList implements Iterable<TransportState> {
     }
 
     public void add(ArmState armState) {
-        add(armState.getTransportState());
+//        add(armState.getTransportState());
     }
 
     public void add(TransportState transportState) {
         if (filter == null) {
-            TPLogger.severe("Filter not set");
+            logger.fatal("Filter not set");
             return;
         }
         containerList.add(transportState);

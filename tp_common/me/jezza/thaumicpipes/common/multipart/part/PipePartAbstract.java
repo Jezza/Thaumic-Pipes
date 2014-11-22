@@ -1,13 +1,5 @@
-package me.jezza.thaumicpipes.common.multipart.pipe;
+package me.jezza.thaumicpipes.common.multipart.part;
 
-import me.jezza.thaumicpipes.client.IPartRenderer;
-import me.jezza.thaumicpipes.common.core.utils.CoordSet;
-import me.jezza.thaumicpipes.common.multipart.MultiPartAbstract;
-import me.jezza.thaumicpipes.common.multipart.OcclusionPart;
-import me.jezza.thaumicpipes.common.multipart.OcclusionPartTester;
-import me.jezza.thaumicpipes.common.transport.connection.NodeState;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.common.util.ForgeDirection;
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.data.MCDataOutput;
 import codechicken.lib.vec.Vector3;
@@ -15,6 +7,15 @@ import codechicken.multipart.INeighborTileChange;
 import codechicken.multipart.TMultiPart;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import me.jezza.oc.common.utils.CoordSet;
+import me.jezza.thaumicpipes.client.IPartRenderer;
+import me.jezza.thaumicpipes.common.multipart.core.MultiPartAbstract;
+import me.jezza.thaumicpipes.common.multipart.occlusion.OcclusionPart;
+import me.jezza.thaumicpipes.common.multipart.occlusion.OcclusionPartTester;
+import me.jezza.thaumicpipes.common.transport.connection.NodeState;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 
 public abstract class PipePartAbstract extends MultiPartAbstract implements INeighborTileChange {
 
@@ -29,12 +30,12 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
         occlusionTester = new OcclusionPartTester();
     }
 
-    public CoordSet getCoordSet() {
-        return new CoordSet(tile());
-    }
-
     public TileEntity[] getTileCache() {
         return tileCache;
+    }
+
+    public CoordSet getCoordSet() {
+        return new CoordSet(tile());
     }
 
     @Override
@@ -46,9 +47,11 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
     }
 
     public void updateStates() {
-        int index = 0;
-        for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS)
-            tileCache[index++] = getCoordSet().addForgeDirection(direction).getTileEntity(world());
+        CoordSet coordSet = getCoordSet();
+        World world = world();
+        ForgeDirection[] directions = ForgeDirection.VALID_DIRECTIONS;
+        for (int i = 0; i <= 5; i++)
+            tileCache[i] = coordSet.getTileFromDirection(world, directions[i]);
     }
 
     @Override
@@ -108,4 +111,5 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
 
     @SideOnly(Side.CLIENT)
     public abstract IPartRenderer getRenderer();
+
 }

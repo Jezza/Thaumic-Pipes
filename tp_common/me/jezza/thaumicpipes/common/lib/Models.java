@@ -8,6 +8,6 @@ public class Models {
     public static final ResourceLocation PIPE_EXTENSION = getModelLocation("pipeExtension");
 
     private static ResourceLocation getModelLocation(String name) {
-        return new ResourceLocation(Reference.MOD_ID.toLowerCase(), "models/" + name + ".obj");
+        return new ResourceLocation(CoreProperties.MOD_ID.toLowerCase(), "models/" + name + ".obj");
     }
 }

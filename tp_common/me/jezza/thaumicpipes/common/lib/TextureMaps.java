@@ -1,10 +1,10 @@
 package me.jezza.thaumicpipes.common.lib;
 
-import java.util.ArrayList;
-
-import net.minecraft.util.ResourceLocation;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraft.util.ResourceLocation;
+
+import java.util.ArrayList;
 
 @SideOnly(Side.CLIENT)
 public class TextureMaps {
@@ -27,8 +27,8 @@ public class TextureMaps {
 
     private static ResourceLocation[] getAnimationFrames() {
         String frameName = "priorityFrame_";
-        ArrayList<ResourceLocation> resourceMap = new ArrayList<ResourceLocation>();
-        for (int i = 0; i < Reference.PIPE_ANIMATION_SIZE; i++)
+        ArrayList<ResourceLocation> resourceMap = new ArrayList<>();
+        for (int i = 0; i < CoreProperties.PIPE_ANIMATION_SIZE; i++)
             resourceMap.add(getResource("priority/" + frameName + i));
         return resourceMap.toArray(new ResourceLocation[resourceMap.size()]);
     }
@@ -47,7 +47,7 @@ public class TextureMaps {
     }
 
     private static ResourceLocation getResource(String loc) {
-        return new ResourceLocation(Reference.MOD_ID.toLowerCase(), MODEL_SHEET_LOCATION + loc + ".png");
+        return new ResourceLocation(CoreProperties.MOD_ID.toLowerCase(), MODEL_SHEET_LOCATION + loc + ".png");
     }
 
 }
