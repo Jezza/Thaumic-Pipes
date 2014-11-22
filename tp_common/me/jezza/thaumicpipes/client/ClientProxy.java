@@ -16,6 +16,10 @@ import net.minecraftforge.client.MinecraftForgeClient;
 public class ClientProxy extends CommonProxy {
 
     @Override
+    public void initServerSide() {
+    }
+
+    @Override
     public void initClientSide() {
         registerItemRenderer(ModItems.thaumicPipe, new ItemThaumicPipeRenderer());
     }

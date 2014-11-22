@@ -5,16 +5,18 @@ import me.jezza.thaumicpipes.common.core.PipeProperties;
 import me.jezza.thaumicpipes.common.core.interfaces.IOcclusionPart;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public enum NodeState implements IOcclusionPart {
-    BIG_NODE(true, true),
-    NORMAL_NODE(true, false),
-    DIRECTIONAL_SECTION(false, false);
+public class NodeState implements IOcclusionPart {
+    public static final NodeState BIG_NODE = new NodeState(0, true, true);
+    public static final NodeState NORMAL_NODE = new NodeState(1, true, false);
+    public static final NodeState DIRECTIONAL_SECTION = new NodeState(2, false, false);
 
+    private final int id;
     private final boolean isNode, bigNode;
-    private ForgeDirection direction = ForgeDirection.UNKNOWN;
     private Cuboid6 occlusionBox = PipeProperties.getNode();
+    private ForgeDirection direction = ForgeDirection.UNKNOWN;
 
-    private NodeState(boolean isNode, boolean bigNode) {
+    private NodeState(int id, boolean isNode, boolean bigNode) {
+        this.id = id;
         this.isNode = isNode;
         this.bigNode = bigNode;
     }
@@ -23,6 +25,10 @@ public enum NodeState implements IOcclusionPart {
         direction = ForgeDirection.getOrientation(side);
         occlusionBox = PipeProperties.getSmallNode(direction.ordinal());
         return this;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public ForgeDirection getDirection() {
@@ -39,6 +45,15 @@ public enum NodeState implements IOcclusionPart {
         return occlusionBox;
     }
 
+    @Override
+    public Object clone() {
+        try {
+            return super.clone();
+        } catch (CloneNotSupportedException e) {
+        }
+        return new NodeState(id, isNode, bigNode);
+    }
+
     public static NodeState createNodeState(ArmState[] armStateArray) {
         boolean[] flags = new boolean[6];
 
@@ -46,29 +61,38 @@ public enum NodeState implements IOcclusionPart {
             ArmState armState = armStateArray[i];
             boolean flag = armState.isPartValid();
             if (flag && !armState.isPipe())
-                return BIG_NODE;
+                return (NodeState) BIG_NODE.clone();
             flags[i] = flag;
         }
 
-        int side = 0;
-        int count = 0;
+
+        if (getBooleanArraySize(flags, true) != 2)
+            return (NodeState) NORMAL_NODE.clone();
+
+        int side = -1;
+        boolean flag = false;
 
         for (int i = 0; i <= 5; i += 2) {
-            boolean firstValid = flags[i];
-            boolean secondValid = flags[i + 1];
+            flag = flags[i] && flags[i + 1];
 
-            if (firstValid)
-                count++;
-            if (secondValid)
-                count++;
-            if (firstValid && secondValid)
+            if (flag) {
                 side = i;
+                break;
+            }
         }
 
-        if (count != 2)
-            return NORMAL_NODE;
+        if (side == -1)
+            return (NodeState) NORMAL_NODE.clone();
 
-        return DIRECTIONAL_SECTION.setDirectionalSection(side);
+        return ((NodeState) DIRECTIONAL_SECTION.clone()).setDirectionalSection(side);
+    }
+
+    private static int getBooleanArraySize(boolean[] array, boolean test) {
+        int count = 0;
+        for (int i = 0; i < array.length; i++)
+            if (array[i] == test)
+                count++;
+        return count;
     }
 
 }

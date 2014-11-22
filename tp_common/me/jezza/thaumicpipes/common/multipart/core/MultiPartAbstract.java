@@ -22,6 +22,8 @@ import java.util.LinkedList;
 
 public abstract class MultiPartAbstract extends TMultiPart implements JNormalOcclusion {
 
+    private static final LinkedList<IndexedCuboid6> PART_LIST_CACHE = new LinkedList<>();
+
     @Override
     public void onWorldJoin() {
         super.onWorldJoin();
@@ -41,7 +43,7 @@ public abstract class MultiPartAbstract extends TMultiPart implements JNormalOcc
     @Override
     public Iterable<IndexedCuboid6> getSubParts() {
         Iterable<Cuboid6> occlusionBoxes = getAllOcclusionBoxes();
-        LinkedList<IndexedCuboid6> partList = new LinkedList<>();
+        LinkedList<IndexedCuboid6> partList = (LinkedList<IndexedCuboid6>) PART_LIST_CACHE.clone();
         for (Cuboid6 c : occlusionBoxes)
             partList.add(new IndexedCuboid6(0, c));
         return partList;

@@ -1,4 +1,4 @@
-package me.jezza.thaumicpipes.common.multipart.part.thaumic;
+package me.jezza.thaumicpipes.common.multipart.pipe.thaumic;
 
 import codechicken.lib.vec.Cuboid6;
 import cpw.mods.fml.relauncher.Side;
@@ -12,7 +12,7 @@ import me.jezza.thaumicpipes.common.core.interfaces.IOcclusionPart;
 import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.multipart.occlusion.OcclusionPart;
-import me.jezza.thaumicpipes.common.multipart.part.PipePartAbstract;
+import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
 import me.jezza.thaumicpipes.common.transport.connection.ArmState;
 import me.jezza.thaumicpipes.common.transport.connection.ArmStateHandler;
 import me.jezza.thaumicpipes.common.transport.connection.NodeState;
@@ -65,7 +65,10 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
     public void updateStates() {
         super.updateStates();
         nodeState = armStateHandler.updateArmStates(this, getTileCache());
-        occlusionTester.update((IOcclusionPart) armStateHandler, nodeState);
+        IOcclusionPart[] occlusionParts = new IOcclusionPart[7];
+        System.arraycopy(armStateHandler.getArmStateArray(), 0, occlusionParts, 0, 6);
+        occlusionParts[6] = nodeState;
+        occlusionTester.update(occlusionParts);
     }
 
     @Override

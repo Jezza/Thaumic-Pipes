@@ -8,8 +8,8 @@ import me.jezza.thaumicpipes.client.model.ModelJarConnection;
 import me.jezza.thaumicpipes.client.model.ModelPipeExtension;
 import me.jezza.thaumicpipes.client.model.ModelThaumicPipe;
 import me.jezza.thaumicpipes.common.lib.TextureMaps;
-import me.jezza.thaumicpipes.common.multipart.part.PipePartAbstract;
-import me.jezza.thaumicpipes.common.multipart.part.thaumic.ThaumicPipePart;
+import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
+import me.jezza.thaumicpipes.common.multipart.pipe.thaumic.ThaumicPipePart;
 import me.jezza.thaumicpipes.common.transport.connection.ArmState;
 import me.jezza.thaumicpipes.common.transport.connection.ConnectionType;
 import me.jezza.thaumicpipes.common.transport.connection.NodeState;
@@ -49,16 +49,16 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
 
     private void renderNodeState(NodeState nodeState) {
         float scale = 1.01F;
-        switch (nodeState) {
-            case BIG_NODE:
+        switch (nodeState.getId()) {
+            case 0:
                 scale = 1.33F;
-            case NORMAL_NODE:
+            case 1:
             default:
                 RenderUtils.bindTexture(TextureMaps.THAUMIC_PIPE_CENTRE[TextureMaps.THAUMIC_TEXTURE_INDEX]);
                 glScalef(scale, scale, scale);
                 modelThaumicPipe.renderPart("centre");
                 break;
-            case DIRECTIONAL_SECTION:
+            case 2:
                 RenderUtils.bindBorderlessTexture();
                 switch (nodeState.getDirection()) {
                     case DOWN:

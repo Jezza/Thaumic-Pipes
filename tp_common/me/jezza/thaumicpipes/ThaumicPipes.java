@@ -18,7 +18,6 @@ import me.jezza.thaumicpipes.common.core.config.ConfigHandler;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.research.ModRecipes;
 import me.jezza.thaumicpipes.common.research.ModResearch;
-import net.minecraft.creativetab.CreativeTabs;
 import thaumcraft.common.Thaumcraft;
 
 import static me.jezza.thaumicpipes.common.lib.CoreProperties.*;
@@ -29,7 +28,7 @@ public class ThaumicPipes {
     @Instance(MOD_ID)
     public static ThaumicPipes instance;
 
-    public static CreativeTabs creativeTab = new CreativeTabSimple(MOD_ID, ModItems.thaumicPipe);
+    public static CreativeTabSimple creativeTab = new CreativeTabSimple(MOD_ID);
 
     @SidedProxy(clientSide = CLIENT_PROXY_CLASS, serverSide = SERVER_PROXY_CLASS)
     public static CommonProxy proxy;
@@ -42,6 +41,8 @@ public class ThaumicPipes {
 
         ModBlocks.init();
         ModItems.init();
+
+        creativeTab.setIcon(ModItems.thaumicPipe);
     }
 
     @EventHandler

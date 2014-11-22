@@ -1,4 +1,4 @@
-package me.jezza.thaumicpipes.common.multipart.part;
+package me.jezza.thaumicpipes.common.multipart.pipe;
 
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.data.MCDataOutput;

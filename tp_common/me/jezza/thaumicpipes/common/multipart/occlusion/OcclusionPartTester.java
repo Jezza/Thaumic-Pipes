@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Used to handle/calculate all the parts counted as the part.
+ * Used to handle/calculate all the parts counted as the pipe.
  * EG, all armStates and nodeState.
  * <p/>
  * An occlusion collection class.

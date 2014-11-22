@@ -1,6 +1,6 @@
 package me.jezza.thaumicpipes.common.core.interfaces;
 
-import me.jezza.thaumicpipes.common.multipart.part.PipePartAbstract;
+import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 

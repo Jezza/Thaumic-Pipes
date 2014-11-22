@@ -10,8 +10,8 @@ public class CoreProperties {
 
     public static final String MOD_IDENTIFIER = MOD_ID + ":";
 
-    public static final String CLIENT_PROXY_CLASS = "me.jezza.thaumicpipes.CommonProxy";
-    public static final String SERVER_PROXY_CLASS = "me.jezza.thaumicpipes.client.ClientProxy";
+    public static final String CLIENT_PROXY_CLASS = "me.jezza.thaumicpipes.client.ClientProxy";
+    public static final String SERVER_PROXY_CLASS = "me.jezza.thaumicpipes.CommonProxy";
 
     public static Logger logger = LogManager.getLogger("ThaumicPipes");
 

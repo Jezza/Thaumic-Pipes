@@ -1,6 +1,6 @@
 package me.jezza.thaumicpipes.client;
 
-import me.jezza.thaumicpipes.common.multipart.part.PipePartAbstract;
+import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
 
 public interface IPartRenderer {
 
