@@ -9,6 +9,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import me.jezza.oc.common.utils.CoordSet;
 import me.jezza.thaumicpipes.client.IPartRenderer;
+import me.jezza.thaumicpipes.common.core.interfaces.IOcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.core.MultiPartAbstract;
 import me.jezza.thaumicpipes.common.multipart.occlusion.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.occlusion.OcclusionPartTester;
@@ -34,24 +35,33 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
         return tileCache;
     }
 
-    public CoordSet getCoordSet() {
-        return new CoordSet(tile());
-    }
-
     @Override
     public void update() {
         if (shouldUpdate) {
             shouldUpdate = false;
-            updateStates();
+            updateTileCache();
+            updateConnections();
+            updateOcclusions();
+            updateNetwork();
         }
     }
 
-    public void updateStates() {
+    public void updateTileCache() {
         CoordSet coordSet = getCoordSet();
         World world = world();
         ForgeDirection[] directions = ForgeDirection.VALID_DIRECTIONS;
         for (int i = 0; i <= 5; i++)
             tileCache[i] = coordSet.getTileFromDirection(world, directions[i]);
+    }
+
+    public void updateOcclusions() {
+        occlusionTester.update(getOcclusionParts());
+    }
+
+    public void updateConnections() {
+    }
+
+    public void updateNetwork(){
     }
 
     @Override
@@ -111,5 +121,7 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
 
     @SideOnly(Side.CLIENT)
     public abstract IPartRenderer getRenderer();
+
+    public abstract IOcclusionPart[] getOcclusionParts();
 
 }

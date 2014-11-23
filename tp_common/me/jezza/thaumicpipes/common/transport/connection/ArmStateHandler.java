@@ -13,8 +13,11 @@ public class ArmStateHandler {
     private final ArmState CACHE = new ArmState();
     private ArmState[] armStateArray;
 
+    private Collection<INetworkNode> validConnections;
+
     public ArmStateHandler() {
         armStateArray = new ArmState[6];
+        validConnections = new LinkedList<>();
     }
 
     public NodeState updateArmStates(IThaumicPipe pipe, TileEntity[] tileEntities) {
@@ -24,6 +27,13 @@ public class ArmStateHandler {
             TileEntity tileEntity = tileEntities[i];
             boolean isValidConnection = pipe.canConnectTo(tileEntity, direction);
             armStateArray[i] = createArmState(direction, tileEntity, isValidConnection);
+        }
+
+        validConnections.clear();
+        for (int i = 0; i <= 5; i++) {
+            ArmState armState = armStateArray[i];
+            if (armState.isPartValid() && armState.isPipe())
+                validConnections.add((INetworkNode) ((IThaumicPipe) tileEntities[i]).getPipe());
         }
 
         return createNode();
@@ -40,13 +50,7 @@ public class ArmStateHandler {
         return armState.setFields(direction, tileEntity, isValidConnection);
     }
 
-    public Collection<INetworkNode> getValidConnections(TileEntity[] tileEntities) {
-        LinkedList<INetworkNode> validConnections = new LinkedList<>();
-        for (int i = 0; i <= 5; i++) {
-            ArmState armState = armStateArray[i];
-            if (armState.isPipe())
-                validConnections.add((INetworkNode) tileEntities[i]);
-        }
+    public Collection<INetworkNode> getValidConnections() {
         return validConnections;
     }
 

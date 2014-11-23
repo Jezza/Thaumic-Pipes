@@ -9,6 +9,7 @@ import codechicken.multipart.NormalOcclusionTest;
 import codechicken.multipart.TMultiPart;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import me.jezza.oc.common.utils.CoordSet;
 import me.jezza.thaumicpipes.common.multipart.occlusion.OcclusionPart;
 import net.minecraft.block.Block;
 import net.minecraft.client.particle.EffectRenderer;
@@ -87,9 +88,14 @@ public abstract class MultiPartAbstract extends TMultiPart implements JNormalOcc
         return getBlock().getIcon(0, 0);
     }
 
+    public CoordSet getCoordSet() {
+        return new CoordSet(tile());
+    }
+
     public abstract Block getBlock();
 
     public abstract ItemStack getDropStack();
 
     public abstract Iterable<Cuboid6> getAllOcclusionBoxes();
+
 }

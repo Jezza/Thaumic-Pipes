@@ -10,8 +10,16 @@ public class CommonProxy {
 
     private static NetworkInstance networkInstance;
 
-    public void initServerSide() {
+    private static boolean init = false;
+
+    public static void createNetworkInstance() {
+        if (init)
+            return;
+        init = true;
         networkInstance = new NetworkInstance();
+    }
+
+    public void initServerSide() {
     }
 
     public void initClientSide() {

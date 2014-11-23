@@ -48,6 +48,7 @@ public class ThaumicPipes {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         new MultiPartFactory().init();
+        CommonProxy.createNetworkInstance();
         proxy.initServerSide();
         proxy.initClientSide();
     }

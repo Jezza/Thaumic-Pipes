@@ -16,12 +16,14 @@ import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.core.PipeProperties;
 import me.jezza.thaumicpipes.common.core.interfaces.IOcclusionPart;
 import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
+import me.jezza.thaumicpipes.common.lib.CoreProperties;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.multipart.occlusion.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
 import me.jezza.thaumicpipes.common.transport.connection.ArmState;
 import me.jezza.thaumicpipes.common.transport.connection.ArmStateHandler;
 import me.jezza.thaumicpipes.common.transport.connection.NodeState;
+import me.jezza.thaumicpipes.common.transport.messages.NetworkMessageTest;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -38,6 +40,7 @@ import java.util.Collection;
 
 public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, INetworkNode {
 
+    private int prevSize = -1;
     private IMessageProcessor messageProcessor;
     private ArmStateHandler armStateHandler;
 
@@ -65,7 +68,17 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
 
     @Override
     public boolean activate(EntityPlayer player, MovingObjectPosition hit, ItemStack item) {
-        return super.activate(player, hit, item);
+        if (!world().isRemote) {
+
+            if (messageProcessor != null) {
+                messageProcessor.postMessage(new NetworkMessageTest(this));
+                CoreProperties.logger.info("Message posted.");
+            } else {
+                CoreProperties.logger.info("messageProcessor is null");
+            }
+
+        }
+        return false;
     }
 
     public NodeState getNodeState() {
@@ -77,21 +90,27 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     }
 
     @Override
-    public void updateStates() {
-        super.updateStates();
-
-        ThaumicPipes.proxy.updateNetworkNode(this);
-
+    public void updateConnections() {
         nodeState = armStateHandler.updateArmStates(this, getTileCache());
-        IOcclusionPart[] occlusionParts = new IOcclusionPart[7];
-        System.arraycopy(armStateHandler.getArmStateArray(), 0, occlusionParts, 0, 6);
-        occlusionParts[6] = nodeState;
-        occlusionTester.update(occlusionParts);
+    }
+
+    @Override
+    public void updateNetwork() {
+        if (!world().isRemote) {
+            int size = tile().jPartList().size();
+            if (prevSize == -1)
+                ThaumicPipes.proxy.addNetworkNode(this);
+            else if (size != prevSize) {
+                ThaumicPipes.proxy.updateNetworkNode(this);
+            }
+            prevSize = size;
+        }
     }
 
     @Override
     public void onWorldSeparate() {
-        ThaumicPipes.proxy.removeNetworkNode(this);
+        if (!world().isRemote)
+            ThaumicPipes.proxy.removeNetworkNode(this);
     }
 
     @Override
@@ -152,6 +171,14 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     }
 
     @Override
+    public IOcclusionPart[] getOcclusionParts() {
+        IOcclusionPart[] occlusionParts = new IOcclusionPart[7];
+        System.arraycopy(armStateHandler.getArmStateArray(), 0, occlusionParts, 0, 6);
+        occlusionParts[6] = nodeState;
+        return occlusionParts;
+    }
+
+    @Override
     public NetworkOverride onMessagePosted(INetworkMessage message) {
         return NetworkOverride.IGNORE;
     }
@@ -163,12 +190,13 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
 
     @Override
     public MessageResponse onMessageComplete(INetworkMessage message) {
+        CoreProperties.logger.info("Fired");
         return MessageResponse.VALID;
     }
 
     @Override
     public Collection<INetworkNode> getNearbyNodes() {
-        return armStateHandler.getValidConnections(getTileCache());
+        return armStateHandler.getValidConnections();
     }
 
     @Override
