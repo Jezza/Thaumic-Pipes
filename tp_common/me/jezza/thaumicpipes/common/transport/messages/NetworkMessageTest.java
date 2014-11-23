@@ -2,6 +2,7 @@ package me.jezza.thaumicpipes.common.transport.messages;
 
 import me.jezza.oc.api.NetworkResponse.MessageResponse;
 import me.jezza.oc.api.abstracts.NetworkMessageAbstract;
+import me.jezza.oc.api.interfaces.IMessageProcessor;
 import me.jezza.oc.api.interfaces.INetworkNode;
 import me.jezza.thaumicpipes.common.lib.CoreProperties;
 
@@ -29,7 +30,12 @@ public class NetworkMessageTest extends NetworkMessageAbstract {
 
 //        IThaumicPipe pipe = (IThaumicPipe) node;
         nodes.add(node);
-        CoreProperties.logger.info("Adding node.");
+        return MessageResponse.VALID;
+    }
+
+    @Override
+    public MessageResponse onMessageComplete(IMessageProcessor messageProcessor) {
+        CoreProperties.logger.info("Fired: " + nodes.size());
         return MessageResponse.VALID;
     }
 }

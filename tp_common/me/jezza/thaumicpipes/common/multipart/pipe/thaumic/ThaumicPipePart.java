@@ -3,7 +3,6 @@ package me.jezza.thaumicpipes.common.multipart.pipe.thaumic;
 import codechicken.lib.vec.Cuboid6;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import me.jezza.oc.api.NetworkResponse.MessageResponse;
 import me.jezza.oc.api.NetworkResponse.NetworkOverride;
 import me.jezza.oc.api.interfaces.IMessageProcessor;
 import me.jezza.oc.api.interfaces.INetworkMessage;
@@ -186,12 +185,6 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     @Override
     public NetworkOverride onMessageReceived(INetworkMessage message) {
         return NetworkOverride.IGNORE;
-    }
-
-    @Override
-    public MessageResponse onMessageComplete(INetworkMessage message) {
-        CoreProperties.logger.info("Fired");
-        return MessageResponse.VALID;
     }
 
     @Override
