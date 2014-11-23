@@ -3,13 +3,18 @@ package me.jezza.thaumicpipes.common.transport.connection;
 import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MathHelper;
+import thaumcraft.api.aspects.IAspectContainer;
 import thaumcraft.common.tiles.TileAlembic;
 import thaumcraft.common.tiles.TileJarFillable;
+import thaumcraft.common.tiles.TileThaumatorium;
+import thaumcraft.common.tiles.TileThaumatoriumTop;
 
 public enum ConnectionType {
     DEFAULT,
     ALBEMIC(0.5F),
     JAR,
+    CONSTRUCT,
+    ASPECT_CONTAINER,
     PIPE;
 
     private float extensionSize = 0.0F;
@@ -25,18 +30,6 @@ public enum ConnectionType {
         return this == PIPE;
     }
 
-    public boolean isAlbemic() {
-        return this == ALBEMIC;
-    }
-
-    public boolean isJar() {
-        return this == JAR;
-    }
-
-    public boolean isDefault() {
-        return this == DEFAULT;
-    }
-
     public float getExtensionSize() {
         return extensionSize;
     }
@@ -48,6 +41,10 @@ public enum ConnectionType {
             return JAR;
         if (tileEntity instanceof TileAlembic)
             return ALBEMIC;
+        if (tileEntity instanceof TileThaumatorium || tileEntity instanceof TileThaumatoriumTop)
+            return CONSTRUCT;
+        if (tileEntity instanceof IAspectContainer)
+            return ASPECT_CONTAINER;
         return DEFAULT;
     }
 }

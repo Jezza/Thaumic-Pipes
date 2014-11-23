@@ -10,14 +10,30 @@ import java.util.LinkedList;
 
 public class ArmStateHandler {
 
-    private final ArmState CACHE = new ArmState();
+    private final LinkedList<TileEntity> LINKED_LIST_CACHE = new LinkedList<>();
+    private final ArmState ARM_STATE_CACHE = new ArmState();
     private ArmState[] armStateArray;
 
-    private Collection<INetworkNode> validConnections;
+    private Collection<INetworkNode> pipeConnections;
+    private Collection<TileEntity> jarConnections, albemicConnections, constructConnections, containerConnections;
 
     public ArmStateHandler() {
         armStateArray = new ArmState[6];
-        validConnections = new LinkedList<>();
+        pipeConnections = new LinkedList<>();
+        jarConnections = createLinkedList();
+        albemicConnections = createLinkedList();
+        constructConnections = createLinkedList();
+        containerConnections = createLinkedList();
+    }
+
+    private LinkedList<TileEntity> createLinkedList() {
+        LinkedList<TileEntity> list;
+        try {
+            list = (LinkedList<TileEntity>) LINKED_LIST_CACHE.clone();
+        } catch (Exception e) {
+            list = new LinkedList<>();
+        }
+        return list;
     }
 
     public NodeState updateArmStates(IThaumicPipe pipe, TileEntity[] tileEntities) {
@@ -29,12 +45,8 @@ public class ArmStateHandler {
             armStateArray[i] = createArmState(direction, tileEntity, isValidConnection);
         }
 
-        validConnections.clear();
-        for (int i = 0; i <= 5; i++) {
-            ArmState armState = armStateArray[i];
-            if (armState.isPartValid() && armState.isPipe())
-                validConnections.add((INetworkNode) ((IThaumicPipe) tileEntities[i]).getPipe());
-        }
+        updateConnections(tileEntities);
+
 
         return createNode();
     }
@@ -42,7 +54,7 @@ public class ArmStateHandler {
     private ArmState createArmState(ForgeDirection direction, TileEntity tileEntity, boolean isValidConnection) {
         ArmState armState;
         try {
-            armState = (ArmState) CACHE.clone();
+            armState = (ArmState) ARM_STATE_CACHE.clone();
         } catch (CloneNotSupportedException e) {
             armState = new ArmState(direction, tileEntity, isValidConnection);
         }
@@ -50,8 +62,54 @@ public class ArmStateHandler {
         return armState.setFields(direction, tileEntity, isValidConnection);
     }
 
+    private void updateConnections(TileEntity[] tileEntities) {
+        pipeConnections.clear();
+        for (int i = 0; i <= 5; i++) {
+            ArmState armState = armStateArray[i];
+            if (armState.isPartValid()) {
+                ConnectionType connectionType = armState.getConnectionType();
+                TileEntity tileEntity = tileEntities[i];
+                switch (connectionType) {
+                    case DEFAULT:
+                        break;
+                    case ALBEMIC:
+                        albemicConnections.add(tileEntity);
+                        break;
+                    case JAR:
+                        jarConnections.add(tileEntity);
+                        break;
+                    case CONSTRUCT:
+                        constructConnections.add(tileEntity);
+                        break;
+                    case ASPECT_CONTAINER:
+                        containerConnections.add(tileEntity);
+                        break;
+                    case PIPE:
+                        pipeConnections.add((INetworkNode) ((IThaumicPipe) tileEntity).getPipe());
+                        break;
+                }
+            }
+        }
+    }
+
     public Collection<INetworkNode> getValidConnections() {
-        return validConnections;
+        return pipeConnections;
+    }
+
+    public Collection<TileEntity> getJarConnections() {
+        return jarConnections;
+    }
+
+    public Collection<TileEntity> getContainerConnections() {
+        return containerConnections;
+    }
+
+    public Collection<TileEntity> getAlbemicConnections() {
+        return albemicConnections;
+    }
+
+    public Collection<TileEntity> getConstructConnections() {
+        return constructConnections;
     }
 
     public ArmState[] getArmStateArray() {
