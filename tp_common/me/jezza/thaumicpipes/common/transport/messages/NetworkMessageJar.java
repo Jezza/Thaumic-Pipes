@@ -4,37 +4,37 @@ import me.jezza.oc.api.NetworkResponse.MessageResponse;
 import me.jezza.oc.api.interfaces.IMessageProcessor;
 import me.jezza.oc.api.interfaces.INetworkNode;
 import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
+import net.minecraft.tileentity.TileEntity;
 import thaumcraft.api.aspects.Aspect;
-import thaumcraft.api.aspects.AspectList;
 import thaumcraft.api.aspects.IAspectContainer;
 import thaumcraft.common.tiles.TileJarFillable;
 import thaumcraft.common.tiles.TileThaumatorium;
 import thaumcraft.common.tiles.TileThaumatoriumTop;
 
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 
-public class NetworkMessageAspectLocator extends NetworkMessagePipeAbstract {
-
-    private List<IAspectContainer> constructs, jars, containers;
-    private AspectList aspectList;
+public class NetworkMessageJar extends NetworkMessagePipeAbstract {
+    private Collection<IAspectContainer> constructs, containers, jars;
+    private IAspectContainer mainJar;
     private int amount;
+    private boolean fromFiltered;
 
-    public NetworkMessageAspectLocator(INetworkNode owner, AspectList aspectList, Aspect filter, int amount) {
+    public NetworkMessageJar(INetworkNode owner, IAspectContainer mainJar, Aspect filter, int amount, boolean fromFiltered) {
         super(owner, filter);
         constructs = new LinkedList<>();
-        jars = new LinkedList<>();
         containers = new LinkedList<>();
-        this.aspectList = aspectList;
+        jars = new LinkedList<>();
+        this.mainJar = mainJar;
         this.amount = amount;
+        this.fromFiltered = fromFiltered;
     }
 
     @Override
     public void resetMessage() {
         constructs.clear();
-        jars.clear();
         containers.clear();
+        jars.clear();
     }
 
     @Override
@@ -45,9 +45,23 @@ public class NetworkMessageAspectLocator extends NetworkMessagePipeAbstract {
 
         processConnections(constructs, pipe.getConstructConnections());
         processConnections(containers, pipe.getContainerConnections());
-        processConnections(jars, pipe.getJarConnections());
+        if (!fromFiltered)
+            processJars(jars, pipe.getJarConnections());
 
         return MessageResponse.VALID;
+    }
+
+    private void processJars(Collection<IAspectContainer> collection, Collection<TileEntity> connections) {
+        if (connections.isEmpty())
+            return;
+
+        for (TileEntity tileEntity : connections) {
+            TileJarFillable jar = (TileJarFillable) tileEntity;
+
+            Aspect aspect = jar.aspectFilter;
+            if (aspect != null && filter.equals(aspect) && !collection.contains(jar))
+                collection.add(jar);
+        }
     }
 
     @Override
@@ -61,8 +75,8 @@ public class NetworkMessageAspectLocator extends NetworkMessagePipeAbstract {
                     construct = ((TileThaumatoriumTop) container).thaumatorium;
                 int amountToAdd = getAmountToAddToConstruct(construct, filter);
                 amountToAdd = Math.min(amountToAdd, amount);
-                if (amountToAdd > 0 && addTo(container, amount))
-                    return MessageResponse.VALID;
+                if (amountToAdd > 0 && addTo(construct, amount))
+                    break;
             }
         }
 
@@ -71,33 +85,20 @@ public class NetworkMessageAspectLocator extends NetworkMessagePipeAbstract {
                 if (addTo(container, amount))
                     break;
 
-        Iterator<IAspectContainer> iterator = jars.iterator();
-        if (amount > 0 && !jars.isEmpty()) {
-            while (iterator.hasNext()) {
-                IAspectContainer container = iterator.next();
-                if (filter.equals(((TileJarFillable) container).aspectFilter)) {
-                    if (addTo(container, amount))
-                        break;
-                    iterator.remove();
-                }
-            }
-        }
-
         if (amount > 0 && !jars.isEmpty())
-            for (IAspectContainer container : jars)
-                if (addTo(container, 1))
+            for (IAspectContainer jar : jars)
+                if (addTo(jar, amount))
                     break;
 
         return MessageResponse.VALID;
     }
 
     private boolean addTo(IAspectContainer container, int amountToAdd) {
+        boolean flag = mainJar.takeFromContainer(filter, amountToAdd);
+        if (!flag)
+            return amount == 0;
         int leftOver = container.addToContainer(filter, amountToAdd);
-        int removed = amountToAdd - leftOver;
-        if (removed > 0) {
-            amount -= removed;
-            aspectList.remove(filter, removed);
-        }
+        amount -= (amountToAdd - leftOver);
         if (amount < 0)
             amount = 0;
         return amount == 0;

@@ -2,7 +2,6 @@ package me.jezza.thaumicpipes.common.core.config;
 
 import me.jezza.thaumicpipes.common.lib.Strings;
 import me.jezza.thaumicpipes.common.lib.TextureMaps;
-import net.minecraft.util.MathHelper;
 import net.minecraftforge.common.config.Configuration;
 
 import java.io.File;
@@ -37,8 +36,10 @@ public class ConfigHandler {
     public static void getConstants() {
         COMMANDS = config.get(MISC, "commands", COMMANDS, "They aren't thaumcraft related, just some useful commands.").getBoolean(COMMANDS);
 
-        int textureIndex = config.get(MISC, Strings.THAUMIC_PIPE_TEXTURE, TextureMaps.THAUMIC_TEXTURE_INDEX, "0 - Steam punk style texture.\n1 - Old thaumcraft style texture.\n2 - The default texture.").getInt();
-        TextureMaps.THAUMIC_TEXTURE_INDEX = MathHelper.clamp_int(textureIndex, 0, 2);
+        DIFFICULTY_LEVEL = config.getInt(MISC, "difficultyLevel", DIFFICULTY_LEVEL, 0, 2, "0 - Simple crafting recipe inside the arcane crafting table.\n1 - Infusion recipe.\n2 - Really hard infusion recipe, as in really hard.\nIn fact, it's probably easier to write your own mod when it's on this.\nYou WILL not succeed.\n");
+
+
+        TextureMaps.THAUMIC_TEXTURE_INDEX = config.getInt(MISC, Strings.THAUMIC_PIPE_TEXTURE, TextureMaps.THAUMIC_TEXTURE_INDEX, 0, 2, "0 - Steam punk style texture.\n1 - Old thaumcraft style texture.\n2 - The default texture.");
     }
 
     public static int getID(String path, int defaultID) {

@@ -62,7 +62,7 @@ public abstract class MultiPartAbstract extends TMultiPart implements JNormalOcc
 
     @Override
     public boolean occlusionTest(TMultiPart part) {
-        return part instanceof OcclusionPart ? true : NormalOcclusionTest.apply(this, part);
+        return part instanceof OcclusionPart || NormalOcclusionTest.apply(this, part);
     }
 
     @Override

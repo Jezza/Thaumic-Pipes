@@ -18,7 +18,6 @@ import me.jezza.thaumicpipes.common.core.config.ConfigHandler;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.research.ModRecipes;
 import me.jezza.thaumicpipes.common.research.ModResearch;
-import thaumcraft.common.Thaumcraft;
 
 import static me.jezza.thaumicpipes.common.lib.CoreProperties.*;
 
@@ -32,11 +31,9 @@ public class ThaumicPipes {
 
     @SidedProxy(clientSide = CLIENT_PROXY_CLASS, serverSide = SERVER_PROXY_CLASS)
     public static CommonProxy proxy;
-    public static thaumcraft.common.CommonProxy tcProxy;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        tcProxy = Thaumcraft.proxy;
         ConfigHandler.init(event.getSuggestedConfigurationFile());
 
         ModBlocks.init();
