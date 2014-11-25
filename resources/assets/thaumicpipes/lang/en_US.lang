@@ -1,6 +1,7 @@
 tile.thaumicPipe.name=Thaumic Pipe
 item.itemThaumicPipe.name=Thaumic Pipe
 itemGroup.ThaumicPipe=Thaumic Pipes
+tc.research_category.TP_CATEGORY=Thaumic Pipes
 
 tc.research_name.thaumicPipe=[TP] Smart Essentia Transport
 tc.research_text.thaumicPipe=Never said suction was bad, just that it's not good...
