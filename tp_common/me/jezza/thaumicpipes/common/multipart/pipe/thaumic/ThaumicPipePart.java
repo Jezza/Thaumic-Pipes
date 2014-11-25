@@ -14,6 +14,7 @@ import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.core.PipeProperties;
 import me.jezza.thaumicpipes.common.core.interfaces.IOcclusionPart;
 import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
+import me.jezza.thaumicpipes.common.lib.CoreProperties;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.multipart.occlusion.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
@@ -21,6 +22,7 @@ import me.jezza.thaumicpipes.common.transport.connection.ArmState;
 import me.jezza.thaumicpipes.common.transport.connection.ArmStateHandler;
 import me.jezza.thaumicpipes.common.transport.connection.NodeState;
 import me.jezza.thaumicpipes.common.transport.messages.NetworkMessageAspectLocator;
+import me.jezza.thaumicpipes.common.transport.messages.NetworkMessageLabeledJar;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -32,10 +34,9 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
+import thaumcraft.api.aspects.IAspectContainer;
 import thaumcraft.api.aspects.IEssentiaTransport;
-import thaumcraft.common.tiles.TileAlembic;
-import thaumcraft.common.tiles.TileJarFillable;
-import thaumcraft.common.tiles.TileTube;
+import thaumcraft.common.tiles.*;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,84 +44,154 @@ import java.util.Random;
 
 public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, INetworkNode {
 
-    protected TimeTicker albemicTicker, messageTicker;
-    private AspectList pendingAspects;
-
     private int prevSize = -1;
-    private IMessageProcessor messageProcessor;
-    private ArmStateHandler armStateHandler;
+
+    protected Random random;
+
+    protected AspectList albemicList, jarLabelList;
+
+    protected ArmStateHandler armStateHandler;
+    protected IMessageProcessor messageProcessor;
+    // TODO Should I make a better method for this?
+    protected TimeTicker albemicTicker, messageTicker, constructTicker;
+
+    private int[] timeTickerValues, amounts;
 
     @SideOnly(Side.CLIENT)
     private ThaumicPipePartRenderer renderer;
 
     public ThaumicPipePart() {
         armStateHandler = new ArmStateHandler();
-        pendingAspects = new AspectList();
-        createTickers();
+
+        albemicList = new AspectList();
+        jarLabelList = new AspectList();
+
+        random = new Random();
+        timeTickerValues = getTimeTickerValues();
+        amounts = getAmounts();
+        albemicTicker = new TimeTicker(timeTickerValues[0]);
+        messageTicker = new TimeTicker(timeTickerValues[1]);
+        constructTicker = new TimeTicker(timeTickerValues[2]);
     }
 
-    public void createTickers() {
-        albemicTicker = new TimeTicker(0, 5);
-        messageTicker = new TimeTicker(0, 10);
+    /**
+     * [0] = albemicTicker;
+     * [1] = messageTicker;
+     * [2] = constructTicker;
+     */
+    public int[] getTimeTickerValues() {
+        return new int[]{5, 10, 20};
+    }
+
+    /**
+     * Drain speed.
+     * [0] = withdraw speed.
+     * [1] = dump speed.
+     */
+    public int[] getAmounts() {
+        return new int[]{1, 10};
+    }
+
+    public int getWithdrawVariance() {
+        return 0;
+    }
+
+    public int getDumpVariance() {
+        return random.nextInt(5) - 2;
     }
 
     @Override
     public void update() {
         super.update();
 
+        if (world().isRemote)
+            return;
+
         if (albemicTicker.tick())
             processAlbemicConnections();
 
-        if (pendingAspects.size() > 0)
+        if (constructTicker.tick())
+            processConstructConnections();
+
+        if (albemicList.size() > 0)
             if (messageTicker.tick())
-                sendPotentialMessage();
-    }
+                sendMessagesForAlembics();
 
-    public int getWithdrawAmount() {
-        return 1;
-    }
-
-    public int getTransportAmount() {
-        return 10;
+        if (jarLabelList.size() > 0)
+            if (messageTicker.tick())
+                sendMessagesForLabelJars();
     }
 
     private void processAlbemicConnections() {
-        Collection<TileEntity> albemicConnections = armStateHandler.getAlbemicConnections();
-        if (albemicConnections.isEmpty())
+        Collection<TileEntity> albemicConnections = getAlbemicConnections();
+        if (albemicConnections.isEmpty() || world().isRemote)
             return;
 
         for (TileEntity tileEntity : albemicConnections) {
             TileAlembic alembic = (TileAlembic) tileEntity;
             Aspect aspect = alembic.aspect;
-            int withdrawAmount = getWithdrawAmount();
+            int withdrawAmount = amounts[0] + getWithdrawVariance();
             if (alembic.takeFromContainer(aspect, withdrawAmount))
-                pendingAspects.add(aspect, withdrawAmount);
+                albemicList.add(aspect, withdrawAmount);
         }
     }
 
-    private void sendPotentialMessage() {
-        if (!world().isRemote) {
-            for (Aspect aspect : pendingAspects.getAspects()) {
-                if (aspect == null)
-                    continue;
-                int amount = pendingAspects.getAmount(aspect);
-                if (amount > 0) {
-                    int randomAlteration = new Random().nextInt(6) - 3;
-                    int transportAmount = Math.min(amount, getTransportAmount() + randomAlteration);
-                    messageProcessor.postMessage(new NetworkMessageAspectLocator(this, aspect, transportAmount));
-                }
+    private void processConstructConnections() {
+        Collection<TileEntity> constructConnections = getConstructConnections();
+        if (constructConnections.isEmpty() || world().isRemote)
+            return;
+
+        for (TileEntity tileEntity : constructConnections) {
+            if (tileEntity instanceof TileThaumatorium) {
+                TileThaumatorium construct = (TileThaumatorium) tileEntity;
+                int currentCraft = construct.currentCraft;
+                Aspect currentSuction = construct.currentSuction;
+            } else if (tileEntity instanceof TileThaumatoriumTop) {
+                TileThaumatoriumTop construct = (TileThaumatoriumTop) tileEntity;
+
+            }
+
+            // TODO SEND CONSTRUCT MESSAGES
+        }
+    }
+
+    private void sendMessagesForAlembics() {
+        Aspect[] aspects = albemicList.getAspects();
+        for (int i = 0; i < aspects.length; i++) {
+            Aspect aspect = aspects[i];
+            if (aspect == null)
+                continue;
+            int amount = albemicList.getAmount(aspect);
+            if (amount > 0) {
+                int transportAmount = Math.min(amount, amounts[1] + getDumpVariance());
+                messageProcessor.postMessage(new NetworkMessageAspectLocator(this, albemicList, aspect, transportAmount));
+            }
+        }
+    }
+
+    private void sendMessagesForLabelJars() {
+        Aspect[] aspects = jarLabelList.getAspects();
+        for (int i = 0; i < aspects.length; i++) {
+            Aspect aspect = aspects[i];
+            if (aspect == null)
+                continue;
+            int amount = albemicList.getAmount(aspect);
+            if (amount > 0) {
+                messageProcessor.postMessage(new NetworkMessageLabeledJar(this, aspect, ));
             }
         }
     }
 
     @Override
     public void save(NBTTagCompound tag) {
-        pendingAspects.writeToNBT(tag);
     }
 
     @Override
     public void load(NBTTagCompound tag) {
-        pendingAspects.readFromNBT(tag);
+    }
+
+    private AspectList saveAspectList(NBTTagCompound tag, AspectList list, String id) {
+
     }
 
     @Override
@@ -131,17 +202,17 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
 
             if (player.isSneaking()) {
                 drain();
-                player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "Pipe was drained."));
+                addChatMessage(player, EnumChatFormatting.DARK_AQUA + "Pipe was drained.");
             } else {
                 boolean empty = true;
                 for (Aspect aspect : pendingAspects.getAspects()) {
                     if (aspect == null)
                         continue;
                     empty = false;
-                    player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "Contains " + pendingAspects.getAmount(aspect) + " " + aspect.getName()));
+                    addChatMessage(player, EnumChatFormatting.DARK_AQUA + "Contains " + pendingAspects.getAmount(aspect) + " " + aspect.getName());
                 }
                 if (empty)
-                    player.addChatMessage(new ChatComponentText(EnumChatFormatting.DARK_AQUA + "The pipe is empty."));
+                    addChatMessage(player, EnumChatFormatting.DARK_AQUA + "The pipe is empty.");
             }
             return true;
         }
@@ -149,7 +220,27 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     }
 
     private void drain() {
-        pendingAspects = new AspectList();
+//        pendingAspects = new AspectList();
+        TileThaumatorium construct = null;
+        Collection<TileEntity> constructs = getConstructConnections();
+        if (!constructs.isEmpty())
+            for (TileEntity entity : constructs) {
+                IAspectContainer container = (IAspectContainer) entity;
+                if (container instanceof TileThaumatorium)
+                    construct = (TileThaumatorium) container;
+                else if (container instanceof TileThaumatoriumTop)
+                    construct = ((TileThaumatoriumTop) container).thaumatorium;
+
+                if (construct == null)
+                    continue;
+                CoreProperties.logger.info(construct.currentCraft);
+                if (construct.currentSuction != null)
+                    CoreProperties.logger.info(construct.currentSuction.getName());
+            }
+    }
+
+    private void addChatMessage(EntityPlayer player, String text) {
+        player.addChatComponentMessage(new ChatComponentText(text));
     }
 
     public NodeState getNodeState() {
@@ -288,4 +379,10 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     public IMessageProcessor getIMessageProcessor() {
         return messageProcessor;
     }
+
+    private static enum MessagePhase {
+        ALEMBIC,
+        LABELED_JAR,
+    }
+
 }

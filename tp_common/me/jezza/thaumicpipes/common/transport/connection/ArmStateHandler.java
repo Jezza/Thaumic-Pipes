@@ -63,6 +63,10 @@ public class ArmStateHandler {
     }
 
     private void updateConnections(TileEntity[] tileEntities) {
+        albemicConnections.clear();
+        jarConnections.clear();
+        constructConnections.clear();
+        containerConnections.clear();
         pipeConnections.clear();
         for (int i = 0; i <= 5; i++) {
             ArmState armState = armStateArray[i];
