@@ -40,7 +40,7 @@ public class TextureMaps {
     private static ResourceLocation[] getResources(String... loc) {
         if (loc.length <= 0)
             return null;
-        ArrayList<ResourceLocation> resourceMap = new ArrayList<ResourceLocation>();
+        ArrayList<ResourceLocation> resourceMap = new ArrayList<>();
         for (int i = 0; i < loc.length; i++)
             resourceMap.add(getResource(loc[i]));
         return resourceMap.toArray(new ResourceLocation[resourceMap.size()]);

@@ -79,7 +79,7 @@ public class ModRecipes {
         components[i++] = new ItemStack(Items.ender_pearl);
         components[i++] = new ItemStack(Items.ender_pearl);
         components[i++] = new ItemStack(Items.ender_pearl);
-        components[i++] = silverWood;
+        components[i] = silverWood;
 
         thaumicPipe_RecipeInfusion = ThaumcraftApi.addInfusionCraftingRecipe(Strings.THAUMIC_PIPE,
                 new ItemStack(ModItems.thaumicPipe, 6),
@@ -116,7 +116,7 @@ public class ModRecipes {
         components[i++] = new ItemStack(Items.nether_star);
         components[i++] = new ItemStack(Items.ender_pearl);
         components[i++] = silverWood;
-        components[i++] = new ItemStack(Items.ender_pearl);
+        components[i] = new ItemStack(Items.ender_pearl);
 
         thaumicPipe_RecipeInfusion = ThaumcraftApi.addInfusionCraftingRecipe(Strings.THAUMIC_PIPE,
                 new ItemStack(ModItems.thaumicPipe, 6),

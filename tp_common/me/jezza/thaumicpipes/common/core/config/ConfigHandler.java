@@ -27,7 +27,6 @@ public class ConfigHandler {
             logger.info("Configs loaded successfully");
 
         } catch (Exception e) {
-
         } finally {
             config.save();
         }

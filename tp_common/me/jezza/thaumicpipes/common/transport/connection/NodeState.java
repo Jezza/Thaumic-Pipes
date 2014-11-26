@@ -5,7 +5,7 @@ import me.jezza.thaumicpipes.common.core.PipeProperties;
 import me.jezza.thaumicpipes.common.core.interfaces.IOcclusionPart;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class NodeState implements IOcclusionPart {
+public class NodeState implements IOcclusionPart, Cloneable {
     public static final NodeState BIG_NODE = new NodeState(0, true, true);
     public static final NodeState NORMAL_NODE = new NodeState(1, true, false);
     public static final NodeState DIRECTIONAL_SECTION = new NodeState(2, false, false);

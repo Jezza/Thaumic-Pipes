@@ -120,7 +120,7 @@ public class ArmStateHandler {
         return armStateArray;
     }
 
-    public NodeState createNode() {
+    private NodeState createNode() {
         return NodeState.createNodeState(armStateArray);
     }
 }

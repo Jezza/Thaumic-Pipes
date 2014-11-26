@@ -14,7 +14,6 @@ import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.core.PipeProperties;
 import me.jezza.thaumicpipes.common.core.interfaces.IOcclusionPart;
 import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
-import me.jezza.thaumicpipes.common.lib.CoreProperties;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.multipart.occlusion.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
@@ -57,7 +56,6 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     protected ArmStateHandler armStateHandler;
     protected IMessageProcessor messageProcessor;
 
-    // TODO Probably need to make a better method for this.
     protected TimeTicker albemicTicker, messageTicker, jarTicker;
 
     public ThaumicPipePart() {
@@ -211,13 +209,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     }
 
     private void drain() {
-//        pendingAspects = new AspectList();
-        CoreProperties.logger.info(getJarConnections().size());
-        for (TileEntity tileEntity : getJarConnections()) {
-            TileJarFillable jar = (TileJarFillable) tileEntity;
-            if (jar.aspectFilter != null)
-                CoreProperties.logger.info(jar.aspectFilter.getName());
-        }
+        pendingAspects = new AspectList();
     }
 
     private void addChatMessage(EntityPlayer player, String text) {
@@ -302,9 +294,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
             return true;
         if (tileEntity instanceof TileTube)
             return false;
-        if (tileEntity instanceof IEssentiaTransport)
-            return ((IEssentiaTransport) tileEntity).isConnectable(direction.getOpposite());
-        return false;
+        return tileEntity instanceof IEssentiaTransport && ((IEssentiaTransport) tileEntity).isConnectable(direction.getOpposite());
     }
 
     @Override
@@ -359,11 +349,6 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     @Override
     public IMessageProcessor getIMessageProcessor() {
         return messageProcessor;
-    }
-
-    private static enum MessagePhase {
-        ALEMBIC,
-        LABELED_JAR,
     }
 
 }

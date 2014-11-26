@@ -35,6 +35,6 @@ public class OcclusionPart extends JCuboidPart implements JNormalOcclusion {
 
     @Override
     public boolean occlusionTest(TMultiPart part) {
-        return (part instanceof IThaumicPipe) ? true : NormalOcclusionTest.apply(this, part);
+        return part instanceof IThaumicPipe || NormalOcclusionTest.apply(this, part);
     }
 }
