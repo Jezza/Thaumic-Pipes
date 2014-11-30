@@ -8,21 +8,20 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
-import me.jezza.oc.api.configuration.ConfigHandler;
+import me.jezza.oc.api.configuration.Config;
 import me.jezza.oc.client.CreativeTabSimple;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.core.command.CommandAirBlock;
 import me.jezza.thaumicpipes.common.core.command.CommandAreaRemove;
 import me.jezza.thaumicpipes.common.core.command.CommandAreaScan;
-import me.jezza.thaumicpipes.common.lib.CoreProperties;
-import me.jezza.thaumicpipes.common.lib.TextureMaps;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.research.ModRecipes;
 import me.jezza.thaumicpipes.common.research.ModResearch;
 
 import static me.jezza.thaumicpipes.common.lib.CoreProperties.*;
 
+@Config.Controller
 @Mod(modid = MOD_ID, name = MOD_NAME, dependencies = DEPENDENCIES)
 public class ThaumicPipes {
 
@@ -36,10 +35,7 @@ public class ThaumicPipes {
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        ConfigHandler configHandler = new ConfigHandler();
-        configHandler.register(CoreProperties.class);
-        configHandler.register(TextureMaps.class);
-        configHandler.readFrom(event.getSuggestedConfigurationFile());
+        logger = event.getModLog();
 
         ModBlocks.init();
         ModItems.init();

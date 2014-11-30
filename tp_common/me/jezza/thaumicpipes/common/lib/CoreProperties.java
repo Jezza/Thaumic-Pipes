@@ -1,9 +1,9 @@
 package me.jezza.thaumicpipes.common.lib;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static me.jezza.oc.api.configuration.Config.*;
+import static me.jezza.oc.api.configuration.Config.ConfigBoolean;
+import static me.jezza.oc.api.configuration.Config.ConfigInteger;
 
 public class CoreProperties {
 
@@ -15,7 +15,7 @@ public class CoreProperties {
     public static final String CLIENT_PROXY_CLASS = "me.jezza.thaumicpipes.client.ClientProxy";
     public static final String SERVER_PROXY_CLASS = "me.jezza.thaumicpipes.CommonProxy";
 
-    public static Logger logger = LogManager.getLogger("ThaumicPipes");
+    public static Logger logger;
 
     public static final String DEPENDENCIES = "required-after:OmnisCore;required-after:Thaumcraft;after:ThaumicTinkerer";
 
