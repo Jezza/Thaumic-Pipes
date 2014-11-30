@@ -8,13 +8,15 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import me.jezza.oc.api.configuration.ConfigHandler;
 import me.jezza.oc.client.CreativeTabSimple;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.core.command.CommandAirBlock;
 import me.jezza.thaumicpipes.common.core.command.CommandAreaRemove;
 import me.jezza.thaumicpipes.common.core.command.CommandAreaScan;
-import me.jezza.thaumicpipes.common.core.config.ConfigHandler;
+import me.jezza.thaumicpipes.common.lib.CoreProperties;
+import me.jezza.thaumicpipes.common.lib.TextureMaps;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.research.ModRecipes;
 import me.jezza.thaumicpipes.common.research.ModResearch;
@@ -34,7 +36,10 @@ public class ThaumicPipes {
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        ConfigHandler.init(event.getSuggestedConfigurationFile());
+        ConfigHandler configHandler = new ConfigHandler();
+        configHandler.register(CoreProperties.class);
+        configHandler.register(TextureMaps.class);
+        configHandler.readFrom(event.getSuggestedConfigurationFile());
 
         ModBlocks.init();
         ModItems.init();
@@ -63,5 +68,9 @@ public class ThaumicPipes {
             new CommandAreaRemove("removeArea", "<dimID> <x1> <y1> <z1> <x2> <y2> <z2>").register();
             new CommandAreaScan("removeBlock", "<dimID> <x1> <y1> <z1> <x2> <y2> <z2> <id> <meta>").register();
         }
+    }
+
+    public void onPlayerJoin() {
+
     }
 }

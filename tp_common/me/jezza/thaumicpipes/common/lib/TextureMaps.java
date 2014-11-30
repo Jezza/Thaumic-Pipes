@@ -1,16 +1,15 @@
 package me.jezza.thaumicpipes.common.lib;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import me.jezza.oc.api.configuration.Config.ConfigInteger;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.ArrayList;
 
-@SideOnly(Side.CLIENT)
 public class TextureMaps {
 
     private static final String MODEL_SHEET_LOCATION = "textures/models/";
 
+    @ConfigInteger(category = "Gameplay", minValue = 0, maxValue = 2, comment = "0 - Steam punk style texture.\n1 - Old thaumcraft style texture.\n2 - The default texture.")
     public static int THAUMIC_TEXTURE_INDEX = 2;
 
     public static final ResourceLocation JAR_CONNECTION = getResource("jarConnection");

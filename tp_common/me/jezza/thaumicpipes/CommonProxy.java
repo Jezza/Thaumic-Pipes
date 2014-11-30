@@ -1,10 +1,10 @@
 package me.jezza.thaumicpipes;
 
-import me.jezza.oc.api.NetworkInstance;
-import me.jezza.oc.api.NetworkResponse.NodeAdded;
-import me.jezza.oc.api.NetworkResponse.NodeRemoved;
-import me.jezza.oc.api.NetworkResponse.NodeUpdated;
-import me.jezza.oc.api.interfaces.INetworkNode;
+import me.jezza.oc.api.network.NetworkInstance;
+import me.jezza.oc.api.network.NetworkResponse.NodeAdded;
+import me.jezza.oc.api.network.NetworkResponse.NodeRemoved;
+import me.jezza.oc.api.network.NetworkResponse.NodeUpdated;
+import me.jezza.oc.api.network.interfaces.INetworkNode;
 
 public class CommonProxy {
 

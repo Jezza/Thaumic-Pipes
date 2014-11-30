@@ -1,6 +1,6 @@
 tile.thaumicPipe.name=Thaumic Pipe
 item.itemThaumicPipe.name=Thaumic Pipe
-itemGroup.ThaumicPipe=Thaumic Pipes
+itemGroup.ThaumicPipes=Thaumic Pipes
 tc.research_category.TP_CATEGORY=Thaumic Pipes
 
 tc.research_name.thaumicPipe=[TP] Smart Essentia Transport

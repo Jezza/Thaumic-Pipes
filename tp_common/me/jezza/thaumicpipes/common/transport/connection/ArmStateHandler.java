@@ -1,6 +1,6 @@
 package me.jezza.thaumicpipes.common.transport.connection;
 
-import me.jezza.oc.api.interfaces.INetworkNode;
+import me.jezza.oc.api.network.interfaces.INetworkNode;
 import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;

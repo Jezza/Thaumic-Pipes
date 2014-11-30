@@ -4,7 +4,7 @@ import codechicken.multipart.MultiPartRegistry;
 import codechicken.multipart.MultiPartRegistry.IPartFactory;
 import codechicken.multipart.MultipartGenerator;
 import codechicken.multipart.TMultiPart;
-import me.jezza.oc.api.interfaces.INetworkNode;
+import me.jezza.oc.api.network.interfaces.INetworkNode;
 import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.multipart.pipe.thaumic.ThaumicPipePart;
 

@@ -1,7 +1,7 @@
 package me.jezza.thaumicpipes.common.transport.messages;
 
 import me.jezza.oc.api.abstracts.NetworkMessageAbstract;
-import me.jezza.oc.api.interfaces.INetworkNode;
+import me.jezza.oc.api.network.interfaces.INetworkNode;
 import net.minecraft.tileentity.TileEntity;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
