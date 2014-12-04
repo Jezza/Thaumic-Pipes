@@ -61,7 +61,7 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
     public void updateConnections() {
     }
 
-    public void updateNetwork(){
+    public void updateNetwork() {
     }
 
     @Override

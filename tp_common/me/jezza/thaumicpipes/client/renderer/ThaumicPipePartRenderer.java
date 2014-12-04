@@ -44,6 +44,7 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
         }
 
         renderNodeState(pipe.getNodeState());
+
         glPopMatrix();
     }
 
@@ -159,7 +160,6 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
 
             glPopMatrix();
         }
-
     }
 
     @Override

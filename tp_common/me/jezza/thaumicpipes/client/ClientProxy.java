@@ -31,5 +31,4 @@ public class ClientProxy extends CommonProxy {
     private void registerItemRenderer(Item item, IItemRenderer renderer) {
         MinecraftForgeClient.registerItemRenderer(item, renderer);
     }
-
 }

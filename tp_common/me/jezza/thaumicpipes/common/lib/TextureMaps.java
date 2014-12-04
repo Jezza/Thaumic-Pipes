@@ -9,7 +9,7 @@ public class TextureMaps {
 
     private static final String MODEL_SHEET_LOCATION = "textures/models/";
 
-    @ConfigInteger(category = "Gameplay", minValue = 0, maxValue = 2, comment = "0 - Steam punk style texture.\n1 - Old thaumcraft style texture.\n2 - The default texture.")
+    @ConfigInteger(category = "Gameplay", minValue = 0, maxValue = 2, comment = {"0 - Steam punk style texture.", "1 - Old thaumcraft style texture.", "2 - The default texture."})
     public static int THAUMIC_TEXTURE_INDEX = 2;
 
     public static final ResourceLocation JAR_CONNECTION = getResource("jarConnection");

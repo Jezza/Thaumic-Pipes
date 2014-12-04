@@ -9,7 +9,6 @@ import thaumcraft.api.aspects.AspectList;
 import thaumcraft.api.aspects.IAspectContainer;
 import thaumcraft.common.tiles.TileJarFillable;
 import thaumcraft.common.tiles.TileThaumatorium;
-import thaumcraft.common.tiles.TileThaumatoriumTop;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -53,53 +52,62 @@ public class NetworkMessageAspectLocator extends NetworkMessagePipeAbstract {
     @Override
     public MessageResponse onMessageComplete(IMessageProcessor messageProcessor) {
         if (!constructs.isEmpty()) {
-            TileThaumatorium construct = null;
             for (IAspectContainer container : constructs) {
-                if (container instanceof TileThaumatorium)
-                    construct = (TileThaumatorium) container;
-                else if (container instanceof TileThaumatoriumTop)
-                    construct = ((TileThaumatoriumTop) container).thaumatorium;
+                TileThaumatorium construct = getThaumatorium(container);
+                if (construct == null)
+                    continue;
                 int amountToAdd = getAmountToAddToConstruct(construct, filter);
                 amountToAdd = Math.min(amountToAdd, amount);
-                if (amountToAdd > 0 && addTo(container, amount))
-                    return MessageResponse.VALID;
+                if (amountToAdd > 0) {
+                    amount -= amountToAdd;
+                    amountToAdd = removeFromAddTo(aspectList, construct, amountToAdd);
+                    amount += amountToAdd;
+                    if (amount == 0)
+                        return MessageResponse.VALID;
+                }
             }
         }
 
         if (amount > 0 && !containers.isEmpty())
-            for (IAspectContainer container : containers)
-                if (addTo(container, amount))
-                    break;
+            for (IAspectContainer container : containers) {
+                amount = removeFromAddTo(aspectList, container, amount);
+                if (amount == 0)
+                    return MessageResponse.VALID;
+            }
 
-        Iterator<IAspectContainer> iterator = jars.iterator();
         if (amount > 0 && !jars.isEmpty()) {
+            Iterator<IAspectContainer> iterator = jars.iterator();
             while (iterator.hasNext()) {
                 IAspectContainer container = iterator.next();
-                if (filter.equals(((TileJarFillable) container).aspectFilter)) {
-                    if (addTo(container, amount))
-                        break;
+                if (filter == ((TileJarFillable) container).aspectFilter) {
+                    amount = removeFromAddTo(aspectList, container, amount);
+                    if (amount == 0)
+                        return MessageResponse.VALID;
+                    iterator.remove();
+                }
+            }
+        }
+
+        if (amount > 0 && !jars.isEmpty()) {
+            Iterator<IAspectContainer> iterator = jars.iterator();
+            while (iterator.hasNext()) {
+                TileJarFillable jar = (TileJarFillable) iterator.next();
+                if (jar.amount > 0 && filter.equals(jar.aspect)) {
+                    amount = removeFromAddTo(aspectList, jar, amount);
+                    if (amount == 0)
+                        return MessageResponse.VALID;
                     iterator.remove();
                 }
             }
         }
 
         if (amount > 0 && !jars.isEmpty())
-            for (IAspectContainer container : jars)
-                if (addTo(container, 1))
-                    break;
+            for (IAspectContainer container : jars) {
+                amount = removeFromAddTo(aspectList, container, amount);
+                if (amount == 0)
+                    return MessageResponse.VALID;
+            }
 
         return MessageResponse.VALID;
-    }
-
-    private boolean addTo(IAspectContainer container, int amountToAdd) {
-        int leftOver = container.addToContainer(filter, amountToAdd);
-        int removed = amountToAdd - leftOver;
-        if (removed > 0) {
-            amount -= removed;
-            aspectList.remove(filter, removed);
-        }
-        if (amount < 0)
-            amount = 0;
-        return amount == 0;
     }
 }

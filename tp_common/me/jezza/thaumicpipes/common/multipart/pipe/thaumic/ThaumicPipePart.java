@@ -5,7 +5,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import me.jezza.oc.api.network.interfaces.IMessageProcessor;
 import me.jezza.oc.api.network.interfaces.INetworkNode;
-import me.jezza.oc.common.utils.TimeTicker;
 import me.jezza.thaumicpipes.ThaumicPipes;
 import me.jezza.thaumicpipes.client.IPartRenderer;
 import me.jezza.thaumicpipes.client.renderer.ThaumicPipePartRenderer;
@@ -34,6 +33,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
 import thaumcraft.api.aspects.IEssentiaTransport;
+import thaumcraft.common.Thaumcraft;
 import thaumcraft.common.tiles.TileAlembic;
 import thaumcraft.common.tiles.TileJarFillable;
 import thaumcraft.common.tiles.TileTube;
@@ -44,8 +44,10 @@ import java.util.Random;
 
 public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, INetworkNode {
 
+    private int[] counts;
     private int prevSize = -1;
-    private int[] timeTickerValues, amounts;
+    private int[] amounts;
+    private int[] timeTickerValues;
 
     @SideOnly(Side.CLIENT)
     private ThaumicPipePartRenderer renderer;
@@ -56,8 +58,6 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     protected ArmStateHandler armStateHandler;
     protected IMessageProcessor messageProcessor;
 
-    protected TimeTicker albemicTicker, messageTicker, jarTicker;
-
     public ThaumicPipePart() {
         armStateHandler = new ArmStateHandler();
 
@@ -65,19 +65,19 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
 
         random = new Random();
         timeTickerValues = getTimeTickerValues();
+        counts = new int[timeTickerValues.length];
+        Arrays.fill(counts, 0);
         amounts = getAmounts();
-        albemicTicker = new TimeTicker(timeTickerValues[0]);
-        messageTicker = new TimeTicker(timeTickerValues[1]);
-        jarTicker = new TimeTicker(timeTickerValues[2]);
     }
 
     /**
-     * [0] = albemicTicker;
-     * [1] = messageTicker;
-     * [2] = jarTicker;
+     * [0] = Albemic ticker;
+     * [1] = Message ticker;
+     * [2] = Jar ticker;
+     * [3] = FX ticker
      */
     public int[] getTimeTickerValues() {
-        return new int[]{5, 10, 10};
+        return new int[]{5, 10, 10, 5};
     }
 
     /**
@@ -113,17 +113,27 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     @Override
     public void update() {
         super.update();
+//        if (tick(3))
+//            renderFX();
+
         if (world().isRemote)
             return;
 
-        if (albemicTicker.tick())
+        if (tick(0))
             processAlbemicConnections();
 
-        if (pendingAspects.size() > 0 && messageTicker.tick())
+        if (pendingAspects.size() > 0 && tick(1))
             sendAlembicMessages();
 
-        if (jarTicker.tick())
+        if (tick(2))
             processJarConnections();
+    }
+
+    private boolean tick(int index) {
+        boolean flag = ++counts[index] % timeTickerValues[index] == 0;
+        if (flag)
+            counts[index] = 0;
+        return flag;
     }
 
     private void processAlbemicConnections() {
@@ -170,7 +180,18 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
                 messageProcessor.postMessage(new NetworkMessageJar(this, jar, aspect, withdrawAmount, jar.aspectFilter != null));
             }
         }
+    }
 
+    public void renderFX() {
+        Aspect[] aspects = pendingAspects.getAspects();
+        if (aspects.length == 0)
+            return;
+        for (int i = 0; i < aspects.length; i++) {
+            Aspect aspect = aspects[i];
+            if (!world().isRemote || aspect == null)
+                continue;
+            Thaumcraft.proxy.sourceStreamFX(world(), x() + random.nextFloat(), y() + random.nextFloat(), z() + random.nextFloat(), x() + random.nextFloat(), y() + random.nextFloat(), z() + random.nextFloat(), aspect.getColor());
+        }
     }
 
     @Override
@@ -210,6 +231,9 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
 
     private void drain() {
         pendingAspects = new AspectList();
+        pendingAspects.add(Aspect.AIR, 4);
+        pendingAspects.add(Aspect.ORDER, 4);
+        pendingAspects.add(Aspect.METAL, 12);
     }
 
     private void addChatMessage(EntityPlayer player, String text) {

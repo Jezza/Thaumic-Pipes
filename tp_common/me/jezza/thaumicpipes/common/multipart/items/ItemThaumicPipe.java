@@ -12,6 +12,7 @@ public class ItemThaumicPipe extends ItemMultiPartAbstract {
     public ItemThaumicPipe(String name) {
         super(name);
         setCreativeTab(ThaumicPipes.creativeTab);
+        setTextureless();
     }
 
     @Override
@@ -22,10 +23,5 @@ public class ItemThaumicPipe extends ItemMultiPartAbstract {
     @Override
     public SoundType getSoundType() {
         return Block.soundTypeStone;
-    }
-
-    @Override
-    public boolean requireIconReg() {
-        return false;
     }
 }

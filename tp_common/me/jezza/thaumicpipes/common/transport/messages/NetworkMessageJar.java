@@ -9,14 +9,14 @@ import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.IAspectContainer;
 import thaumcraft.common.tiles.TileJarFillable;
 import thaumcraft.common.tiles.TileThaumatorium;
-import thaumcraft.common.tiles.TileThaumatoriumTop;
 
 import java.util.Collection;
 import java.util.LinkedList;
 
 public class NetworkMessageJar extends NetworkMessagePipeAbstract {
-    private Collection<IAspectContainer> constructs, containers, jars;
-    private IAspectContainer mainJar;
+    private Collection<IAspectContainer> constructs, containers;
+    private Collection<TileJarFillable> jars;
+    private TileJarFillable mainJar;
     private int amount;
     private boolean fromFiltered;
 
@@ -25,7 +25,7 @@ public class NetworkMessageJar extends NetworkMessagePipeAbstract {
         constructs = new LinkedList<>();
         containers = new LinkedList<>();
         jars = new LinkedList<>();
-        this.mainJar = mainJar;
+        this.mainJar = (TileJarFillable) mainJar;
         this.amount = amount;
         this.fromFiltered = fromFiltered;
     }
@@ -45,21 +45,26 @@ public class NetworkMessageJar extends NetworkMessagePipeAbstract {
 
         processConnections(constructs, pipe.getConstructConnections());
         processConnections(containers, pipe.getContainerConnections());
-        if (!fromFiltered)
-            processJars(jars, pipe.getJarConnections());
+        processJars(jars, pipe.getJarConnections());
 
         return MessageResponse.VALID;
     }
 
-    private void processJars(Collection<IAspectContainer> collection, Collection<TileEntity> connections) {
+    private void processJars(Collection<TileJarFillable> collection, Collection<TileEntity> connections) {
         if (connections.isEmpty())
             return;
 
         for (TileEntity tileEntity : connections) {
             TileJarFillable jar = (TileJarFillable) tileEntity;
 
+            if (this.mainJar.equals(jar))
+                continue;
+
+            if (jar.aspect == null || jar.amount == jar.maxAmount)
+                continue;
+
             Aspect aspect = jar.aspectFilter;
-            if (aspect != null && filter.equals(aspect) && !collection.contains(jar))
+            if (aspect != null && filter == aspect && !collection.contains(jar))
                 collection.add(jar);
         }
     }
@@ -67,40 +72,45 @@ public class NetworkMessageJar extends NetworkMessagePipeAbstract {
     @Override
     public MessageResponse onMessageComplete(IMessageProcessor messageProcessor) {
         if (!constructs.isEmpty()) {
-            TileThaumatorium construct = null;
             for (IAspectContainer container : constructs) {
-                if (container instanceof TileThaumatorium)
-                    construct = (TileThaumatorium) container;
-                else if (container instanceof TileThaumatoriumTop)
-                    construct = ((TileThaumatoriumTop) container).thaumatorium;
+                TileThaumatorium construct = getThaumatorium(container);
+                if (construct == null)
+                    continue;
                 int amountToAdd = getAmountToAddToConstruct(construct, filter);
                 amountToAdd = Math.min(amountToAdd, amount);
-                if (amountToAdd > 0 && addTo(construct, amount))
-                    break;
+                if (amountToAdd > 0) {
+                    amount -= amountToAdd;
+                    amountToAdd = removeFromAddTo(mainJar, construct, amountToAdd);
+                    amount += amountToAdd;
+                    if (amount == 0)
+                        return MessageResponse.VALID;
+                }
             }
         }
 
         if (amount > 0 && !containers.isEmpty())
-            for (IAspectContainer container : containers)
-                if (addTo(container, amount))
-                    break;
+            for (IAspectContainer container : containers) {
+                amount = removeFromAddTo(mainJar, container, amount);
+                if (amount == 0)
+                    return MessageResponse.VALID;
+            }
 
         if (amount > 0 && !jars.isEmpty())
-            for (IAspectContainer jar : jars)
-                if (addTo(jar, amount))
-                    break;
+            if (fromFiltered) {
+                for (TileJarFillable jar : jars)
+                    if (mainJar.amount > jar.amount + 1) {
+                        amount = removeFromAddTo(mainJar, jar, amount);
+                        if (amount == 0)
+                            break;
+                    }
+            } else {
+                for (IAspectContainer jar : jars) {
+                    amount = removeFromAddTo(mainJar, jar, amount);
+                    if (amount == 0)
+                        break;
+                }
+            }
 
         return MessageResponse.VALID;
-    }
-
-    private boolean addTo(IAspectContainer container, int amountToAdd) {
-        boolean flag = mainJar.takeFromContainer(filter, amountToAdd);
-        if (!flag)
-            return amount == 0;
-        int leftOver = container.addToContainer(filter, amountToAdd);
-        amount -= (amountToAdd - leftOver);
-        if (amount < 0)
-            amount = 0;
-        return amount == 0;
     }
 }
