@@ -120,7 +120,7 @@ public class ModRecipes {
 
         thaumicPipe_RecipeInfusion = ThaumcraftApi.addInfusionCraftingRecipe(Strings.THAUMIC_PIPE,
                 new ItemStack(ModItems.thaumicPipe, 6),
-                5,
+                10,
                 aspectList,
                 ItemApi.getBlock("blockTube", 0),
                 components
