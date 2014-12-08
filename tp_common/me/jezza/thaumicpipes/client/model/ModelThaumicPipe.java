@@ -1,9 +1,9 @@
 package me.jezza.thaumicpipes.client.model;
 
-import me.jezza.oc.client.models.ModelAbstract;
-import me.jezza.thaumicpipes.common.lib.Models;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import me.jezza.oc.client.models.ModelAbstract;
+import me.jezza.thaumicpipes.common.lib.Models;
 
 @SideOnly(Side.CLIENT)
 public class ModelThaumicPipe extends ModelAbstract {
@@ -24,5 +24,4 @@ public class ModelThaumicPipe extends ModelAbstract {
     public void renderVerticalParts() {
         renderOnly("arm1", "arm2");
     }
-
 }

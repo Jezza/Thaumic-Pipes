@@ -2,8 +2,8 @@ package me.jezza.thaumicpipes.client.renderer;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import me.jezza.thaumicpipes.client.IPartRenderer;
 import me.jezza.thaumicpipes.client.RenderUtils;
+import me.jezza.thaumicpipes.client.interfaces.IDynamicPartRenderer;
 import me.jezza.thaumicpipes.client.model.ModelJarConnection;
 import me.jezza.thaumicpipes.client.model.ModelPipeExtension;
 import me.jezza.thaumicpipes.client.model.ModelThaumicPipe;
@@ -18,7 +18,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import static org.lwjgl.opengl.GL11.*;
 
 @SideOnly(Side.CLIENT)
-public class ThaumicPipePartRenderer implements IPartRenderer {
+public class ThaumicPipePartRenderer implements IDynamicPartRenderer {
 
     ModelThaumicPipe modelThaumicPipe = new ModelThaumicPipe();
     ModelJarConnection modelJarConnection = new ModelJarConnection();
@@ -33,7 +33,6 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
         glTranslated(x + 0.5F, y + 0.5F, z + 0.5F);
 
         float scale = 0.3850F;
-
         glScalef(scale, scale, scale);
 
         ArmState[] armSet = pipe.getArmStateArray();
@@ -84,10 +83,8 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
         RenderUtils.bindPipeTexture();
         modelThaumicPipe.renderArm(index);
 
-        ForgeDirection currentDir = currentState.getDirection();
-        ConnectionType connectionType = currentState.getConnectionType();
-
         glPushMatrix();
+        ConnectionType connectionType = currentState.getConnectionType();
         switch (connectionType) {
             case JAR:
                 renderJarConnections(currentState, index);
@@ -98,6 +95,7 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
                 float extensionSize = connectionType.getExtensionSize();
                 if (extensionSize == 0.0F)
                     break;
+                ForgeDirection currentDir = currentState.getDirection();
                 glTranslatef(currentDir.offsetX * extensionSize, currentDir.offsetY * extensionSize, currentDir.offsetZ * extensionSize);
                 glScalef(0.9999F, 0.9999F, 0.9999F);
                 modelThaumicPipe.renderArm(index);
@@ -163,8 +161,8 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
     }
 
     @Override
-    public void renderAt(PipePartAbstract part, double x, double y, double z, float frame) {
+    public void renderAt(PipePartAbstract part, double x, double y, double z, float tick) {
         if (part instanceof ThaumicPipePart)
-            render((ThaumicPipePart) part, x, y, z, frame);
+            render((ThaumicPipePart) part, x, y, z, tick);
     }
 }

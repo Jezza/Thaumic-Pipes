@@ -65,8 +65,4 @@ public class ThaumicPipes {
             new CommandAreaScan("removeBlock", "<dimID> <x1> <y1> <z1> <x2> <y2> <z2> <id> <meta>").register();
         }
     }
-
-    public void onPlayerJoin() {
-
-    }
 }
