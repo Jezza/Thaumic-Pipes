@@ -40,7 +40,7 @@ public class ModResearch {
         String parent = "";
         int col = 1;
         int row = 1;
-        if (false && Loader.isModLoaded("ThaumicTinkerer")) {
+        if (Loader.isModLoaded("ThaumicTinkerer")) {
             category = "TT_CATEGORY";
             parent = "REPAIRER";
             col = -2;
@@ -49,7 +49,7 @@ public class ModResearch {
             initResearchCategory();
 
 
-        ResearchItem researchItem = new ResearchItem(Strings.RESEARCH_NAME, category, new AspectList().add(Aspect.VOID, 10).add(Aspect.AIR, 10), col, row, 2, new ItemStack(ModItems.thaumicPipe));
+        ResearchItem researchItem = new ResearchItem(Strings.THAUMIC_PIPE, category, new AspectList().add(Aspect.VOID, 10).add(Aspect.AIR, 10), col, row, 2, new ItemStack(ModItems.thaumicPipe));
         researchItem.setPages(pages);
         if (!parent.equals(""))
             researchItem.setParents(parent);

@@ -8,21 +8,18 @@ import codechicken.multipart.TMultiPart;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import me.jezza.oc.common.utils.CoordSet;
-import me.jezza.thaumicpipes.client.interfaces.IDynamicPartRenderer;
-import me.jezza.thaumicpipes.client.interfaces.IStaticPartRenderer;
+import me.jezza.thaumicpipes.client.interfaces.IPartRenderer;
 import me.jezza.thaumicpipes.common.core.interfaces.IOcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.core.MultiPartAbstract;
 import me.jezza.thaumicpipes.common.multipart.occlusion.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.occlusion.OcclusionPartTester;
 import me.jezza.thaumicpipes.common.transport.connection.NodeState;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 public abstract class PipePartAbstract extends MultiPartAbstract implements INeighborTileChange {
 
-    private boolean isDynamicRenderer = false;
     private boolean shouldUpdate = false;
     private TileEntity[] tileCache;
 
@@ -32,11 +29,6 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
     public PipePartAbstract() {
         tileCache = new TileEntity[6];
         occlusionTester = new OcclusionPartTester();
-    }
-
-    public PipePartAbstract setDynamicRenderer() {
-        isDynamicRenderer = true;
-        return this;
     }
 
     public TileEntity[] getTileCache() {
@@ -123,36 +115,12 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
     @Override
     @SideOnly(Side.CLIENT)
     public void renderDynamic(Vector3 pos, float frame, int pass) {
-        if (!isDynamicRenderer)
-            return;
-        if (pass == 0) {
-            IDynamicPartRenderer renderer = getDynamicRenderer();
-            if (renderer != null)
-                renderer.renderAt(this, pos.x, pos.y, pos.z, frame);
-        }
-    }
-
-    @Override
-    public boolean renderStatic(Vector3 pos, int pass) {
-        if (isDynamicRenderer)
-            return false;
-        if (pass == 0) {
-            IStaticPartRenderer renderer = getStaticRenderer();
-            if (renderer != null)
-                return renderer.renderAt(this, Tessellator.instance);
-        }
-        return false;
+        if (pass == 0)
+            getRenderer().renderAt(this, pos.x, pos.y, pos.z, frame);
     }
 
     @SideOnly(Side.CLIENT)
-    public IStaticPartRenderer getStaticRenderer() {
-        return null;
-    }
-
-    @SideOnly(Side.CLIENT)
-    public IDynamicPartRenderer getDynamicRenderer() {
-        return null;
-    }
+    public abstract IPartRenderer getRenderer();
 
     public abstract IOcclusionPart[] getOcclusionParts();
 

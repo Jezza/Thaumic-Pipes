@@ -7,7 +7,4 @@ public class Strings {
 
     // Item
     public static final String ITEM_THAUMIC_PIPE = "itemThaumicPipe";
-
-    // Research
-    public static final String RESEARCH_NAME = "THAUMIC_PIPES";
 }

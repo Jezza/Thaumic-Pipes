@@ -6,7 +6,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import me.jezza.oc.api.network.interfaces.IMessageProcessor;
 import me.jezza.oc.api.network.interfaces.INetworkNode;
 import me.jezza.thaumicpipes.ThaumicPipes;
-import me.jezza.thaumicpipes.client.interfaces.IDynamicPartRenderer;
+import me.jezza.thaumicpipes.client.interfaces.IPartRenderer;
 import me.jezza.thaumicpipes.client.renderer.ThaumicPipePartRenderer;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.ModItems;
@@ -66,9 +66,8 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
         random = new Random();
         timeTickerValues = getTimeTickerValues();
         counts = new int[timeTickerValues.length];
-        Arrays.fill(counts, 0);
+        //Arrays.fill(counts, 0);
         amounts = getAmounts();
-        setDynamicRenderer();
     }
 
     /**
@@ -232,9 +231,6 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
 
     private void drain() {
         pendingAspects = new AspectList();
-        pendingAspects.add(Aspect.AIR, 4);
-        pendingAspects.add(Aspect.ORDER, 4);
-        pendingAspects.add(Aspect.METAL, 12);
     }
 
     private void addChatMessage(EntityPlayer player, String text) {
@@ -260,9 +256,8 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
             int size = tile().jPartList().size();
             if (prevSize == -1)
                 ThaumicPipes.proxy.addNetworkNode(this);
-            else if (size != prevSize) {
+            else if (size != prevSize)
                 ThaumicPipes.proxy.updateNetworkNode(this);
-            }
             prevSize = size;
         }
     }
@@ -328,7 +323,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     }
 
     @Override
-    public IDynamicPartRenderer getDynamicRenderer() {
+    public IPartRenderer getRenderer() {
         return renderer == null ? renderer = new ThaumicPipePartRenderer() : renderer;
     }
 

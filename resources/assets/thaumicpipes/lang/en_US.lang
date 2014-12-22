@@ -4,7 +4,7 @@ itemGroup.ThaumicPipes=Thaumic Pipes
 tc.research_category.TP_CATEGORY=Thaumic Pipes
 
 tc.research_name.thaumicPipe=Smart Essentia Transport
-tc.research_text.thaumicPipe=Never said suction was bad, just that it's not good...
+tc.research_text.thaumicPipe=[TP] Never said suction was bad, just that it's not good...
 tp.research_page.thaumicPipe.count=3
 tp.research_page.thaumicPipe.1=You thought that the previous essentia transport systems that you developed were great for small to medium scale alchemical contraptions, but severely lacked the ability to transfer large amounts of essentia at any given time.<BR>Without the suction system, you think that automation would be a breeze.<BR>With that in mind, using the secrets of the ender realm and essentia rich filters, you have devised a way to transport essentia with improved effectiveness and speed.
 tp.research_page.thaumicPipe.2=These pipes are capable of transferring all nearby essentia from sources, such as the albemic, to receivers, such as a jar or an Alchemical Construct.<BR>They can transfer more than one type of essentia at any given time, and there is no limit to how much it can transfer at one time.<BR>They will try to locate all sources in the following order: Alchemical Constructs, other machines, and lastly jars.<BR>Labeled jars will pull all the essentia from unlabel jars of the same type.

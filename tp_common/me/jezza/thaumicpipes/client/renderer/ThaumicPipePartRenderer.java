@@ -3,7 +3,7 @@ package me.jezza.thaumicpipes.client.renderer;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import me.jezza.thaumicpipes.client.RenderUtils;
-import me.jezza.thaumicpipes.client.interfaces.IDynamicPartRenderer;
+import me.jezza.thaumicpipes.client.interfaces.IPartRenderer;
 import me.jezza.thaumicpipes.client.model.ModelJarConnection;
 import me.jezza.thaumicpipes.client.model.ModelPipeExtension;
 import me.jezza.thaumicpipes.client.model.ModelThaumicPipe;
@@ -18,7 +18,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import static org.lwjgl.opengl.GL11.*;
 
 @SideOnly(Side.CLIENT)
-public class ThaumicPipePartRenderer implements IDynamicPartRenderer {
+public class ThaumicPipePartRenderer implements IPartRenderer {
 
     ModelThaumicPipe modelThaumicPipe = new ModelThaumicPipe();
     ModelJarConnection modelJarConnection = new ModelJarConnection();

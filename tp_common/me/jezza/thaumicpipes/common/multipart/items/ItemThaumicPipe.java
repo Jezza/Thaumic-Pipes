@@ -12,7 +12,6 @@ public class ItemThaumicPipe extends ItemMultiPartAbstract {
     public ItemThaumicPipe(String name) {
         super(name);
         setCreativeTab(ThaumicPipes.creativeTab);
-        setTextureless();
     }
 
     @Override
