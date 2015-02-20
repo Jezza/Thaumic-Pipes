@@ -10,19 +10,22 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import me.jezza.oc.api.configuration.Config;
 import me.jezza.oc.client.CreativeTabSimple;
+import me.jezza.thaumicpipes.api.ThaumicRegistry;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.ModItems;
+import me.jezza.thaumicpipes.common.core.RegistryHelper;
 import me.jezza.thaumicpipes.common.core.command.CommandAirBlock;
 import me.jezza.thaumicpipes.common.core.command.CommandAreaRemove;
 import me.jezza.thaumicpipes.common.core.command.CommandAreaScan;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.research.ModRecipes;
 import me.jezza.thaumicpipes.common.research.ModResearch;
+import me.jezza.thaumicpipes.common.transport.connection.ConnectionType;
 
 import static me.jezza.thaumicpipes.common.lib.CoreProperties.*;
 
 @Config.Controller
-@Mod(modid = MOD_ID, name = MOD_NAME, dependencies = DEPENDENCIES)
+@Mod(modid = MOD_ID, name = MOD_NAME, version = VERSION, dependencies = DEPENDENCIES)
 public class ThaumicPipes {
 
     @Instance(MOD_ID)
@@ -49,12 +52,17 @@ public class ThaumicPipes {
         CommonProxy.createNetworkInstance();
         proxy.initServerSide();
         proxy.initClientSide();
+
+        RegistryHelper.init();
     }
 
     @EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         ModRecipes.init();
         ModResearch.init();
+
+        ThaumicRegistry.lock();
+        ConnectionType.wasLocked();
     }
 
     @EventHandler

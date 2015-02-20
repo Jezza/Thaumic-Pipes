@@ -3,7 +3,6 @@ package me.jezza.thaumicpipes.common.multipart.pipe;
 import codechicken.lib.data.MCDataInput;
 import codechicken.lib.data.MCDataOutput;
 import codechicken.lib.vec.Vector3;
-import codechicken.multipart.INeighborTileChange;
 import codechicken.multipart.TMultiPart;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -18,13 +17,16 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public abstract class PipePartAbstract extends MultiPartAbstract implements INeighborTileChange {
+public abstract class PipePartAbstract extends MultiPartAbstract {
 
     private boolean shouldUpdate = false;
     private TileEntity[] tileCache;
 
     public OcclusionPartTester occlusionTester;
     public NodeState nodeState;
+
+    @SideOnly(Side.CLIENT)
+    protected IPartRenderer renderer;
 
     public PipePartAbstract() {
         tileCache = new TileEntity[6];
@@ -90,16 +92,6 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
         shouldUpdate = true;
     }
 
-    @Override
-    public void onNeighborTileChanged(int arg0, boolean arg1) {
-        shouldUpdate = true;
-    }
-
-    @Override
-    public boolean weakTileChanges() {
-        return false;
-    }
-
     public boolean passOcclusionTest(OcclusionPart part) {
         return tile().occlusionTest(tile().partList(), part);
     }
@@ -115,8 +107,11 @@ public abstract class PipePartAbstract extends MultiPartAbstract implements INei
     @Override
     @SideOnly(Side.CLIENT)
     public void renderDynamic(Vector3 pos, float frame, int pass) {
+        if (renderer == null)
+            renderer = getRenderer();
+
         if (pass == 0)
-            getRenderer().renderAt(this, pos.x, pos.y, pos.z, frame);
+            renderer.renderAt(this, pos.x, pos.y, pos.z, frame);
     }
 
     @SideOnly(Side.CLIENT)

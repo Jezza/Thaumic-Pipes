@@ -9,6 +9,7 @@ public class CoreProperties {
 
     public static final String MOD_ID = "ThaumicPipes";
     public static final String MOD_NAME = "Thaumic Pipes";
+    public static final String VERSION = "1.2.00";
 
     public static final String MOD_IDENTIFIER = MOD_ID + ":";
 

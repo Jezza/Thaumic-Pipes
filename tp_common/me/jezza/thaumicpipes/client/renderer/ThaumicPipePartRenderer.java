@@ -84,28 +84,21 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
         modelThaumicPipe.renderArm(index);
 
         glPushMatrix();
-        ConnectionType connectionType = currentState.getConnectionType();
-        switch (connectionType) {
-            case JAR:
-                renderJarConnections(currentState, index);
-                break;
-            case PIPE:
-                break;
-            default:
-                float extensionSize = connectionType.getExtensionSize();
-                if (extensionSize == 0.0F)
-                    break;
-                ForgeDirection currentDir = currentState.getDirection();
-                glTranslatef(currentDir.offsetX * extensionSize, currentDir.offsetY * extensionSize, currentDir.offsetZ * extensionSize);
-                glScalef(0.9999F, 0.9999F, 0.9999F);
-                modelThaumicPipe.renderArm(index);
-                break;
+        int connectionType = currentState.getConnectionType();
+        if (ConnectionType.isJar(connectionType))
+            renderJarConnections(currentState);
+        else if (ConnectionType.isTransportExtended(connectionType)) {
+            ForgeDirection currentDir = currentState.direction;
+            float extensionSize = 1.0F;
+            glTranslatef(currentDir.offsetX * extensionSize, currentDir.offsetY * extensionSize, currentDir.offsetZ * extensionSize);
+            glScalef(0.9999F, 0.9999F, 0.9999F);
+            modelThaumicPipe.renderArm(index);
         }
         glPopMatrix();
     }
 
-    private void renderJarConnections(ArmState currentState, int index) {
-        ForgeDirection direction = currentState.getDirection();
+    private void renderJarConnections(ArmState currentState) {
+        ForgeDirection direction = currentState.direction;
 
         float xDisplace = direction.offsetX;
         float yDisplace = direction.offsetY;

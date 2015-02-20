@@ -41,7 +41,7 @@ public class ModRecipes {
                 break;
             case 2:
                 initHardInfusionRecipe();
-                CoreProperties.logger.fatal("Really hard infusion recipe.");
+                CoreProperties.logger.fatal("Infusion recipe. [Good luck!]");
                 break;
         }
     }

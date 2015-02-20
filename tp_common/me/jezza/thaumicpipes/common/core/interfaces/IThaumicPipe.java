@@ -1,28 +1,18 @@
 package me.jezza.thaumicpipes.common.core.interfaces;
 
-import me.jezza.oc.common.utils.CoordSet;
+import com.sun.istack.internal.NotNull;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
+import me.jezza.thaumicpipes.common.transport.connection.ArmStateHandler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
-import thaumcraft.api.aspects.AspectList;
-
-import java.util.Collection;
 
 public interface IThaumicPipe {
 
-    public boolean canConnectTo(TileEntity tileEntity, ForgeDirection direction);
-
-    public CoordSet getCoordSet();
-
-    public Collection<TileEntity> getJarConnections();
-
-    public Collection<TileEntity> getContainerConnections();
-
-    public Collection<TileEntity> getAlbemicConnections();
-
-    public Collection<TileEntity> getConstructConnections();
-
-    public AspectList getPendingAspects();
-
+    @NotNull
     public PipePartAbstract getPipe();
+
+    @NotNull
+    public ArmStateHandler getArmStateHandler();
+
+    public boolean canConnectTo(TileEntity tileEntity, ForgeDirection direction);
 }

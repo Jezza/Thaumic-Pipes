@@ -5,7 +5,6 @@ import codechicken.lib.vec.Vector3;
 import codechicken.multipart.TMultiPart;
 import codechicken.multipart.TileMultipart;
 import me.jezza.oc.common.items.ItemAbstract;
-import me.jezza.thaumicpipes.common.lib.CoreProperties;
 import net.minecraft.block.Block.SoundType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -53,9 +52,4 @@ public abstract class ItemMultiPartAbstract extends ItemAbstract {
     public abstract TMultiPart getPart();
 
     public abstract SoundType getSoundType();
-
-    @Override
-    public String getModIdentifier() {
-        return CoreProperties.MOD_IDENTIFIER;
-    }
 }

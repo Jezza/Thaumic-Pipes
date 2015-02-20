@@ -1,7 +1,6 @@
 package me.jezza.thaumicpipes.common.blocks;
 
 import me.jezza.oc.common.blocks.BlockAbstract;
-import me.jezza.thaumicpipes.common.lib.CoreProperties;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.AxisAlignedBB;
@@ -19,11 +18,6 @@ public class BlockThaumicPipe extends BlockAbstract {
         super(material, name);
         setHardness(3F);
         setCreativeTab(null);
-    }
-
-    @Override
-    public String getModIdentifier() {
-        return CoreProperties.MOD_IDENTIFIER;
     }
 
     @Override

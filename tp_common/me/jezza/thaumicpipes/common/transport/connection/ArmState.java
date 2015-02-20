@@ -6,41 +6,37 @@ import me.jezza.thaumicpipes.common.core.interfaces.IOcclusionPart;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class ArmState implements IOcclusionPart, Cloneable {
+public class ArmState implements IOcclusionPart {
 
-    private boolean isValidConnection = true;
-    private ForgeDirection direction = ForgeDirection.UNKNOWN;
-    private ConnectionType connectionType = ConnectionType.DEFAULT;
+    public final ForgeDirection direction;
 
-    public ArmState() {
-    }
+    private boolean isValidConnection = false;
+    private int connectionType = ConnectionType.DEFAULT | ConnectionType.INVALID;
+    private boolean isPipe = false;
 
-    public ArmState(ForgeDirection direction, TileEntity tileEntity, boolean isValidConnection) {
-        setFields(direction, tileEntity, isValidConnection);
-    }
-
-    public ConnectionType getConnectionType() {
-        return connectionType;
-    }
-
-    public ForgeDirection getDirection() {
-        return direction;
-    }
-
-    public ArmState setFields(ForgeDirection direction, TileEntity tileEntity, boolean isValidConnection) {
+    public ArmState(ForgeDirection direction) {
         this.direction = direction;
-        connectionType = ConnectionType.getProperties(tileEntity);
+    }
+
+    public ArmState update(ForgeDirection direction, TileEntity tileEntity, boolean isValidConnection) {
         this.isValidConnection = isValidConnection;
+        if (!isValidConnection) {
+            connectionType = ConnectionType.DEFAULT_INVALID;
+            return this;
+        }
+        connectionType = ConnectionType.getProperties(direction, tileEntity);
+        this.isValidConnection = !ConnectionType.isInvalid(connectionType);
+        if (this.isValidConnection)
+            isPipe = ConnectionType.isPipe(connectionType);
         return this;
     }
 
-    public boolean isPipe() {
-        return connectionType.isPipe();
+    public int getConnectionType() {
+        return connectionType;
     }
 
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        return super.clone();
+    public boolean isPipe() {
+        return isPipe;
     }
 
     @Override

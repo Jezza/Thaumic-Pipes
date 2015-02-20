@@ -34,30 +34,15 @@ public abstract class NetworkMessagePipeAbstract extends NetworkMessageAbstract 
     }
 
     public int getAmountToAddToConstruct(TileThaumatorium construct, Aspect type) {
-        AspectList currentAspectList = construct.essentia;
-        int amountToAdd = 0;
-
-        aspectList:
-        for (AspectList aspectList : construct.recipeEssentia)
-            if (aspectList != null)
-                for (Aspect aspect : aspectList.getAspects()) {
-                    if (aspect != null && type.equals(aspect)) {
-                        int amountNeedToAdd = aspectList.getAmount(type);
-                        int currentStored = currentAspectList.getAmount(type);
-                        if (amountNeedToAdd > currentStored)
-                            amountToAdd = amountNeedToAdd;
-                        break aspectList;
-                    }
-                }
-        return amountToAdd;
+        int currentCraft = construct.currentCraft;
+        if (currentCraft < 0)
+            return 0;
+        int amountDiff = construct.recipeEssentia.get(currentCraft).getAmount(filter) - construct.essentia.getAmount(filter);
+        return amountDiff <= 0 ? 0 : amountDiff;
     }
 
     public TileThaumatorium getThaumatorium(IAspectContainer container) {
-        if (container instanceof TileThaumatorium)
-            return (TileThaumatorium) container;
-        if (container instanceof TileThaumatoriumTop)
-            return ((TileThaumatoriumTop) container).thaumatorium;
-        return null;
+        return container instanceof TileThaumatorium ? (TileThaumatorium) container : container instanceof TileThaumatoriumTop ? ((TileThaumatoriumTop) container).thaumatorium : null;
     }
 
     /**
@@ -79,10 +64,13 @@ public abstract class NetworkMessagePipeAbstract extends NetworkMessageAbstract 
     }
 
     public int removeFromAddTo(IAspectContainer from, IAspectContainer to, int amount) {
-        if (!from.takeFromContainer(filter, amount))
+        boolean flag = from.takeFromContainer(filter, amount);
+        if (!flag)
             return amount;
-        int amountLeft = addTo(to, amount);
-        return amountLeft < 0 ? 0 : amountLeft;
+        int amountLeft = Math.max(addTo(to, amount), 0);
+        if (amountLeft > 0)
+            addTo(from, amountLeft);
+        return amountLeft;
     }
 
     public int removeFromAddTo(AspectList from, IAspectContainer to, int amount) {
@@ -100,12 +88,7 @@ public abstract class NetworkMessagePipeAbstract extends NetworkMessageAbstract 
     }
 
     public int addTo(IAspectContainer to, int amount) {
-        int amountLeft;
-        if (to instanceof TileJarFillable)
-            amountLeft = addAmountToJar((TileJarFillable) to, amount);
-        else
-            amountLeft = to.addToContainer(filter, amount);
-        return amountLeft;
+        return to instanceof TileJarFillable ? addAmountToJar((TileJarFillable) to, amount) : to.addToContainer(filter, amount);
     }
 
 }

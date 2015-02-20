@@ -1,9 +1,9 @@
 package me.jezza.thaumicpipes.common.research;
 
 import cpw.mods.fml.common.Loader;
+import me.jezza.oc.common.utils.Localise;
 import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.lib.Strings;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import thaumcraft.api.aspects.Aspect;
@@ -23,17 +23,16 @@ public class ModResearch {
     }
 
     private static void initResearch() {
-
         int count;
         try {
-            count = Integer.valueOf(I18n.format("tp.research_page.thaumicPipe.count"));
-        } catch (NumberFormatException e) {
+            count = Integer.parseInt(Localise.format("tp.research_page.thaumicPipe.count"));
+        } catch (Exception e) {
             count = 3;
         }
-
         ResearchPage[] pages = new ResearchPage[count + 1];
+        StringBuilder searchString = new StringBuilder("tp.research_page.thaumicPipe.");
         for (int i = 1; i <= count; i++)
-            pages[i - 1] = new ResearchPage("tp.research_page.thaumicPipe." + i);
+            pages[i - 1] = new ResearchPage(searchString.toString() + i);
         pages[count] = ModRecipes.getResearchPage();
 
         String category = "TP_CATEGORY";
@@ -62,5 +61,4 @@ public class ModResearch {
         ResourceLocation background = new ResourceLocation("thaumcraft", "textures/gui/gui_researchback.png");
         ResearchCategories.registerCategory("TP_CATEGORY", new ResourceLocation("thaumicpipes:textures/misc/r_thaumicPipes.png"), background);
     }
-
 }
