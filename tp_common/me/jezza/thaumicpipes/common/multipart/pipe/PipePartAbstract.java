@@ -9,7 +9,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import me.jezza.oc.common.utils.CoordSet;
 import me.jezza.thaumicpipes.client.interfaces.IPartRenderer;
 import me.jezza.thaumicpipes.common.core.interfaces.IOcclusionPart;
-import me.jezza.thaumicpipes.common.multipart.core.MultiPartAbstract;
+import me.jezza.thaumicpipes.common.multipart.MultiPartAbstract;
 import me.jezza.thaumicpipes.common.multipart.occlusion.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.occlusion.OcclusionPartTester;
 import me.jezza.thaumicpipes.common.transport.connection.NodeState;
@@ -56,11 +56,11 @@ public abstract class PipePartAbstract extends MultiPartAbstract {
             tileCache[i] = coordSet.getTileFromDirection(world, directions[i]);
     }
 
-    public void updateOcclusions() {
-        occlusionTester.update(getOcclusionParts());
+    public void updateConnections() {
     }
 
-    public void updateConnections() {
+    public void updateOcclusions() {
+        occlusionTester.update(getOcclusionParts());
     }
 
     public void updateNetwork() {
@@ -78,7 +78,7 @@ public abstract class PipePartAbstract extends MultiPartAbstract {
     @Override
     public void writeDesc(MCDataOutput packet) {
         super.writeDesc(packet);
-        packet.writeBoolean(true);
+        packet.writeBoolean(shouldUpdate);
     }
 
     @Override

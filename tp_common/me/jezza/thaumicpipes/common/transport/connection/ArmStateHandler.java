@@ -11,10 +11,10 @@ import java.util.Collection;
 
 public class ArmStateHandler {
 
-    private ArmState[] armStateArray;
+    private final ArmState[] armStateArray;
 
-    private Collection<INetworkNode> pipes;
-    private Collection<IEssentiaTransport> inputs, storages, outputs;
+    private final Collection<INetworkNode> pipes;
+    private final Collection<IEssentiaTransport> inputs, storages, outputs;
 
     public ArmStateHandler() {
         ForgeDirection[] directions = ForgeDirection.VALID_DIRECTIONS;
@@ -26,10 +26,10 @@ public class ArmStateHandler {
         armStateArray[4] = new ArmState(directions[4]);
         armStateArray[5] = new ArmState(directions[5]);
 
-        pipes = new ArrayList<INetworkNode>();
-        inputs = new ArrayList<IEssentiaTransport>();
-        storages = new ArrayList<IEssentiaTransport>();
-        outputs = new ArrayList<IEssentiaTransport>();
+        pipes = new ArrayList<>();
+        inputs = new ArrayList<>();
+        storages = new ArrayList<>();
+        outputs = new ArrayList<>();
     }
 
     public NodeState updateArmStates(IThaumicPipe pipe, TileEntity[] tileEntities) {

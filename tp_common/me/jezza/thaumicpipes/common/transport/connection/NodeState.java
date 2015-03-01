@@ -46,10 +46,10 @@ public class NodeState implements IOcclusionPart, Cloneable {
     }
 
     @Override
-    public Object clone() {
+    public final NodeState clone() {
         try {
-            return super.clone();
-        } catch (CloneNotSupportedException e) {
+            return (NodeState) super.clone();
+        } catch (CloneNotSupportedException ignored) {
         }
         return new NodeState(id, isNode, bigNode);
     }
@@ -61,16 +61,15 @@ public class NodeState implements IOcclusionPart, Cloneable {
             ArmState armState = armStateArray[i];
             boolean flag = armState.isPartValid();
             if (flag && !armState.isPipe())
-                return (NodeState) BIG_NODE.clone();
+                return BIG_NODE.clone();
             flags[i] = flag;
         }
 
-
         if (getBooleanArraySize(flags, true) != 2)
-            return (NodeState) NORMAL_NODE.clone();
+            return NORMAL_NODE.clone();
 
         int side = -1;
-        boolean flag = false;
+        boolean flag;
 
         for (int i = 0; i <= 5; i += 2) {
             flag = flags[i] && flags[i + 1];
@@ -81,16 +80,13 @@ public class NodeState implements IOcclusionPart, Cloneable {
             }
         }
 
-        if (side == -1)
-            return (NodeState) NORMAL_NODE.clone();
-
-        return ((NodeState) DIRECTIONAL_SECTION.clone()).setDirectionalSection(side);
+        return side == -1 ? NORMAL_NODE.clone() : DIRECTIONAL_SECTION.clone().setDirectionalSection(side);
     }
 
     private static int getBooleanArraySize(boolean[] array, boolean test) {
         int count = 0;
-        for (int i = 0; i < array.length; i++)
-            if (array[i] == test)
+        for (boolean anArray : array)
+            if (anArray == test)
                 count++;
         return count;
     }

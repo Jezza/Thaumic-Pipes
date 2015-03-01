@@ -12,7 +12,6 @@ import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.core.PipeProperties;
 import me.jezza.thaumicpipes.common.core.interfaces.IOcclusionPart;
 import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
-import me.jezza.thaumicpipes.common.lib.CoreProperties;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
 import me.jezza.thaumicpipes.common.multipart.occlusion.OcclusionPart;
 import me.jezza.thaumicpipes.common.multipart.pipe.PipePartAbstract;
@@ -20,6 +19,7 @@ import me.jezza.thaumicpipes.common.transport.connection.ArmState;
 import me.jezza.thaumicpipes.common.transport.connection.ArmStateHandler;
 import me.jezza.thaumicpipes.common.transport.connection.NodeState;
 import me.jezza.thaumicpipes.common.transport.messages.InformationMessage;
+import me.jezza.thaumicpipes.common.transport.messages.StorageMessage;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -37,7 +37,10 @@ import thaumcraft.api.aspects.IEssentiaTransport;
 import thaumcraft.common.tiles.TileJarFillable;
 import thaumcraft.common.tiles.TileTube;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Random;
 
 public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, INetworkNode {
 
@@ -45,16 +48,14 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     private int[] counts, amounts, timeTickerValues;
 
     protected Random random;
-    protected AspectList pendingAspects, waitingAspects;
+    protected AspectList aspects;
 
     protected ArmStateHandler armStateHandler;
     protected IMessageProcessor messageProcessor;
 
     public ThaumicPipePart() {
         armStateHandler = new ArmStateHandler();
-
-        pendingAspects = new AspectList();
-        waitingAspects = new AspectList();
+        aspects = new AspectList();
 
         random = new Random();
         timeTickerValues = getTimeTickerValues();
@@ -66,13 +67,11 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
 
     /**
      * [0] = Input ticker; Default: 5
-     * [1] = Information ticker; Default: 10
-     * [2] = Output ticker; Default: 5 // Unused
-     * [3] = Labeled Jar ticker; Default: 10 // Unused
-     * [4] = FX ticker; Default: 10 // Unused.
+     * [1] = Aspect ticker; Default: 10
+     * [2] = Storage ticker; Default: 10
      */
     public int[] getTimeTickerValues() {
-        return new int[]{5, 10, 5, 10, 10};
+        return new int[]{5, 10, 20};
     }
 
     /**
@@ -108,8 +107,6 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     @Override
     public void update() {
         super.update();
-//        if (tick(3))
-
         if (world().isRemote)
             return;
 
@@ -117,17 +114,10 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
             processInputs();
 
         if (tick(1))
-            processCurrentAspects();
-//            processStorage();
-//
-//        if (tick(2))
-//            processOutputs();
-//
-//        if (pendingAspects.size() > 0 && tick(1))
-//            sendAlembicMessages();
-//
-//        if (tick(2))
-//            processJarConnections();
+            processAspects();
+
+        if (tick(2))
+            processStorage();
     }
 
     private boolean tick(int index) {
@@ -156,33 +146,31 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
                 if (!flag)
                     continue;
             }
-            pendingAspects.add(essentiaType, essentiaAmount);
+            aspects.add(essentiaType, essentiaAmount);
         }
     }
 
-    private void processCurrentAspects() {
-        for (Aspect aspect : pendingAspects.getAspects()) {
-            if (aspect == null)
-                continue;
-            int amount = Math.min(getDepositSpeed(), pendingAspects.getAmount(aspect));
-            if (amount < 1)
-                continue;
-            messageProcessor.postMessage(new InformationMessage(this, aspect, amount));
-            pendingAspects.remove(aspect, amount);
-            waitingAspects.add(aspect, amount);
+    private void processAspects() {
+        if (aspects.size() > 0)
+            messageProcessor.postMessage(new InformationMessage(this, aspects, getDepositSpeed()));
+    }
+
+    private void processStorage() {
+        for (IEssentiaTransport transport : armStateHandler.getStorage()) {
+            Aspect type = transport.getSuctionType(null);
+            if (type != null)
+                messageProcessor.postMessage(new StorageMessage(this, transport, type));
         }
     }
 
     @Override
     public void save(NBTTagCompound tag) {
-        pendingAspects.writeToNBT(tag);
-        waitingAspects.writeToNBT(tag);
+        aspects.writeToNBT(tag);
     }
 
     @Override
     public void load(NBTTagCompound tag) {
-        pendingAspects.readFromNBT(tag);
-        waitingAspects.readFromNBT(tag);
+        aspects.readFromNBT(tag);
     }
 
     @Override
@@ -198,44 +186,25 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
                 boolean empty = true;
                 boolean debugFlag = DebugHelper.isDebug_enableChat();
                 if (debugFlag) {
-                    addChatMessage(player, EnumChatFormatting.DARK_RED + "Pipes: " + EnumChatFormatting.RESET + armStateHandler.getValidConnections().size());
-                    addChatMessage(player, EnumChatFormatting.DARK_RED + "Inputs: " + EnumChatFormatting.RESET + armStateHandler.getInputs().size());
-                    addChatMessage(player, EnumChatFormatting.DARK_RED + "Storages: " + EnumChatFormatting.RESET + armStateHandler.getStorage().size());
-                    addChatMessage(player, EnumChatFormatting.DARK_RED + "Outputs: " + EnumChatFormatting.RESET + armStateHandler.getOutputs().size());
+                    addChatMessage(player, getDescriptionString(armStateHandler.getValidConnections(), "Pipes", false));
+                    addChatMessage(player, getDescriptionString(armStateHandler.getInputs(), "Inputs", false));
+                    addChatMessage(player, getDescriptionString(armStateHandler.getStorage(), "Storages", false));
+                    addChatMessage(player, getDescriptionString(armStateHandler.getOutputs(), "Outputs", false));
                     addChatMessage(player, EnumChatFormatting.DARK_PURPLE + "Pending Aspects:");
                 }
 
-                LinkedHashMap<Aspect, Integer> total = new LinkedHashMap<Aspect, Integer>();
+                AspectList total = new AspectList();
                 int count = 0;
-                for (Aspect aspect : pendingAspects.getAspects()) {
+                for (Aspect aspect : aspects.getAspects()) {
                     if (aspect == null)
                         continue;
                     empty = false;
-                    boolean flag = ThaumcraftApiHelper.hasDiscoveredAspect(player.getCommandSenderName(), aspect);
-                    if (flag)
-                        total.put(aspect, pendingAspects.getAmount(aspect));
+                    if (ThaumcraftApiHelper.hasDiscoveredAspect(player.getCommandSenderName(), aspect))
+                        total.add(aspect, aspects.getAmount(aspect));
                     else
-                        count += pendingAspects.getAmount(aspect);
+                        count += aspects.getAmount(aspect);
                     if (debugFlag)
-                        addChatMessage(player, EnumChatFormatting.DARK_AQUA + "Contains " + pendingAspects.getAmount(aspect) + " " + aspect.getName());
-                }
-
-                if (debugFlag) {
-                    addChatMessage(player, "");
-                    addChatMessage(player, EnumChatFormatting.DARK_PURPLE + "Waiting Aspects:");
-                }
-                for (Aspect aspect : waitingAspects.getAspects()) {
-                    if (aspect == null)
-                        continue;
-                    empty = false;
-                    boolean flag = ThaumcraftApiHelper.hasDiscoveredAspect(player.getCommandSenderName(), aspect);
-                    if (flag)
-                        total.put(aspect, waitingAspects.getAmount(aspect));
-                    else
-                        count += waitingAspects.getAmount(aspect);
-                    CoreProperties.logger.info(aspect.getName());
-                    if (debugFlag)
-                        addChatMessage(player, EnumChatFormatting.DARK_AQUA + "Contains " + waitingAspects.getAmount(aspect) + " " + aspect.getName());
+                        addChatMessage(player, EnumChatFormatting.DARK_AQUA + "Contains " + aspects.getAmount(aspect) + " " + aspect.getName());
                 }
 
                 if (debugFlag) {
@@ -243,7 +212,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
                     addChatMessage(player, EnumChatFormatting.DARK_PURPLE + "Default message:");
                 }
 
-                for (Map.Entry<Aspect, Integer> entry : total.entrySet())
+                for (Map.Entry<Aspect, Integer> entry : total.aspects.entrySet())
                     addChatMessage(player, EnumChatFormatting.DARK_AQUA + "Contains " + entry.getValue() + " " + entry.getKey().getName());
 
                 if (count > 0) {
@@ -251,7 +220,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
                     sb.append("Contains possibly ");
                     sb.append(count);
                     sb.append(" ");
-                    if (!total.isEmpty())
+                    if (!total.aspects.isEmpty())
                         sb.append("more ");
                     if (count == 1)
                         sb.append("of an Unknown Aspect...");
@@ -268,9 +237,21 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
         return false;
     }
 
+    private <T> String getDescriptionString(Collection<T> transports, String description, boolean suction) {
+        StringBuilder result = new StringBuilder(EnumChatFormatting.DARK_RED.toString());
+        result.append(description);
+        result.append(": ");
+        result.append(EnumChatFormatting.RESET);
+
+        // TODO Suction.
+        int size = transports.size();
+
+        result.append(size);
+        return result.toString();
+    }
+
     private void drain() {
-        pendingAspects.aspects.clear();
-        waitingAspects.aspects.clear();
+        aspects.aspects.clear();
     }
 
     private void addChatMessage(EntityPlayer player, String text) {
@@ -358,12 +339,12 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     }
 
     @Override
-    public void notifyNode(int id, int process, Object... data) {
-        if (id == 0) {
-            Aspect aspect = (Aspect) data[0];
-            waitingAspects.remove(aspect, process);
-            pendingAspects.add(aspect, process);
-        }
+    public Object notifyNode(int id, int process, Object... data) {
+        if (id == 0)
+            return getCoordSet();
+        if (id == 1)
+            return world();
+        return null;
     }
 
     @Override

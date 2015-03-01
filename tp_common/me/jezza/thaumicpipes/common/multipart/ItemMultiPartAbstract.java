@@ -1,4 +1,4 @@
-package me.jezza.thaumicpipes.common.multipart.core;
+package me.jezza.thaumicpipes.common.multipart;
 
 import codechicken.lib.vec.BlockCoord;
 import codechicken.lib.vec.Vector3;
@@ -12,20 +12,20 @@ import net.minecraft.world.World;
 
 public abstract class ItemMultiPartAbstract extends ItemAbstract {
 
-    public ItemMultiPartAbstract(String name) {
+    protected ItemMultiPartAbstract(String name) {
         super(name);
     }
 
     @Override
     public boolean onItemUse(ItemStack itemStack, EntityPlayer player, World world, int x, int y, int z, int side, float hitVecX, float hitVecY, float hitVecZ) {
         BlockCoord pos = new BlockCoord(x, y, z);
-        Vector3 vhit = new Vector3(hitVecX, hitVecY, hitVecZ);
-        double d = getHitDepth(vhit, side);
+        Vector3 vHit = new Vector3(hitVecX, hitVecY, hitVecZ);
+        double d = getHitDepth(vHit, side);
 
-        if ((d < 1.0D) && (placePart(itemStack, player, world, pos, side, vhit)))
+        if (d < 1.0D && placePart(itemStack, player, world, pos, side, vHit))
             return true;
         pos.offset(side);
-        return placePart(itemStack, player, world, pos, side, vhit);
+        return placePart(itemStack, player, world, pos, side, vHit);
     }
 
     public boolean placePart(ItemStack item, EntityPlayer player, World world, BlockCoord pos, int side, Vector3 vHit) {
@@ -45,11 +45,11 @@ public abstract class ItemMultiPartAbstract extends ItemAbstract {
         return true;
     }
 
-    double getHitDepth(Vector3 vhit, int side) {
-        return vhit.copy().scalarProject(codechicken.lib.vec.Rotation.axes[side]) + (side % 2 ^ 0x1);
+    double getHitDepth(Vector3 vHit, int side) {
+        return vHit.copy().scalarProject(codechicken.lib.vec.Rotation.axes[side]) + (side % 2 ^ 0x1);
     }
 
-    public abstract TMultiPart getPart();
+    protected abstract TMultiPart getPart();
 
-    public abstract SoundType getSoundType();
+    protected abstract SoundType getSoundType();
 }

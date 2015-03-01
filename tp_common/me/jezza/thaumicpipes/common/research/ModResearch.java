@@ -41,9 +41,9 @@ public class ModResearch {
         int row = 1;
         if (Loader.isModLoaded("ThaumicTinkerer")) {
             category = "TT_CATEGORY";
-            parent = "REPAIRER";
-            col = -2;
-            row = -11;
+            parent = "FUNNEL";
+            col = 1;
+            row = -9;
         } else
             initResearchCategory();
 

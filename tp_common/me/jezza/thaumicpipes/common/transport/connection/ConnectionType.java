@@ -97,7 +97,7 @@ public class ConnectionType {
         else
             result = result | DEFAULT;
 
-        TileType tileType = getTileType(direction, tileEntity);
+        TileType tileType = getTileType(direction.getOpposite(), tileEntity);
 
         if (tileType != null) {
             switch (tileType) {
@@ -119,19 +119,22 @@ public class ConnectionType {
     private static TileType getTileType(ForgeDirection direction, TileEntity tileEntity) {
         Class<?> tileClazz = tileEntity.getClass();
         if (classes.containsKey(tileClazz))
-            return classes.get(tileClazz).getTileType(direction);
+            return classes.get(tileClazz).getTileType(direction).getOpposite();
         else {
-            // This makes sure that Tiles that use these Interfaces don't get confused with their supertypes. (EG, you extend TileJarFillable, but it only acts as an OUTPUT.)
-            if (IThaumicInput.class.isAssignableFrom(tileClazz)) {
-                return TileType.INPUT;
-            } else if (IThaumicStorage.class.isAssignableFrom(tileClazz)) {
-                return TileType.STORAGE;
-            } else if (IThaumicOutput.class.isAssignableFrom(tileClazz)) {
+            /**
+             * The interfaces have a higher importance than the registered classes.
+             * As you could wish to OUTPUT something but could extend TileJarFillable, which is registered as STORAGE.
+             */
+            if (IThaumicInput.class.isAssignableFrom(tileClazz))
                 return TileType.OUTPUT;
-            } else
+            else if (IThaumicStorage.class.isAssignableFrom(tileClazz))
+                return TileType.STORAGE;
+            else if (IThaumicOutput.class.isAssignableFrom(tileClazz))
+                return TileType.INPUT;
+            else
                 for (Class<?> clazz : classes.keySet())
                     if (clazz.isAssignableFrom(tileClazz))
-                        return classes.get(clazz).getTileType(direction);
+                        return classes.get(clazz).getTileType(direction).getOpposite();
         }
         return null;
     }

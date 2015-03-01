@@ -7,17 +7,16 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.relauncher.Side;
 import me.jezza.oc.api.configuration.Config;
 import me.jezza.oc.client.CreativeTabSimple;
+import me.jezza.oc.common.core.network.NetworkDispatcher;
 import me.jezza.thaumicpipes.api.ThaumicRegistry;
 import me.jezza.thaumicpipes.common.ModBlocks;
 import me.jezza.thaumicpipes.common.ModItems;
 import me.jezza.thaumicpipes.common.core.RegistryHelper;
-import me.jezza.thaumicpipes.common.core.command.CommandAirBlock;
-import me.jezza.thaumicpipes.common.core.command.CommandAreaRemove;
-import me.jezza.thaumicpipes.common.core.command.CommandAreaScan;
 import me.jezza.thaumicpipes.common.multipart.MultiPartFactory;
+import me.jezza.thaumicpipes.common.packet.AspectPacket;
 import me.jezza.thaumicpipes.common.research.ModRecipes;
 import me.jezza.thaumicpipes.common.research.ModResearch;
 import me.jezza.thaumicpipes.common.transport.connection.ConnectionType;
@@ -35,6 +34,8 @@ public class ThaumicPipes {
 
     @SidedProxy(clientSide = CLIENT_PROXY_CLASS, serverSide = SERVER_PROXY_CLASS)
     public static CommonProxy proxy;
+
+    public static NetworkDispatcher network;
 
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
@@ -61,16 +62,10 @@ public class ThaumicPipes {
         ModRecipes.init();
         ModResearch.init();
 
+        network = new NetworkDispatcher(MOD_ID);
+        network.registerMessage(AspectPacket.class, Side.CLIENT);
+
         ThaumicRegistry.lock();
         ConnectionType.wasLocked();
-    }
-
-    @EventHandler
-    public void initServer(FMLServerStartingEvent event) {
-        if (COMMANDS) {
-            new CommandAirBlock("delete", "<dimID> <x> <y> <z>").register();
-            new CommandAreaRemove("removeArea", "<dimID> <x1> <y1> <z1> <x2> <y2> <z2>").register();
-            new CommandAreaScan("removeBlock", "<dimID> <x1> <y1> <z1> <x2> <y2> <z2> <id> <meta>").register();
-        }
     }
 }

@@ -7,12 +7,11 @@ import me.jezza.thaumicpipes.api.interfaces.IThaumicStorage;
 import java.util.*;
 
 /**
- * This gets processed on {@link cpw.mods.fml.common.event.FMLPostInitializationEvent},
+ * This gets locked on {@link cpw.mods.fml.common.event.FMLPostInitializationEvent},
  * So, have your shit registered before then, and you'll be fine.
  * <p/>
- * You might have noticed that I've blacklisted some classes, such as TileTube, and IEssentiaTransport.
- * This stops anyone from registering those, which is a MASSIVE blanket register.
- * Most things implement IEssentiaTransport.
+ * I blacklist a bunch of classes that stops blanket casing.
+ * (A word I just coined. It means cases that are generalised by specific cause or means.)
  * <p/>
  * If you have a ton of Tiles that aren't related to each other, but would be registered under the same TileType,
  * why not make an empty interface, and register that?
@@ -21,14 +20,27 @@ import java.util.*;
  * TileEssentiaDeleter doesn't extend any pre-registered tiles, so naturally, you have to register it.
  * But you've also made TileEssentiaRemover, along with other class names that I can't think of, because who would do that in the first place...
  * ANYWAY, create an empty interface, eg, IAwesomeEssentiaRemoverDeleterOutput, and register that.
- * registerTile(IAwesomeEssentiaRemoverDeleter.class, TileType.OUTPUT)
+ * registerTile(IAwesomeEssentiaRemoverDeleter.class, TileType.INPUT)
  * <p/>
- * Or better yet, just use one of my pre-registered interfaces:
+ * Or better yet, just use one of my pre-handled interfaces:
  * {@link me.jezza.thaumicpipes.api.interfaces.IThaumicInput}
  * {@link me.jezza.thaumicpipes.api.interfaces.IThaumicOutput}
  * {@link me.jezza.thaumicpipes.api.interfaces.IThaumicStorage}
  * <p/>
- * You should be able to distinguish what interface is registered with what type...
+ * You should be able to distinguish what interface is handled as what type...
+ * <p/>
+ * Examples:
+ * <p/>
+ * registerTile(TileAlembic.class, TileProperties.OUTPUT);
+ * <p/>
+ * registerTile(TileJarFillable.class, TileProperties.STORAGE);
+ * <p/>
+ * registerTile(TileArcaneLampFertility.class, TileProperties.INPUT);
+ * registerTile(TileArcaneLampGrowth.class, TileProperties.INPUT);
+ * <p/>
+ * <p/>
+ * Overloading the tile types:
+ * registerTile(TileCentrifuge.class, TileProperties.OUTPUT.addDirectionalFlag(ForgeDirection.DOWN, TileType.INPUT));
  */
 public class ThaumicRegistry {
 

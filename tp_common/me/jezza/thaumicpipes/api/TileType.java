@@ -6,5 +6,11 @@ package me.jezza.thaumicpipes.api;
 public enum TileType {
     INPUT,
     STORAGE,
-    OUTPUT,
+    OUTPUT;
+
+    public static final int[] OPPOSITES = {2, 1, 0};
+
+    public TileType getOpposite() {
+        return values()[OPPOSITES[ordinal()]];
+    }
 }

@@ -13,15 +13,10 @@ public class ModelThaumicPipe extends ModelAbstract {
     }
 
     public void renderArm(int i) {
-        if (i == 1)
-            i = 2;
-        else if (i == 2)
-            i = 1;
-
         renderPart("arm" + i);
     }
 
     public void renderVerticalParts() {
-        renderOnly("arm1", "arm2");
+        renderOnly("arm0", "arm1");
     }
 }

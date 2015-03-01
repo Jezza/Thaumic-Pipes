@@ -21,12 +21,9 @@ public class OcclusionPartTester {
 
     public Iterable<Cuboid6> update(IOcclusionPart... parts) {
         occlusionBoxes.clear();
-        for (int i = 0; i < parts.length; i++) {
-            IOcclusionPart part = parts[i];
+        for (IOcclusionPart part : parts)
             if (part.isPartValid())
                 occlusionBoxes.add(part.getOcclusionBox());
-        }
-
         return occlusionBoxes;
     }
 

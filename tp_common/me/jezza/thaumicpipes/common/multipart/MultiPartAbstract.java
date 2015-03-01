@@ -1,4 +1,4 @@
-package me.jezza.thaumicpipes.common.multipart.core;
+package me.jezza.thaumicpipes.common.multipart;
 
 import codechicken.lib.raytracer.IndexedCuboid6;
 import codechicken.lib.render.EntityDigIconFX;
@@ -18,12 +18,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MovingObjectPosition;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 
 public abstract class MultiPartAbstract extends TMultiPart implements JNormalOcclusion {
-
-    private static final LinkedList<IndexedCuboid6> PART_LIST_CACHE = new LinkedList<>();
 
     @Override
     public void onWorldJoin() {
@@ -44,7 +42,7 @@ public abstract class MultiPartAbstract extends TMultiPart implements JNormalOcc
     @Override
     public Iterable<IndexedCuboid6> getSubParts() {
         Iterable<Cuboid6> occlusionBoxes = getAllOcclusionBoxes();
-        LinkedList<IndexedCuboid6> partList = (LinkedList<IndexedCuboid6>) PART_LIST_CACHE.clone();
+        ArrayList<IndexedCuboid6> partList = new ArrayList<>();
         for (Cuboid6 c : occlusionBoxes)
             partList.add(new IndexedCuboid6(0, c));
         return partList;
@@ -89,7 +87,7 @@ public abstract class MultiPartAbstract extends TMultiPart implements JNormalOcc
     }
 
     public CoordSet getCoordSet() {
-        return new CoordSet(tile());
+        return new CoordSet(x(), y(), z());
     }
 
     public abstract Block getBlock();
