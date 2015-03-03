@@ -50,6 +50,8 @@ public abstract class PipePartAbstract extends MultiPartAbstract {
 
     public void updateTileCache() {
         CoordSet coordSet = getCoordSet();
+        if (coordSet == null)
+            return;
         World world = world();
         ForgeDirection[] directions = ForgeDirection.VALID_DIRECTIONS;
         for (int i = 0; i <= 5; i++)

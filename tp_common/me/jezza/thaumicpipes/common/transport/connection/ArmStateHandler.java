@@ -6,15 +6,15 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.IEssentiaTransport;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.EnumMap;
+import java.util.Map;
 
 public class ArmStateHandler {
 
     private final ArmState[] armStateArray;
 
-    private final Collection<INetworkNode> pipes;
-    private final Collection<IEssentiaTransport> inputs, storages, outputs;
+    private final Map<ForgeDirection, INetworkNode> pipes;
+    private final Map<ForgeDirection, IEssentiaTransport> inputs, storages, outputs;
 
     public ArmStateHandler() {
         ForgeDirection[] directions = ForgeDirection.VALID_DIRECTIONS;
@@ -26,10 +26,10 @@ public class ArmStateHandler {
         armStateArray[4] = new ArmState(directions[4]);
         armStateArray[5] = new ArmState(directions[5]);
 
-        pipes = new ArrayList<>();
-        inputs = new ArrayList<>();
-        storages = new ArrayList<>();
-        outputs = new ArrayList<>();
+        pipes = new EnumMap<>(ForgeDirection.class);
+        inputs = new EnumMap<>(ForgeDirection.class);
+        storages = new EnumMap<>(ForgeDirection.class);
+        outputs = new EnumMap<>(ForgeDirection.class);
     }
 
     public NodeState updateArmStates(IThaumicPipe pipe, TileEntity[] tileEntities) {
@@ -51,34 +51,34 @@ public class ArmStateHandler {
             int connectionType = armState.getConnectionType();
 
             if (ConnectionType.isPipe(connectionType))
-                pipes.add((INetworkNode) ((IThaumicPipe) tileEntity).getPipe());
+                pipes.put(direction, (INetworkNode) ((IThaumicPipe) tileEntity).getPipe());
 
             else if (ConnectionType.isInput(connectionType))
-                inputs.add((IEssentiaTransport) tileEntity);
+                inputs.put(direction, (IEssentiaTransport) tileEntity);
 
             else if (ConnectionType.isStorage(connectionType))
-                storages.add((IEssentiaTransport) tileEntity);
+                storages.put(direction, (IEssentiaTransport) tileEntity);
 
             else if (ConnectionType.isOutput(connectionType))
-                outputs.add((IEssentiaTransport) tileEntity);
+                outputs.put(direction, (IEssentiaTransport) tileEntity);
         }
 
         return createNode();
     }
 
-    public Collection<INetworkNode> getValidConnections() {
+    public Map<ForgeDirection, INetworkNode> getValidConnections() {
         return pipes;
     }
 
-    public Collection<IEssentiaTransport> getInputs() {
+    public Map<ForgeDirection, IEssentiaTransport> getInputs() {
         return inputs;
     }
 
-    public Collection<IEssentiaTransport> getStorage() {
+    public Map<ForgeDirection, IEssentiaTransport> getStorage() {
         return storages;
     }
 
-    public Collection<IEssentiaTransport> getOutputs() {
+    public Map<ForgeDirection, IEssentiaTransport> getOutputs() {
         return outputs;
     }
 

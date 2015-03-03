@@ -87,7 +87,7 @@ public abstract class MultiPartAbstract extends TMultiPart implements JNormalOcc
     }
 
     public CoordSet getCoordSet() {
-        return new CoordSet(x(), y(), z());
+        return tile() != null ? new CoordSet(tile()) : null;
     }
 
     public abstract Block getBlock();

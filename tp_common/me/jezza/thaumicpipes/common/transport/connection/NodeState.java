@@ -65,7 +65,11 @@ public class NodeState implements IOcclusionPart, Cloneable {
             flags[i] = flag;
         }
 
-        if (getBooleanArraySize(flags, true) != 2)
+        int count = 0;
+        for (boolean anArray : flags)
+            if (anArray)
+                count++;
+        if (count != 2)
             return NORMAL_NODE.clone();
 
         int side = -1;
@@ -82,13 +86,4 @@ public class NodeState implements IOcclusionPart, Cloneable {
 
         return side == -1 ? NORMAL_NODE.clone() : DIRECTIONAL_SECTION.clone().setDirectionalSection(side);
     }
-
-    private static int getBooleanArraySize(boolean[] array, boolean test) {
-        int count = 0;
-        for (boolean anArray : array)
-            if (anArray == test)
-                count++;
-        return count;
-    }
-
 }

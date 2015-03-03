@@ -6,6 +6,10 @@ import me.jezza.oc.api.network.interfaces.INetworkNode;
 import me.jezza.oc.common.utils.CoordSet;
 import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.transport.connection.ArmStateHandler;
+import me.jezza.thaumicpipes.common.transport.wrappers.AspectListWrapper;
+import me.jezza.thaumicpipes.common.transport.wrappers.EssentiaWrapper;
+import me.jezza.thaumicpipes.common.transport.wrappers.TransportWrapper;
+import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
 import thaumcraft.api.aspects.IEssentiaTransport;
@@ -13,7 +17,6 @@ import thaumcraft.api.aspects.IEssentiaTransport;
 import java.util.*;
 
 import static me.jezza.oc.api.network.NetworkResponse.MessageResponse;
-import static me.jezza.thaumicpipes.common.transport.Wrappers.*;
 
 /**
  * Used to grab information about the current network.
@@ -24,8 +27,8 @@ import static me.jezza.thaumicpipes.common.transport.Wrappers.*;
  */
 public class InformationMessage extends NetworkMessageAbstract {
 
-    private Map<Aspect, AspectWrapper> aspectMap = new LinkedHashMap<>();
-    private List<AspectWrapper> fallback = new ArrayList<>();
+    private Map<Aspect, TransportWrapper> aspectMap = new LinkedHashMap<>();
+    private List<TransportWrapper> fallback = new ArrayList<>();
 
     private final AspectList aspects;
     private final int depositAmount;
@@ -60,22 +63,26 @@ public class InformationMessage extends NetworkMessageAbstract {
         return MessageResponse.VALID;
     }
 
-    private void processTiles(INetworkNode node, Collection<IEssentiaTransport> connections, boolean output) {
-        for (IEssentiaTransport transport : connections) {
-            Aspect type = transport.getSuctionType(null);
+    private void processTiles(INetworkNode node, Map<ForgeDirection, IEssentiaTransport> connections, boolean output) {
+
+        for (Map.Entry<ForgeDirection, IEssentiaTransport> entry : connections.entrySet()) {
+            IEssentiaTransport transport = entry.getValue();
+            ForgeDirection direction = entry.getKey();
+
+            Aspect type = transport.getSuctionType(direction);
             if (type != null) {
                 if (!aspects.aspects.containsKey(type))
                     continue;
                 if (!aspectMap.containsKey(type)) {
-                    AspectWrapper wrapper = new AspectWrapper(node, transport);
+                    TransportWrapper wrapper = new TransportWrapper(node, transport, direction);
                     wrapper.output = output;
                     aspectMap.put(type, wrapper);
                 } else {
-                    AspectWrapper prevWrapper = aspectMap.get(type);
+                    TransportWrapper prevWrapper = aspectMap.get(type);
                     if (!output && prevWrapper.output)
                         continue;
 
-                    AspectWrapper wrapper = new AspectWrapper(node, transport);
+                    TransportWrapper wrapper = new TransportWrapper(node, transport, direction);
                     if (output && !prevWrapper.output) {
                         wrapper.output = true;
                         aspectMap.put(type, wrapper);
@@ -89,7 +96,8 @@ public class InformationMessage extends NetworkMessageAbstract {
                         aspectMap.put(type, wrapper);
                 }
             } else
-                fallback.add(new AspectWrapper(node, transport));
+                fallback.add(new TransportWrapper(node, transport, direction));
+
         }
     }
 
@@ -98,12 +106,12 @@ public class InformationMessage extends NetworkMessageAbstract {
         if (aspectMap.isEmpty() && fallback.isEmpty())
             return MessageResponse.VALID;
 
-        Iterator<AspectWrapper> iterator = fallback.iterator();
+        Iterator<TransportWrapper> iterator = fallback.iterator();
 
         for (Aspect aspect : aspects.getAspects()) {
             if (aspect == null)
                 continue;
-            AspectWrapper wrapper;
+            TransportWrapper wrapper;
 
             if (aspectMap.containsKey(aspect))
                 wrapper = aspectMap.get(aspect);
@@ -115,8 +123,13 @@ public class InformationMessage extends NetworkMessageAbstract {
             }
 
             int amount = Math.min(depositAmount, aspects.getAmount(aspect));
-            AspectListWrapper input = new AspectListWrapper(aspects, (CoordSet) getOwner().notifyNode(0, 0));
-            messageProcessor.postMessage(new AspectMessage(getOwner(), wrapper.node, input, new TransportWrapper(wrapper.transport), aspect, amount));
+            CoordSet coordSet = (CoordSet) getOwner().notifyNode(0, 0);
+
+            if (coordSet == null)
+                return MessageResponse.VALID;
+
+            AspectListWrapper input = new AspectListWrapper(aspects, coordSet);
+            messageProcessor.postMessage(new AspectMessage(getOwner(), wrapper.node, input, new EssentiaWrapper(wrapper.transport, wrapper.direction), aspect, amount));
         }
         return MessageResponse.VALID;
     }

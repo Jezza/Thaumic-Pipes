@@ -80,7 +80,8 @@ public class ThaumicPipePartRenderer implements IPartRenderer {
         }
     }
 
-    private void renderArm(ArmState currentState, int index) {
+    private void renderArm(ArmState currentState, int index) { // ForgeDirection direction, int connectionType
+        TextureMaps.bindPipeTexture();
         modelThaumicPipe.renderArm(index);
 
         glPushMatrix();

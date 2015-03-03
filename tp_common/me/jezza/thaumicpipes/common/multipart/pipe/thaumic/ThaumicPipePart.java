@@ -128,18 +128,21 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     }
 
     private void processInputs() {
-        Collection<IEssentiaTransport> inputs = armStateHandler.getInputs();
+        Map<ForgeDirection, IEssentiaTransport> inputs = armStateHandler.getInputs();
         if (inputs.isEmpty())
             return;
 
-        for (IEssentiaTransport transport : inputs) {
-            int essentiaAmount = transport.getEssentiaAmount(null);
+        for (Map.Entry<ForgeDirection, IEssentiaTransport> entry : inputs.entrySet()) {
+            IEssentiaTransport transport = entry.getValue();
+            ForgeDirection direction = entry.getKey();
+
+            int essentiaAmount = transport.getEssentiaAmount(direction);
             if (essentiaAmount <= 0)
                 continue;
 
-            Aspect essentiaType = transport.getEssentiaType(null);
+            Aspect essentiaType = transport.getEssentiaType(direction);
             essentiaAmount = Math.min(essentiaAmount, getWithdrawSpeed());
-            int resultPulled = transport.takeEssentia(essentiaType, essentiaAmount, null);
+            int resultPulled = transport.takeEssentia(essentiaType, essentiaAmount, direction);
             if (resultPulled == 0) {
                 IAspectContainer container = (IAspectContainer) transport;
                 boolean flag = container.takeFromContainer(essentiaType, essentiaAmount);
@@ -156,10 +159,14 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     }
 
     private void processStorage() {
-        for (IEssentiaTransport transport : armStateHandler.getStorage()) {
+        for (Map.Entry<ForgeDirection, IEssentiaTransport> entry : armStateHandler.getStorage().entrySet()) {
+            IEssentiaTransport transport = entry.getValue();
+            ForgeDirection direction = entry.getKey();
+
             Aspect type = transport.getSuctionType(null);
             if (type != null)
-                messageProcessor.postMessage(new StorageMessage(this, transport, type));
+                messageProcessor.postMessage(new StorageMessage(this, transport, direction, type));
+
         }
     }
 
@@ -186,10 +193,10 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
                 boolean empty = true;
                 boolean debugFlag = DebugHelper.isDebug_enableChat();
                 if (debugFlag) {
-                    addChatMessage(player, getDescriptionString(armStateHandler.getValidConnections(), "Pipes", false));
-                    addChatMessage(player, getDescriptionString(armStateHandler.getInputs(), "Inputs", false));
-                    addChatMessage(player, getDescriptionString(armStateHandler.getStorage(), "Storages", false));
-                    addChatMessage(player, getDescriptionString(armStateHandler.getOutputs(), "Outputs", false));
+                    addChatMessage(player, getDescriptionString(armStateHandler.getValidConnections().values(), "Pipes", false));
+                    addChatMessage(player, getDescriptionString(armStateHandler.getInputs().values(), "Inputs", false));
+                    addChatMessage(player, getDescriptionString(armStateHandler.getStorage().values(), "Storages", false));
+                    addChatMessage(player, getDescriptionString(armStateHandler.getOutputs().values(), "Outputs", false));
                     addChatMessage(player, EnumChatFormatting.DARK_PURPLE + "Pending Aspects:");
                 }
 
@@ -367,7 +374,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
 
     @Override
     public Collection<INetworkNode> getNearbyNodes() {
-        return armStateHandler.getValidConnections();
+        return armStateHandler.getValidConnections().values();
     }
 
     @Override

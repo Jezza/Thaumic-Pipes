@@ -6,14 +6,15 @@ import me.jezza.oc.api.network.interfaces.INetworkNode;
 import me.jezza.oc.api.network.interfaces.ISearchResult;
 import me.jezza.oc.common.utils.CoordSet;
 import me.jezza.thaumicpipes.ThaumicPipes;
+import me.jezza.thaumicpipes.common.core.interfaces.IEssentiaWrapper;
 import net.minecraft.world.World;
 import thaumcraft.api.aspects.Aspect;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static me.jezza.oc.api.network.NetworkResponse.MessageResponse;
-import static me.jezza.thaumicpipes.common.transport.Wrappers.IEssentiaWrapper;
 
 /**
  * This class is slightly more simple than the other message classes.
@@ -30,6 +31,7 @@ public class AspectMessage extends NetworkMessageAbstract {
 
     private ISearchResult searchResult;
     private List<INetworkNode> path;
+    private boolean reversed = false;
 
     public AspectMessage(INetworkNode owner, INetworkNode target, IEssentiaWrapper input, IEssentiaWrapper output, Aspect aspect, int amount) {
         super(owner);
@@ -44,6 +46,8 @@ public class AspectMessage extends NetworkMessageAbstract {
 
     @Override
     public void resetMessage() {
+        Collections.reverse(path);
+        reversed = true;
     }
 
     @Override
@@ -75,18 +79,31 @@ public class AspectMessage extends NetworkMessageAbstract {
             return MessageResponse.VALID;
 
         List<CoordSet> worldPath = new ArrayList<>();
-        worldPath.add((CoordSet) getOwner().notifyNode(0, 0));
+        worldPath.add(input.getCoordSet());
+        CoordSet coordSet = (CoordSet) getOwner().notifyNode(0, 0);
+        if (coordSet == null)
+            return MessageResponse.VALID;
+        worldPath.add(coordSet);
 
         if (!path.isEmpty())
-            for (INetworkNode node : path)
-                worldPath.add((CoordSet) node.notifyNode(0, 0));
+            for (INetworkNode node : path) {
+                coordSet = (CoordSet) node.notifyNode(0, 0);
+                if (coordSet == null)
+                    return MessageResponse.VALID;
+                worldPath.add(coordSet);
+            }
         worldPath.add(output.getCoordSet());
+
+        if (reversed)
+            Collections.reverse(worldPath);
 
         World world = (World) getOwner().notifyNode(1, 0);
         int dimID = world.provider.dimensionId;
         ThaumicPipes.proxy.spawnAspectTrail(dimID, worldPath, aspect);
 
         int amountAdded = output.add(aspect, amount);
+        if (amountAdded <= 0)
+            return reversed ? MessageResponse.VALID : MessageResponse.INVALID;
         input.remove(aspect, amountAdded);
 
         return MessageResponse.VALID;

@@ -36,8 +36,6 @@ public class RegistryHelper {
         // Register default storage
         registerTile(TileJarFillable.class, TileProperties.STORAGE);
         registerTile(TileJarFillableVoid.class, TileProperties.STORAGE);
-        // Need Azanor to fix his shit.
-        // registerTile(TileTubeBuffer.class, TileProperties.STORAGE);
         registerTile(TileEssentiaReservoir.class, TileProperties.STORAGE);
 
         // Register default inputs

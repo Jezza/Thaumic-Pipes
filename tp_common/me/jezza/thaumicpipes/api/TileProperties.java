@@ -18,6 +18,7 @@ public class TileProperties {
      * {@link thaumcraft.common.tiles.TileArcaneLampFertility}
      * {@link thaumcraft.common.tiles.TileArcaneLampGrowth}
      * {@link thaumcraft.common.tiles.TileEssentiaCrystalizer}
+     * {@link thaumcraft.common.tiles.TileTubeBuffer}
      */
     public static final TileProperties INPUT = new TileProperties(TileType.INPUT, true);
 
@@ -25,7 +26,7 @@ public class TileProperties {
      * For tiles that hold it for use of other tiles. Don't need/require it, but can hold it. (This can also mean processors, such as the Centrifuge)
      * EG,
      * {@link thaumcraft.common.tiles.TileJarFillable}
-     * {@link thaumcraft.common.tiles.TileTubeBuffer}
+     * {@link thaumcraft.common.tiles.TileJarFillableVoid}
      * {@link thaumcraft.common.tiles.TileEssentiaReservoir}
      */
     public static final TileProperties STORAGE = new TileProperties(TileType.STORAGE, true);
@@ -52,9 +53,9 @@ public class TileProperties {
     /**
      * This allows the ability to add directional overrides.
      * EG,
-     * {@link thaumcraft.common.tiles.TileCentrifuge}
      * The centrifuge needs DOWN to act as an INPUT, (Thus allowing essentia to be placed inside it),
-     * and UP to be labeled as an OUTPUT for the network. (Thus allowing the pipes to pull out)
+     * and UP to be labeled as an OUTPUT. (Thus allowing the pipes to pull out)
+     * {@link thaumcraft.common.tiles.TileCentrifuge}
      */
     public TileProperties(TileType tileType) {
         this(tileType, false);

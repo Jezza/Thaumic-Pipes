@@ -100,6 +100,7 @@ public class ConnectionType {
         TileType tileType = getTileType(direction.getOpposite(), tileEntity);
 
         if (tileType != null) {
+            tileType = tileType.getOpposite();
             switch (tileType) {
                 case INPUT:
                     result = result | INPUT;
@@ -119,22 +120,24 @@ public class ConnectionType {
     private static TileType getTileType(ForgeDirection direction, TileEntity tileEntity) {
         Class<?> tileClazz = tileEntity.getClass();
         if (classes.containsKey(tileClazz))
-            return classes.get(tileClazz).getTileType(direction).getOpposite();
+            return classes.get(tileClazz).getTileType(direction);
         else {
             /**
              * The interfaces have a higher importance than the registered classes.
              * As you could wish to OUTPUT something but could extend TileJarFillable, which is registered as STORAGE.
              */
             if (IThaumicInput.class.isAssignableFrom(tileClazz))
-                return TileType.OUTPUT;
-            else if (IThaumicStorage.class.isAssignableFrom(tileClazz))
-                return TileType.STORAGE;
-            else if (IThaumicOutput.class.isAssignableFrom(tileClazz))
                 return TileType.INPUT;
-            else
-                for (Class<?> clazz : classes.keySet())
-                    if (clazz.isAssignableFrom(tileClazz))
-                        return classes.get(clazz).getTileType(direction).getOpposite();
+
+            if (IThaumicStorage.class.isAssignableFrom(tileClazz))
+                return TileType.STORAGE;
+
+            if (IThaumicOutput.class.isAssignableFrom(tileClazz))
+                return TileType.OUTPUT;
+
+            for (Class<?> clazz : classes.keySet())
+                if (clazz.isAssignableFrom(tileClazz))
+                    return classes.get(clazz).getTileType(direction);
         }
         return null;
     }

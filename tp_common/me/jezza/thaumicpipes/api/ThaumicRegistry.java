@@ -11,7 +11,7 @@ import java.util.*;
  * So, have your shit registered before then, and you'll be fine.
  * <p/>
  * I blacklist a bunch of classes that stops blanket casing.
- * (A word I just coined. It means cases that are generalised by specific cause or means.)
+ * (A word I just coined. ;) It means cases that are generalised by specific cause or means.)
  * <p/>
  * If you have a ton of Tiles that aren't related to each other, but would be registered under the same TileType,
  * why not make an empty interface, and register that?
@@ -22,7 +22,7 @@ import java.util.*;
  * ANYWAY, create an empty interface, eg, IAwesomeEssentiaRemoverDeleterOutput, and register that.
  * registerTile(IAwesomeEssentiaRemoverDeleter.class, TileType.INPUT)
  * <p/>
- * Or better yet, just use one of my pre-handled interfaces:
+ * Or better yet, just use implement of my pre-registered interfaces:
  * {@link me.jezza.thaumicpipes.api.interfaces.IThaumicInput}
  * {@link me.jezza.thaumicpipes.api.interfaces.IThaumicOutput}
  * {@link me.jezza.thaumicpipes.api.interfaces.IThaumicStorage}
@@ -39,7 +39,7 @@ import java.util.*;
  * registerTile(TileArcaneLampGrowth.class, TileProperties.INPUT);
  * <p/>
  * <p/>
- * Overloading the tile types:
+ * Overloading the TileProperties:
  * registerTile(TileCentrifuge.class, TileProperties.OUTPUT.addDirectionalFlag(ForgeDirection.DOWN, TileType.INPUT));
  */
 public class ThaumicRegistry {

@@ -16,7 +16,7 @@ import java.util.List;
 @SideOnly(Side.CLIENT)
 public class AspectTrailFX extends EntityFX {
 
-    public static int TICKS_PER_NODE = 4;
+    public static int TICKS_PER_NODE = 5;
 
     private int currentTick = 0;
     private int index = 1;
@@ -82,12 +82,12 @@ public class AspectTrailFX extends EntityFX {
     }
 
     @Override
-    public void renderParticle(Tessellator tessellator, float tick, float p_70539_3_, float p_70539_4_, float p_70539_5_, float p_70539_6_, float p_70539_7_) {
+    public void renderParticle(Tessellator tessellator, float tick, float rotationX, float rotationXZ, float rotationZ, float rotationYZ, float rotationXY) {
         float f6 = (float) this.particleTextureIndexX / 16.0F;
         float f7 = f6 + (0.0624375F * 4);
         float f8 = (float) this.particleTextureIndexY / 16.0F;
         float f9 = f8 + (0.0624375F * 4);
-        float f10 = 0.1F * this.particleScale;
+        float scale = 0.1F * this.particleScale;
 
         if (this.particleIcon != null) {
             f6 = this.particleIcon.getMinU();
@@ -96,14 +96,14 @@ public class AspectTrailFX extends EntityFX {
             f9 = this.particleIcon.getMaxV();
         }
 
-        float f11 = (float) (this.prevPosX + (this.posX - this.prevPosX) * (double) tick - interpPosX);
-        float f12 = (float) (this.prevPosY + (this.posY - this.prevPosY) * (double) tick - interpPosY);
-        float f13 = (float) (this.prevPosZ + (this.posZ - this.prevPosZ) * (double) tick - interpPosZ);
+        float dX = (float) (this.prevPosX + (this.posX - this.prevPosX) * (double) tick - interpPosX);
+        float dY = (float) (this.prevPosY + (this.posY - this.prevPosY) * (double) tick - interpPosY);
+        float dZ = (float) (this.prevPosZ + (this.posZ - this.prevPosZ) * (double) tick - interpPosZ);
         tessellator.setColorRGBA_F(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha);
-        tessellator.addVertexWithUV((double) (f11 - p_70539_3_ * f10 - p_70539_6_ * f10), (double) (f12 - p_70539_4_ * f10), (double) (f13 - p_70539_5_ * f10 - p_70539_7_ * f10), (double) f7, (double) f9);
-        tessellator.addVertexWithUV((double) (f11 - p_70539_3_ * f10 + p_70539_6_ * f10), (double) (f12 + p_70539_4_ * f10), (double) (f13 - p_70539_5_ * f10 + p_70539_7_ * f10), (double) f7, (double) f8);
-        tessellator.addVertexWithUV((double) (f11 + p_70539_3_ * f10 + p_70539_6_ * f10), (double) (f12 + p_70539_4_ * f10), (double) (f13 + p_70539_5_ * f10 + p_70539_7_ * f10), (double) f6, (double) f8);
-        tessellator.addVertexWithUV((double) (f11 + p_70539_3_ * f10 - p_70539_6_ * f10), (double) (f12 - p_70539_4_ * f10), (double) (f13 + p_70539_5_ * f10 - p_70539_7_ * f10), (double) f6, (double) f9);
+        tessellator.addVertexWithUV((double) (dX - rotationX * scale - rotationYZ * scale), (double) (dY - rotationXZ * scale), (double) (dZ - rotationZ * scale - rotationXY * scale), (double) f7, (double) f9);
+        tessellator.addVertexWithUV((double) (dX - rotationX * scale + rotationYZ * scale), (double) (dY + rotationXZ * scale), (double) (dZ - rotationZ * scale + rotationXY * scale), (double) f7, (double) f8);
+        tessellator.addVertexWithUV((double) (dX + rotationX * scale + rotationYZ * scale), (double) (dY + rotationXZ * scale), (double) (dZ + rotationZ * scale + rotationXY * scale), (double) f6, (double) f8);
+        tessellator.addVertexWithUV((double) (dX + rotationX * scale - rotationYZ * scale), (double) (dY - rotationXZ * scale), (double) (dZ + rotationZ * scale - rotationXY * scale), (double) f6, (double) f9);
     }
 
     @Override
