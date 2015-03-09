@@ -62,7 +62,11 @@ public class StorageMessage extends NetworkMessageAbstract {
         for (Map.Entry<ForgeDirection, IEssentiaTransport> entry : connections.entrySet()) {
             IEssentiaTransport transport = entry.getValue();
             ForgeDirection direction = entry.getKey();
+
             int suctionAmount = transport.getSuctionAmount(direction);
+            if (suctionAmount <= transport.getMinimumSuction())
+                continue;
+
             Aspect type = transport.getSuctionType(direction);
             if (type == aspect) {
                 if (outputTarget == null)

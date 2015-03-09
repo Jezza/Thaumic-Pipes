@@ -106,6 +106,9 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
 
     @Override
     public void update() {
+        if (world() == null)
+            return;
+
         super.update();
         if (world().isRemote)
             return;

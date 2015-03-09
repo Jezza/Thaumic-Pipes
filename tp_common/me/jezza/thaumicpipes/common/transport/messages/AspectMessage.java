@@ -11,7 +11,6 @@ import net.minecraft.world.World;
 import thaumcraft.api.aspects.Aspect;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static me.jezza.oc.api.network.NetworkResponse.MessageResponse;
@@ -31,7 +30,6 @@ public class AspectMessage extends NetworkMessageAbstract {
 
     private ISearchResult searchResult;
     private List<INetworkNode> path;
-    private boolean reversed = false;
 
     public AspectMessage(INetworkNode owner, INetworkNode target, IEssentiaWrapper input, IEssentiaWrapper output, Aspect aspect, int amount) {
         super(owner);
@@ -46,8 +44,6 @@ public class AspectMessage extends NetworkMessageAbstract {
 
     @Override
     public void resetMessage() {
-        Collections.reverse(path);
-        reversed = true;
     }
 
     @Override
@@ -65,6 +61,7 @@ public class AspectMessage extends NetworkMessageAbstract {
             else
                 return MessageResponse.WAIT;
         }
+
         return MessageResponse.VALID;
     }
 
@@ -94,16 +91,12 @@ public class AspectMessage extends NetworkMessageAbstract {
             }
         worldPath.add(output.getCoordSet());
 
-        if (reversed)
-            Collections.reverse(worldPath);
-
         World world = (World) getOwner().notifyNode(1, 0);
-        int dimID = world.provider.dimensionId;
-        ThaumicPipes.proxy.spawnAspectTrail(dimID, worldPath, aspect);
+        ThaumicPipes.proxy.spawnAspectTrail(world.provider.dimensionId, worldPath, aspect);
 
         int amountAdded = output.add(aspect, amount);
         if (amountAdded <= 0)
-            return reversed ? MessageResponse.VALID : MessageResponse.INVALID;
+            return MessageResponse.VALID;
         input.remove(aspect, amountAdded);
 
         return MessageResponse.VALID;

@@ -64,10 +64,16 @@ public class InformationMessage extends NetworkMessageAbstract {
     }
 
     private void processTiles(INetworkNode node, Map<ForgeDirection, IEssentiaTransport> connections, boolean output) {
-
         for (Map.Entry<ForgeDirection, IEssentiaTransport> entry : connections.entrySet()) {
             IEssentiaTransport transport = entry.getValue();
             ForgeDirection direction = entry.getKey();
+
+            int suctionAmount = transport.getSuctionAmount(direction);
+            int minAmount = transport.getMinimumSuction();
+            if (suctionAmount == 0 && minAmount == 0)
+                continue;
+            if (suctionAmount < minAmount)
+                continue;
 
             Aspect type = transport.getSuctionType(direction);
             if (type != null) {
