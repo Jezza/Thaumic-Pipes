@@ -2,7 +2,6 @@ package me.jezza.thaumicpipes.common.transport.wrappers;
 
 import me.jezza.oc.common.utils.CoordSet;
 import me.jezza.thaumicpipes.common.core.interfaces.IEssentiaWrapper;
-import me.jezza.thaumicpipes.common.lib.CoreProperties;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
 import thaumcraft.api.aspects.Aspect;
@@ -26,21 +25,9 @@ public class EssentiaWrapper implements IEssentiaWrapper {
     @Override
     public int add(Aspect aspect, int amount) {
         int tempAmount = amount;
-//        try {
-            amount -= transport.addEssentia(aspect, amount, direction);
-            if (amount == tempAmount)
-                amount = ((IAspectContainer) transport).addToContainer(aspect, amount);
-//        } catch (RuntimeException ignored) {
-//            if (!fired) {
-//                fired = true;
-                CoreProperties.logger.fatal("Please go yell at Azanor. Courtesy of Jezza");
-                CoreProperties.logger.fatal("Please go yell at Azanor. Courtesy of Jezza");
-                CoreProperties.logger.fatal("Please go yell at Azanor. Courtesy of Jezza");
-                CoreProperties.logger.fatal("Please go yell at Azanor. Courtesy of Jezza");
-                CoreProperties.logger.fatal("Please go yell at Azanor. Courtesy of Jezza");
-//            }
-//            return tempAmount - amount;
-//        }
+        amount -= transport.addEssentia(aspect, amount, direction);
+        if (amount == tempAmount)
+            amount = ((IAspectContainer) transport).addToContainer(aspect, amount);
         return tempAmount - amount;
     }
 
