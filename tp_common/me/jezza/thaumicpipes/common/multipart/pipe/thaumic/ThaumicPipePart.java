@@ -2,7 +2,6 @@ package me.jezza.thaumicpipes.common.multipart.pipe.thaumic;
 
 import codechicken.lib.vec.Cuboid6;
 import me.jezza.oc.api.network.interfaces.IMessageProcessor;
-import me.jezza.oc.api.network.interfaces.INetworkNode;
 import me.jezza.oc.common.core.DebugHelper;
 import me.jezza.thaumicpipes.ThaumicPipes;
 import me.jezza.thaumicpipes.client.interfaces.IPartRenderer;
@@ -20,6 +19,7 @@ import me.jezza.thaumicpipes.common.transport.connection.ArmStateHandler;
 import me.jezza.thaumicpipes.common.transport.connection.NodeState;
 import me.jezza.thaumicpipes.common.transport.messages.InformationMessage;
 import me.jezza.thaumicpipes.common.transport.messages.StorageMessage;
+import me.jezza.thaumicpipes.common.transport.wrappers.EssentiaTransportWrapper;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -37,12 +37,9 @@ import thaumcraft.api.aspects.IEssentiaTransport;
 import thaumcraft.common.tiles.TileJarFillable;
 import thaumcraft.common.tiles.TileTube;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
-public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, INetworkNode {
+public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe {
 
     private int prevSize = -1;
     private int[] counts, amounts, timeTickerValues;
@@ -51,7 +48,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     protected AspectList aspects;
 
     protected ArmStateHandler armStateHandler;
-    protected IMessageProcessor messageProcessor;
+    protected IMessageProcessor<IThaumicPipe> messageProcessor;
 
     public ThaumicPipePart() {
         armStateHandler = new ArmStateHandler();
@@ -79,7 +76,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
      * [1] = depositSpeed.
      */
     public int[] getAmounts() {
-        return new int[]{2, 5};
+        return new int[]{2, 1};
     }
 
     /**
@@ -93,7 +90,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
      * Change in deposit over time.
      */
     public int getDepositVariance() {
-        return random.nextInt(5) - 2;
+        return 0;
     }
 
     private int getWithdrawSpeed() {
@@ -131,28 +128,21 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     }
 
     private void processInputs() {
-        Map<ForgeDirection, IEssentiaTransport> inputs = armStateHandler.getInputs();
+        List<EssentiaTransportWrapper> inputs = armStateHandler.getInputs();
         if (inputs.isEmpty())
             return;
 
-        for (Map.Entry<ForgeDirection, IEssentiaTransport> entry : inputs.entrySet()) {
-            IEssentiaTransport transport = entry.getValue();
-            ForgeDirection direction = entry.getKey();
-
-            int essentiaAmount = transport.getEssentiaAmount(direction);
+        for (EssentiaTransportWrapper transport : inputs) {
+            int essentiaAmount = transport.getEssentiaAmount();
             if (essentiaAmount <= 0)
                 continue;
 
-            Aspect essentiaType = transport.getEssentiaType(direction);
+            Aspect type = transport.getEssentiaType();
             essentiaAmount = Math.min(essentiaAmount, getWithdrawSpeed());
-            int resultPulled = transport.takeEssentia(essentiaType, essentiaAmount, direction);
-            if (resultPulled == 0) {
-                IAspectContainer container = (IAspectContainer) transport;
-                boolean flag = container.takeFromContainer(essentiaType, essentiaAmount);
-                if (!flag)
-                    continue;
-            }
-            aspects.add(essentiaType, essentiaAmount);
+            int resultPulled = transport.takeEssentia(type, essentiaAmount);
+            if (resultPulled == 0 && !((IAspectContainer) transport).takeFromContainer(type, essentiaAmount))
+                continue;
+            aspects.add(type, essentiaAmount);
         }
     }
 
@@ -162,14 +152,11 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     }
 
     private void processStorage() {
-        for (Map.Entry<ForgeDirection, IEssentiaTransport> entry : armStateHandler.getStorage().entrySet()) {
-            IEssentiaTransport transport = entry.getValue();
-            ForgeDirection direction = entry.getKey();
-
-            Aspect type = transport.getSuctionType(null);
-            if (type != null)
-                messageProcessor.postMessage(new StorageMessage(this, transport, direction, type));
-
+        for (EssentiaTransportWrapper transport : armStateHandler.getStorage()) {
+            Aspect type = transport.getSuctionType();
+            int amount = transport.getEssentiaAmount();
+            if (type != null && amount > 0)
+                messageProcessor.postMessage(new StorageMessage(this, transport, type));
         }
     }
 
@@ -188,18 +175,21 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
         if (player.getCurrentEquippedItem() == null) {
             if (player.worldObj.isRemote)
                 return true;
-
             if (player.isSneaking()) {
+//                processAspects();
+//
+//                if (true)
+//                    return true;
                 drain();
                 addChatMessage(player, EnumChatFormatting.DARK_AQUA + "Pipe was drained.");
             } else {
                 boolean empty = true;
                 boolean debugFlag = DebugHelper.isDebug_enableChat();
                 if (debugFlag) {
-                    addChatMessage(player, getDescriptionString(armStateHandler.getValidConnections().values(), "Pipes", false));
-                    addChatMessage(player, getDescriptionString(armStateHandler.getInputs().values(), "Inputs", false));
-                    addChatMessage(player, getDescriptionString(armStateHandler.getStorage().values(), "Storages", false));
-                    addChatMessage(player, getDescriptionString(armStateHandler.getOutputs().values(), "Outputs", false));
+                    addChatMessage(player, EnumChatFormatting.DARK_RED.toString() + "Pipes: " + EnumChatFormatting.RESET + armStateHandler.getValidConnections().values().size());
+                    addChatMessage(player, getDescriptionString(armStateHandler.getInputs(), "Inputs", false));
+                    addChatMessage(player, getDescriptionString(armStateHandler.getStorage(), "Storages", true));
+                    addChatMessage(player, getDescriptionString(armStateHandler.getOutputs(), "Outputs", true));
                     addChatMessage(player, EnumChatFormatting.DARK_PURPLE + "Pending Aspects:");
                 }
 
@@ -247,16 +237,17 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
         return false;
     }
 
-    private <T> String getDescriptionString(Collection<T> transports, String description, boolean suction) {
+    private String getDescriptionString(Collection<EssentiaTransportWrapper> transports, String description, boolean suction) {
         StringBuilder result = new StringBuilder(EnumChatFormatting.DARK_RED.toString());
         result.append(description);
         result.append(": ");
         result.append(EnumChatFormatting.RESET);
-
-        // TODO Suction.
-        int size = transports.size();
-
-        result.append(size);
+        result.append(transports.size());
+        if (suction) {
+            result.append(" ");
+            for (EssentiaTransportWrapper transport : transports)
+                result.append(transport.direction.getOpposite().name()).append(": ").append(transport.getSuctionAmount());
+        }
         return result.toString();
     }
 
@@ -311,7 +302,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
 
         OcclusionPart part = PipeProperties.getOcclusionPart(direction);
         if (tileEntity instanceof IThaumicPipe)
-            return bothPassOcclusionTest(((IThaumicPipe) tileEntity).getPipe(), part, PipeProperties.getOcclusionPart(direction.getOpposite()));
+            return bothPassOcclusionTest(((IThaumicPipe) tileEntity).getPart(), part, PipeProperties.getOcclusionPart(direction.getOpposite()));
         return passOcclusionTest(part) && isValidConnection(tileEntity, direction);
     }
 
@@ -324,7 +315,12 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     }
 
     @Override
-    public PipePartAbstract getPipe() {
+    public IThaumicPipe getPipe() {
+        return this;
+    }
+
+    @Override
+    public PipePartAbstract getPart() {
         return this;
     }
 
@@ -376,7 +372,7 @@ public class ThaumicPipePart extends PipePartAbstract implements IThaumicPipe, I
     }
 
     @Override
-    public Collection<INetworkNode> getNearbyNodes() {
+    public Collection<IThaumicPipe> getNearbyNodes() {
         return armStateHandler.getValidConnections().values();
     }
 

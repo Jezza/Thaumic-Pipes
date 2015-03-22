@@ -6,9 +6,9 @@ import me.jezza.oc.api.network.NetworkResponse.NodeAdded;
 import me.jezza.oc.api.network.NetworkResponse.NodeRemoved;
 import me.jezza.oc.api.network.NetworkResponse.NodeUpdated;
 import me.jezza.oc.api.network.exceptions.NetworkException;
-import me.jezza.oc.api.network.interfaces.INetworkNode;
 import me.jezza.oc.common.core.CoreProperties;
 import me.jezza.oc.common.utils.CoordSet;
+import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.packet.AspectPacket;
 import thaumcraft.api.aspects.Aspect;
 
@@ -16,7 +16,7 @@ import java.util.List;
 
 public class CommonProxy {
 
-    private static NetworkInstance networkInstance;
+    private static NetworkInstance<IThaumicPipe> networkInstance;
 
     private static boolean init = false;
 
@@ -24,7 +24,7 @@ public class CommonProxy {
         if (init)
             return;
         init = true;
-        networkInstance = new NetworkInstance();
+        networkInstance = new NetworkInstance<>();
     }
 
     public void initServerSide() {
@@ -33,7 +33,7 @@ public class CommonProxy {
     public void initClientSide() {
     }
 
-    public NodeAdded addNetworkNode(INetworkNode node) {
+    public NodeAdded addNetworkNode(IThaumicPipe node) {
         NodeAdded response;
         try {
             response = networkInstance.addNetworkNode(node);
@@ -44,7 +44,7 @@ public class CommonProxy {
         return response;
     }
 
-    public NodeRemoved removeNetworkNode(INetworkNode node) {
+    public NodeRemoved removeNetworkNode(IThaumicPipe node) {
         NodeRemoved response;
         try {
             response = networkInstance.removeNetworkNode(node);
@@ -55,7 +55,7 @@ public class CommonProxy {
         return response;
     }
 
-    public NodeUpdated updateNetworkNode(INetworkNode node) {
+    public NodeUpdated updateNetworkNode(IThaumicPipe node) {
         NodeUpdated response;
         try {
             response = networkInstance.updateNetworkNode(node);

@@ -71,6 +71,12 @@ public class AspectTrailFX extends EntityFX {
 
             index++;
         }
+
+        if (next == null || current == null) {
+            setDead();
+            return;
+        }
+
         motionX = ((next.x + ((rand.nextFloat() - 0.5F))) - current.x) / (float) TICKS_PER_NODE;
         motionY = ((next.y + ((rand.nextFloat() - 0.5F))) - current.y) / (float) TICKS_PER_NODE;
         motionZ = ((next.z + ((rand.nextFloat() - 0.5F))) - current.z) / (float) TICKS_PER_NODE;

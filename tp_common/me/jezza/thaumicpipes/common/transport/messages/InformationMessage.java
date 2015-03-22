@@ -2,17 +2,12 @@ package me.jezza.thaumicpipes.common.transport.messages;
 
 import me.jezza.oc.api.network.NetworkMessageAbstract;
 import me.jezza.oc.api.network.interfaces.IMessageProcessor;
-import me.jezza.oc.api.network.interfaces.INetworkNode;
-import me.jezza.oc.common.utils.CoordSet;
 import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.transport.connection.ArmStateHandler;
 import me.jezza.thaumicpipes.common.transport.wrappers.AspectListWrapper;
-import me.jezza.thaumicpipes.common.transport.wrappers.EssentiaWrapper;
-import me.jezza.thaumicpipes.common.transport.wrappers.TransportWrapper;
-import net.minecraftforge.common.util.ForgeDirection;
+import me.jezza.thaumicpipes.common.transport.wrappers.EssentiaTransportWrapper;
 import thaumcraft.api.aspects.Aspect;
 import thaumcraft.api.aspects.AspectList;
-import thaumcraft.api.aspects.IEssentiaTransport;
 
 import java.util.*;
 
@@ -25,15 +20,15 @@ import static me.jezza.oc.api.network.NetworkResponse.MessageResponse;
  * This information is then used to send out AspectMessages to fill up the target tile.
  * This is solely for input devices.
  */
-public class InformationMessage extends NetworkMessageAbstract {
+public class InformationMessage extends NetworkMessageAbstract<IThaumicPipe> {
 
-    private Map<Aspect, TransportWrapper> aspectMap = new LinkedHashMap<>();
-    private List<TransportWrapper> fallback = new ArrayList<>();
+    private Map<Aspect, TreeSet<EssentiaTransportWrapper>> aspectMap = new LinkedHashMap<>();
+    private List<EssentiaTransportWrapper> fallback = new ArrayList<>();
 
     private final AspectList aspects;
     private final int depositAmount;
 
-    public InformationMessage(INetworkNode owner, AspectList aspects, int depositAmount) {
+    public InformationMessage(IThaumicPipe owner, AspectList aspects, int depositAmount) {
         super(owner);
         this.aspects = aspects;
         this.depositAmount = depositAmount;
@@ -44,98 +39,59 @@ public class InformationMessage extends NetworkMessageAbstract {
     }
 
     @Override
-    public void onDataChanged(INetworkNode node) {
+    public void onDataChanged(IThaumicPipe node) {
     }
 
     @Override
-    public MessageResponse preProcessing(IMessageProcessor messageProcessor) {
+    public MessageResponse preProcessing(IMessageProcessor<IThaumicPipe> messageProcessor) {
         return MessageResponse.VALID;
     }
 
     @Override
-    public MessageResponse processNode(IMessageProcessor messageProcessor, INetworkNode node) {
-        IThaumicPipe pipe = (IThaumicPipe) node;
+    public MessageResponse processNode(IMessageProcessor<IThaumicPipe> messageProcessor, IThaumicPipe pipe) {
         ArmStateHandler armStateHandler = pipe.getArmStateHandler();
 
-        processTiles(node, armStateHandler.getOutputs(), true);
-        processTiles(node, armStateHandler.getStorage(), false);
+        processTiles(pipe, armStateHandler.getOutputs(), true);
+        processTiles(pipe, armStateHandler.getStorage(), false);
 
         return MessageResponse.VALID;
     }
 
-    private void processTiles(INetworkNode node, Map<ForgeDirection, IEssentiaTransport> connections, boolean output) {
-        for (Map.Entry<ForgeDirection, IEssentiaTransport> entry : connections.entrySet()) {
-            IEssentiaTransport transport = entry.getValue();
-            ForgeDirection direction = entry.getKey();
-
-            int suctionAmount = transport.getSuctionAmount(direction);
-            int minAmount = transport.getMinimumSuction();
-            if (suctionAmount == 0 && minAmount == 0)
-                continue;
-            if (suctionAmount < minAmount)
+    private void processTiles(IThaumicPipe pipe, List<EssentiaTransportWrapper> connections, boolean output) {
+        for (EssentiaTransportWrapper transport : connections) {
+            if (transport.shouldSkip())
                 continue;
 
-            Aspect type = transport.getSuctionType(direction);
+            Aspect type = transport.getSuctionType();
             if (type != null) {
                 if (!aspects.aspects.containsKey(type))
                     continue;
-                if (!aspectMap.containsKey(type)) {
-                    TransportWrapper wrapper = new TransportWrapper(node, transport, direction);
-                    wrapper.output = output;
-                    aspectMap.put(type, wrapper);
-                } else {
-                    TransportWrapper prevWrapper = aspectMap.get(type);
-                    if (!output && prevWrapper.output)
-                        continue;
-
-                    TransportWrapper wrapper = new TransportWrapper(node, transport, direction);
-                    if (output && !prevWrapper.output) {
-                        wrapper.output = true;
-                        aspectMap.put(type, wrapper);
-                        continue;
-                    }
-
-                    int prevSuctionAmount = prevWrapper.transport.getMinimumSuction();
-                    int newSuctionAmount = wrapper.transport.getMinimumSuction();
-
-                    if (newSuctionAmount > prevSuctionAmount)
-                        aspectMap.put(type, wrapper);
-                }
+                if (!aspectMap.containsKey(type))
+                    aspectMap.put(type, new TreeSet<EssentiaTransportWrapper>());
+                aspectMap.get(type).add(transport);
             } else
-                fallback.add(new TransportWrapper(node, transport, direction));
+                fallback.add(transport);
 
         }
     }
 
     @Override
-    public MessageResponse postProcessing(IMessageProcessor messageProcessor) {
-        if (aspectMap.isEmpty() && fallback.isEmpty())
-            return MessageResponse.VALID;
-
-        Iterator<TransportWrapper> iterator = fallback.iterator();
+    public MessageResponse postProcessing(IMessageProcessor<IThaumicPipe> messageProcessor) {
+        AspectListWrapper wrapper = new AspectListWrapper(aspects, getOwner().getCoordSet());
+        Iterator<EssentiaTransportWrapper> iterator = fallback.iterator();
 
         for (Aspect aspect : aspects.getAspects()) {
             if (aspect == null)
                 continue;
-            TransportWrapper wrapper;
-
-            if (aspectMap.containsKey(aspect))
-                wrapper = aspectMap.get(aspect);
-            else {
-                if (iterator.hasNext()) {
-                    wrapper = iterator.next();
-                } else
-                    continue;
-            }
-
             int amount = Math.min(depositAmount, aspects.getAmount(aspect));
-            CoordSet coordSet = (CoordSet) getOwner().notifyNode(0, 0);
+            if (amount <= 0)
+                continue;
 
-            if (coordSet == null)
-                return MessageResponse.VALID;
-
-            AspectListWrapper input = new AspectListWrapper(aspects, coordSet);
-            messageProcessor.postMessage(new AspectMessage(getOwner(), wrapper.node, input, new EssentiaWrapper(wrapper.transport, wrapper.direction), aspect, amount));
+            if (aspectMap.containsKey(aspect)) {
+                ArrayDeque<EssentiaTransportWrapper> deque = new ArrayDeque<>(aspectMap.get(aspect));
+                messageProcessor.postMessage(new AspectMessage(getOwner(), wrapper, deque, aspect, amount));
+            } else if (iterator.hasNext())
+                messageProcessor.postMessage(new AspectMessage(getOwner(), wrapper, iterator.next(), aspect, amount));
         }
         return MessageResponse.VALID;
     }

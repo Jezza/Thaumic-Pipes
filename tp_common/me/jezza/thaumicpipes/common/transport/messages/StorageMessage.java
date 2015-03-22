@@ -2,36 +2,33 @@ package me.jezza.thaumicpipes.common.transport.messages;
 
 import me.jezza.oc.api.network.NetworkMessageAbstract;
 import me.jezza.oc.api.network.interfaces.IMessageProcessor;
-import me.jezza.oc.api.network.interfaces.INetworkNode;
 import me.jezza.thaumicpipes.common.core.interfaces.IThaumicPipe;
 import me.jezza.thaumicpipes.common.transport.connection.ArmStateHandler;
-import me.jezza.thaumicpipes.common.transport.wrappers.EssentiaWrapper;
-import me.jezza.thaumicpipes.common.transport.wrappers.TransportWrapper;
-import net.minecraftforge.common.util.ForgeDirection;
+import me.jezza.thaumicpipes.common.transport.wrappers.EssentiaTransportWrapper;
 import thaumcraft.api.aspects.Aspect;
-import thaumcraft.api.aspects.IEssentiaTransport;
 
-import java.util.Map;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.TreeSet;
 
 import static me.jezza.oc.api.network.NetworkResponse.MessageResponse;
 
-public class StorageMessage extends NetworkMessageAbstract {
+public class StorageMessage extends NetworkMessageAbstract<IThaumicPipe> {
 
-    private TransportWrapper storageTarget, outputTarget;
+    private TreeSet<EssentiaTransportWrapper> wrappers;
 
-    private final IEssentiaTransport storage;
+    private final EssentiaTransportWrapper input;
     private final int currentAmount;
     private final Aspect aspect;
     private final int suction;
-    private final ForgeDirection direction;
 
-    public StorageMessage(INetworkNode owner, IEssentiaTransport storage, ForgeDirection direction, Aspect aspect) {
+    public StorageMessage(IThaumicPipe owner, EssentiaTransportWrapper input, Aspect aspect) {
         super(owner);
         this.aspect = aspect;
-        this.storage = storage;
-        this.suction = storage.getMinimumSuction();
-        this.currentAmount = storage.getEssentiaAmount(null);
-        this.direction = direction;
+        this.input = input;
+        this.suction = input.getMinimumSuction();
+        this.currentAmount = input.getEssentiaAmount();
+        wrappers = new TreeSet<>();
     }
 
     @Override
@@ -39,89 +36,42 @@ public class StorageMessage extends NetworkMessageAbstract {
     }
 
     @Override
-    public void onDataChanged(INetworkNode node) {
+    public void onDataChanged(IThaumicPipe node) {
     }
 
     @Override
-    public MessageResponse preProcessing(IMessageProcessor messageProcessor) {
+    public MessageResponse preProcessing(IMessageProcessor<IThaumicPipe> messageProcessor) {
         return MessageResponse.VALID;
     }
 
     @Override
-    public MessageResponse processNode(IMessageProcessor messageProcessor, INetworkNode node) {
-        IThaumicPipe pipe = (IThaumicPipe) node;
+    public MessageResponse processNode(IMessageProcessor<IThaumicPipe> messageProcessor, IThaumicPipe pipe) {
         ArmStateHandler armStateHandler = pipe.getArmStateHandler();
 
-        processOutputs(node, armStateHandler.getOutputs());
-        processStorage(node, armStateHandler.getStorage());
+
+        for (EssentiaTransportWrapper transport : armStateHandler.getOutputs())
+            if (!transport.shouldSkip()) {
+                Aspect type = transport.getSuctionType();
+                if (type == null || type == aspect)
+                    wrappers.add(transport);
+            }
+
+        for (EssentiaTransportWrapper transport : armStateHandler.getStorage())
+            if (!transport.shouldSkip() && !input.equals(transport)) {
+                int suctionAmount = transport.getSuctionAmount();
+                if (transport.getSuctionType() == aspect && (suctionAmount > suction || suctionAmount == suction && transport.getEssentiaAmount() + 1 < currentAmount))
+                    wrappers.add(transport);
+            }
 
         return MessageResponse.VALID;
-    }
-
-    private void processOutputs(INetworkNode node, Map<ForgeDirection, IEssentiaTransport> connections) {
-        for (Map.Entry<ForgeDirection, IEssentiaTransport> entry : connections.entrySet()) {
-            IEssentiaTransport transport = entry.getValue();
-            ForgeDirection direction = entry.getKey();
-
-            int suctionAmount = transport.getSuctionAmount(direction);
-            if (suctionAmount <= transport.getMinimumSuction())
-                continue;
-
-            Aspect type = transport.getSuctionType(direction);
-            if (type == aspect) {
-                if (outputTarget == null)
-                    outputTarget = new TransportWrapper(node, transport, direction);
-                else if (suctionAmount > outputTarget.transport.getSuctionAmount(direction))
-                    outputTarget = new TransportWrapper(node, transport, direction);
-            } else if (type == null && outputTarget == null)
-                outputTarget = new TransportWrapper(node, transport, direction);
-        }
-    }
-
-    private void processStorage(INetworkNode node, Map<ForgeDirection, IEssentiaTransport> connections) {
-        for (Map.Entry<ForgeDirection, IEssentiaTransport> entry : connections.entrySet()) {
-            IEssentiaTransport transport = entry.getValue();
-            ForgeDirection direction = entry.getKey();
-            if (transport.equals(storage))
-                continue;
-
-            if (transport.getSuctionType(direction) != aspect)
-                continue;
-
-            int suctionAmount = transport.getSuctionAmount(direction);
-            if (suctionAmount < transport.getMinimumSuction())
-                continue;
-
-            if (suctionAmount > suction) {
-                if (storageTarget == null)
-                    storageTarget = new TransportWrapper(node, transport, direction);
-                else if (suctionAmount > storageTarget.transport.getSuctionAmount(null))
-                    storageTarget = new TransportWrapper(node, transport, direction);
-            } else if (suctionAmount == suction && transport.getEssentiaAmount(null) + 1 < currentAmount) {
-                if (storageTarget == null)
-                    storageTarget = new TransportWrapper(node, transport, direction);
-                else if (suctionAmount > storageTarget.transport.getSuctionAmount(null))
-                    storageTarget = new TransportWrapper(node, transport, direction);
-            }
-        }
     }
 
     @Override
-    public MessageResponse postProcessing(IMessageProcessor messageProcessor) {
-        int amount = storage.getEssentiaAmount(null);
-        if (amount < 1)
+    public MessageResponse postProcessing(IMessageProcessor<IThaumicPipe> messageProcessor) {
+        if (wrappers.isEmpty())
             return MessageResponse.VALID;
-
-        int amountToRemove = 1;
-        if (outputTarget != null) {
-            messageProcessor.postMessage(new AspectMessage(getOwner(), outputTarget.node, new EssentiaWrapper(storage, direction), outputTarget.toWrapper(), aspect, amountToRemove));
-            return MessageResponse.VALID;
-        }
-
-        if (storageTarget != null)
-            messageProcessor.postMessage(new AspectMessage(getOwner(), storageTarget.node, new EssentiaWrapper(storage, direction), storageTarget.toWrapper(), aspect, amountToRemove));
-
+        Deque<EssentiaTransportWrapper> deque = new ArrayDeque<>(wrappers);
+        messageProcessor.postMessage(new AspectMessage(getOwner(), input, deque, aspect, 1));
         return MessageResponse.VALID;
     }
-
 }

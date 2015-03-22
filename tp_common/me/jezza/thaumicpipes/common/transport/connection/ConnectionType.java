@@ -87,7 +87,6 @@ public class ConnectionType {
 
         if (tileEntity instanceof IThaumicPipe)
             return PIPE;
-
         if (tileEntity instanceof TileTubeBuffer)
             result = result | TRANSPORT_EXTENDED;
         else if (tileEntity instanceof TileJarFillable)
