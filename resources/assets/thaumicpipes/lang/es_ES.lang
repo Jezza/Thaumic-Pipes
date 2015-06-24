@@ -1,0 +1,11 @@
+tile.thaumicPipe.name=Tubería Táumica
+item.itemThaumicPipe.name=Tubería Táumica
+itemGroup.ThaumicPipes=Tuberías Táumicas
+tc.research_category.TP_CATEGORY=Tuberías Táumicas
+
+tc.research_name.thaumicPipe=Sistema de Tansporte de Esencia Mejorado
+tc.research_text.thaumicPipe=[TP] Nunca se dijo que la succión fuese mala, simplemente no es buena...
+tp.research_page.thaumicPipe.count=3
+tp.research_page.thaumicPipe.1=Pensabas que los sitemas de transporte de esencia que habias desarrollado previamente eran buenos para artilugios alqúimicos de pequeña a mediana escala, sin embargo no existe la posibilidad de transferir grandes cantidades de esencia en cualquier momento.<BR>Sin el sistema de succión, crees que la automatización puede ser como un soplo de aire fresco.<BR>Con esto en mente, usando los secretos del reino de los ender y filtros de esencia ricos, has ideado una manera de transportar esencia con una efectividad y velocidad mejoradas.
+tp.research_page.thaumicPipe.2=Estas tuberías son capaces de transferir toda la esencia de las distintas fuentes, como el Alambique, a los receptores, como los tarros o la Construcción Alquímica.<BR>Pueden transportar más de un tipo de esencia en cualquier momento dado, y no hay límite de cuanta pueden transferir a la vez.<BR>Estas tuberías intenarán localizar las fuentes de esencia en el siguiente orden: Construcciones Alquímicas, otras maquinas, y finalmente tarros.<BR>Los tarros etiquetados succionarán la esencia de los no etiquetados con el mismo contenido.
+tp.research_page.thaumicPipe.3=Tener más de un tarro etiquetado en la misma red con el mismo aspecto balanceará la esencia entre los dos.<BR>Haciendo click derecho en las tuberías con la mano vacía te informará de cuanta hay en ellas, y click derecho pulsando shift drenará toda la esencia.
